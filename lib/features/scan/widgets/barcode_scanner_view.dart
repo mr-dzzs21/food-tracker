@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/status_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../products/gtin.dart';
@@ -205,21 +207,22 @@ class _CameraPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = context.appColors;
     return ColoredBox(
-      color: colors.surfaceContainerHighest,
+      color: colors.camera,
       child: Center(
         child: Icon(
-          Icons.photo_camera_outlined,
+          Icons.photo_camera_rounded,
           size: 48,
-          color: colors.onSurfaceVariant,
+          color: colors.onCamera.withValues(alpha: 0.6),
         ),
       ),
     );
   }
 }
 
-/// Hint text at the bottom and the torch button at the top right.
+/// The viewfinder, the torch button at the top right and the hint at the
+/// bottom.
 class _CameraOverlay extends StatelessWidget {
   const _CameraOverlay({required this.torchState, required this.onToggleTorch});
 
@@ -229,45 +232,192 @@ class _CameraOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final colors = context.appColors;
     final torchOn = torchState == TorchState.on;
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.s),
-      child: Stack(
-        children: [
-          // Some devices (and the front camera) have no torch.
-          if (torchState != TorchState.unavailable)
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton.filledTonal(
-                tooltip: torchOn ? l10n.scannerTorchOff : l10n.scannerTorchOn,
-                icon: Icon(
-                  torchOn ? Icons.flashlight_off : Icons.flashlight_on,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ScannerViewfinder(),
+        Padding(
+          padding: const EdgeInsets.all(Spacing.m),
+          child: Stack(
+            children: [
+              // Some devices (and the front camera) have no torch.
+              if (torchState != TorchState.unavailable)
+                Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  child: SquareIconButton(
+                    tooltip: torchOn
+                        ? l10n.scannerTorchOff
+                        : l10n.scannerTorchOn,
+                    icon: torchOn
+                        ? Icons.flashlight_off_rounded
+                        : Icons.flashlight_on_rounded,
+                    background: colors.cameraScrim,
+                    foreground: colors.onCamera,
+                    onPressed: onToggleTorch,
+                  ),
                 ),
-                onPressed: onToggleTorch,
-              ),
-            ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(Radii.l),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Spacing.m,
-                  vertical: Spacing.xs,
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: colors.cameraScrim,
+                    shape: const StadiumBorder(),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Spacing.m,
+                      vertical: 6,
+                    ),
+                    child: Text(
+                      l10n.scannerHint,
+                      style: Theme.of(context).textTheme.labelMedium!
+                          .copyWith(color: colors.onCamera),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-                child: Text(
-                  l10n.scannerHint,
-                  style: theme.textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The dark frame over the camera picture with a clear, rounded window in
+/// the middle and white rounded corner marks – "hold the barcode here".
+///
+/// Decoration only (no touch, no screen-reader node). Public so tests can
+/// check where the window is.
+class ScannerViewfinder extends StatelessWidget {
+  const ScannerViewfinder({super.key});
+
+  /// The clear window inside an area of [size]: 80 % of the width (at most
+  /// 320 px), a barcode-like 16:10 shape, centred, never taller than half of
+  /// the area.
+  static Rect windowRect(Size size) {
+    final width = math.min(size.width * 0.8, 320.0);
+    final height = math.min(width * 0.625, size.height * 0.5);
+    return Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: width,
+      height: height,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _ViewfinderPainter(
+          scrim: colors.cameraScrim,
+          corners: colors.onCamera,
+        ),
+      ),
+    );
+  }
+}
+
+class _ViewfinderPainter extends CustomPainter {
+  const _ViewfinderPainter({required this.scrim, required this.corners});
+
+  final Color scrim;
+  final Color corners;
+
+  static const double _radius = Radii.button;
+  static const double _cornerLength = 26;
+  static const double _stroke = 4;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final window = RRect.fromRectAndRadius(
+      ScannerViewfinder.windowRect(size),
+      const Radius.circular(_radius),
+    );
+    // Everything dark except the window.
+    canvas.drawPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRect(Offset.zero & size)
+        ..addRRect(window),
+      Paint()..color = scrim,
+    );
+
+    // Four rounded corner marks on the window's edge.
+    final paint = Paint()
+      ..color = corners
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _stroke
+      ..strokeCap = StrokeCap.round;
+    final r = window.outerRect;
+    const d = _radius * 2;
+    const sweep = math.pi / 2;
+    final arcs = [
+      (Rect.fromLTWH(r.left, r.top, d, d), math.pi),
+      (Rect.fromLTWH(r.right - d, r.top, d, d), -sweep),
+      (Rect.fromLTWH(r.right - d, r.bottom - d, d, d), 0.0),
+      (Rect.fromLTWH(r.left, r.bottom - d, d, d), sweep),
+    ];
+    for (final (box, start) in arcs) {
+      canvas.drawArc(box, start, sweep, false, paint);
+    }
+    // Straight parts next to each arc.
+    const l = _cornerLength;
+    for (final (from, to) in [
+      (Offset(r.left + _radius, r.top), Offset(r.left + _radius + l, r.top)),
+      (Offset(r.left, r.top + _radius), Offset(r.left, r.top + _radius + l)),
+      (Offset(r.right - _radius, r.top), Offset(r.right - _radius - l, r.top)),
+      (Offset(r.right, r.top + _radius), Offset(r.right, r.top + _radius + l)),
+      (
+        Offset(r.right - _radius, r.bottom),
+        Offset(r.right - _radius - l, r.bottom),
+      ),
+      (
+        Offset(r.right, r.bottom - _radius),
+        Offset(r.right, r.bottom - _radius - l),
+      ),
+      (
+        Offset(r.left + _radius, r.bottom),
+        Offset(r.left + _radius + l, r.bottom),
+      ),
+      (
+        Offset(r.left, r.bottom - _radius),
+        Offset(r.left, r.bottom - _radius - l),
+      ),
+    ]) {
+      canvas.drawLine(from, to, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ViewfinderPainter oldDelegate) =>
+      oldDelegate.scrim != scrim || oldDelegate.corners != corners;
+}
+
+/// The rounded camera area of the Scan tab and the scanner page: radius 28,
+/// dark backdrop, soft shadow. [child] is the camera (or what tests show
+/// instead).
+class CameraArea extends StatelessWidget {
+  const CameraArea({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.camera,
+        borderRadius: BorderRadius.circular(Radii.camera),
+        boxShadow: colors.cardShadow,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Radii.camera),
+        child: child,
       ),
     );
   }
@@ -291,19 +441,19 @@ class ScannerErrorView extends StatelessWidget {
       // We cannot ask again: iOS and Android show the dialog only once, so
       // we explain where the switch is (no extra permission package).
       MobileScannerErrorCode.permissionDenied => StatusView(
-        icon: Icons.no_photography_outlined,
+        icon: Icons.no_photography_rounded,
         title: l10n.scannerPermissionTitle,
         message: l10n.scannerPermissionText,
         compact: true,
       ),
       // No camera at all, for example on the iOS simulator.
       MobileScannerErrorCode.unsupported => StatusView(
-        icon: Icons.no_photography_outlined,
+        icon: Icons.no_photography_rounded,
         title: l10n.scannerUnsupported,
         compact: true,
       ),
       _ => StatusView(
-        icon: Icons.error_outline,
+        icon: Icons.error_outline_rounded,
         title: l10n.scannerError,
         actionLabel: l10n.actionRetry,
         onAction: onRetry,
@@ -311,7 +461,8 @@ class ScannerErrorView extends StatelessWidget {
       ),
     };
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      // A friendly light card inside the dark camera frame.
+      color: context.appColors.surface,
       // Centred when it fits; scrollable when long texts at large font sizes
       // need more room than the camera area has.
       child: LayoutBuilder(

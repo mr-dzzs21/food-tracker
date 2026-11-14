@@ -3,10 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/bottom_cta_bar.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/dialogs.dart';
+import '../../core/widgets/icon_square.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../diary/diary_repository.dart';
+import '../diary/meal_style.dart';
 
 /// Rename, add, hide and reorder meals.
 ///
@@ -20,16 +27,18 @@ class MealsSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final slots = ref.watch(mealSlotsProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.mealsTitle)),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: Text(l10n.mealsAdd),
-        onPressed: () => _addMeal(context, ref),
+      appBar: AppTopBar(title: l10n.mealsTitle),
+      bottomNavigationBar: BottomCtaBar(
+        child: CtaButton(
+          icon: Icons.add_rounded,
+          label: l10n.mealsAdd,
+          onPressed: () => _addMeal(context, ref),
+        ),
       ),
       body: switch (slots) {
         AsyncData(:final value) => _MealsList(slots: value),
         AsyncError() => StatusView(
-          icon: Icons.error_outline,
+          icon: Icons.error_outline_rounded,
           title: l10n.errorGeneric,
           actionLabel: l10n.actionRetry,
           onAction: () => ref.invalidate(mealSlotsProvider),
@@ -129,24 +138,14 @@ class _MealsListState extends ConsumerState<_MealsList> {
       return;
     }
     if (!mounted) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.mealsDeleteTitle(name)),
-        content: Text(l10n.mealsDeleteText),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.actionDelete),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: l10n.mealsDeleteTitle(name),
+      message: l10n.mealsDeleteText,
+      confirmLabel: l10n.actionDelete,
+      destructive: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     final result = await repository.deleteMealSlot(slot.id);
     switch (result) {
@@ -196,40 +195,40 @@ class _MealsListState extends ConsumerState<_MealsList> {
       // the tap that opens the edit dialog.
       buildDefaultDragHandles: false,
       onReorderItem: _reorder,
-      // Room for the floating "Mahlzeit hinzufügen" button.
-      padding: const EdgeInsets.only(bottom: Spacing.belowFab),
+      padding: const EdgeInsets.fromLTRB(Spacing.l, 0, Spacing.l, Spacing.xl),
+      // The lifted card keeps its round shape (no square Material shadow).
+      proxyDecorator: (child, _, _) =>
+          Material(type: MaterialType.transparency, child: child),
       header: Padding(
         padding: const EdgeInsets.fromLTRB(
-          Spacing.l,
+          Spacing.xs,
           Spacing.s,
-          Spacing.l,
-          Spacing.s,
+          Spacing.xs,
+          Spacing.m,
         ),
-        child: Text(
-          l10n.mealsHint,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
+        child: Text(l10n.mealsHint, style: theme.textTheme.bodySmall),
       ),
       children: [
         for (final (index, slot) in slots.indexed)
-          _MealTile(
+          Padding(
             key: ValueKey(slot.id),
-            slot: slot,
-            index: index,
-            onTap: () => _edit(slot),
-            onVisibleChanged: (visible) => _setHidden(slot, hidden: !visible),
+            padding: const EdgeInsets.only(bottom: Spacing.s),
+            child: _MealRow(
+              slot: slot,
+              index: index,
+              onTap: () => _edit(slot),
+              onVisibleChanged: (visible) => _setHidden(slot, hidden: !visible),
+            ),
           ),
       ],
     );
   }
 }
 
-/// One meal: name, start time, "anzeigen" switch and drag handle.
-class _MealTile extends StatelessWidget {
-  const _MealTile({
-    super.key,
+/// One meal as a card: its icon, name, start time, "anzeigen" switch and
+/// drag handle.
+class _MealRow extends StatelessWidget {
+  const _MealRow({
     required this.slot,
     required this.index,
     required this.onTap,
@@ -244,39 +243,78 @@ class _MealTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = context.appColors;
+    final palette = mealPaletteOf(slot, colors);
     final name = mealSlotName(slot, l10n);
     final details = [
       _startTimeText(context, slot.startMinute),
       if (slot.isHidden) l10n.mealsHidden,
     ].join(' · ');
 
-    return ListTile(
-      title: Text(name),
-      subtitle: Text(details),
+    return AppCard(
+      padding: EdgeInsets.zero,
       onTap: onTap,
-      contentPadding: const EdgeInsetsDirectional.only(start: Spacing.l),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Semantics(
-            label: l10n.mealsShow(name),
-            child: Switch(value: !slot.isHidden, onChanged: onVisibleChanged),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 64),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(
+            start: Spacing.l,
+            top: Spacing.s,
+            bottom: Spacing.s,
           ),
-          ReorderableDragStartListener(
-            index: index,
-            // Its own node, so screen readers announce the handle (the
-            // list adds "move up/down" actions to the row itself).
-            child: Semantics(
-              container: true,
-              label: l10n.mealsMove(name),
-              child: const SizedBox.square(
-                // At least 48 × 48, so the handle is easy to grab.
-                dimension: 48,
-                child: Icon(Icons.drag_handle),
+          child: Row(
+            children: [
+              IconSquare(
+                icon: mealIconOf(slot),
+                background: palette.background,
+                foreground: palette.icon,
               ),
-            ),
+              const SizedBox(width: Spacing.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      name,
+                      style: theme.textTheme.bodyLarge!.copyWith(
+                        fontWeight: FontWeight.w800,
+                        // Hidden meals look a bit quieter.
+                        color: slot.isHidden ? colors.inkMuted : null,
+                      ),
+                    ),
+                    Text(details, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              Semantics(
+                label: l10n.mealsShow(name),
+                child: Switch.adaptive(
+                  value: !slot.isHidden,
+                  onChanged: onVisibleChanged,
+                ),
+              ),
+              ReorderableDragStartListener(
+                index: index,
+                // Its own node, so screen readers announce the handle (the
+                // list adds "move up/down" actions to the row itself).
+                child: Semantics(
+                  container: true,
+                  label: l10n.mealsMove(name),
+                  child: SizedBox.square(
+                    // At least 48 × 48, so the handle is easy to grab.
+                    dimension: 48,
+                    child: Icon(
+                      Icons.drag_indicator_rounded,
+                      color: colors.inkMuted,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -406,7 +444,7 @@ class _MealDialogState extends State<_MealDialog> {
                 spacing: Spacing.s,
                 children: [
                   TextButton.icon(
-                    icon: const Icon(Icons.schedule),
+                    icon: const Icon(Icons.schedule_rounded),
                     label: Text(l10n.mealsPickTime),
                     onPressed: _pickTime,
                   ),
@@ -425,6 +463,9 @@ class _MealDialogState extends State<_MealDialog> {
         if (slot != null)
           TextButton(
             onPressed: () => Navigator.of(context).pop(const _DeleteMeal()),
+            style: TextButton.styleFrom(
+              foregroundColor: context.appColors.ratingHigh,
+            ),
             child: Text(l10n.actionDelete),
           ),
         TextButton(

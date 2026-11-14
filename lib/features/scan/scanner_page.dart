@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router.dart';
 import '../diary/add_food_page.dart';
@@ -23,11 +25,24 @@ class ScannerPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scanner = ref.watch(scannerViewProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context).scannerTitle)),
-      body: scanner(
-        (code) => replaceInAddFlow(
-          context,
-          Routes.product(code, day: day, mealId: mealId),
+      appBar: AppTopBar(title: AppLocalizations.of(context).scannerTitle),
+      body: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(
+          Spacing.l,
+          Spacing.xs,
+          Spacing.l,
+          Spacing.l,
+        ),
+        // The same rounded camera frame as on the Scan tab, as big as the
+        // page allows.
+        child: CameraArea(
+          child: scanner(
+            (code) => replaceInAddFlow(
+              context,
+              Routes.product(code, day: day, mealId: mealId),
+            ),
+          ),
         ),
       ),
     );

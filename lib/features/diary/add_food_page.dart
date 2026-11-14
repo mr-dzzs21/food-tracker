@@ -6,7 +6,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/buttons.dart';
+import '../../core/widgets/card_list.dart';
+import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/search_field.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -104,12 +107,10 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
         unawaited(_open(Routes.food(food.id, day: day, mealId: mealId)));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          slot == null
-              ? dayText
-              : l10n.addFoodTitle(mealSlotName(slot, l10n), dayText),
-        ),
+      appBar: AppTopBar(
+        title: slot == null
+            ? dayText
+            : l10n.addFoodTitle(mealSlotName(slot, l10n), dayText),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
@@ -135,29 +136,24 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
               Spacing.l,
               0,
             ),
-            // Wrap instead of Row: at large font sizes the buttons go below
-            // each other instead of overflowing.
-            child: Wrap(
-              spacing: Spacing.s,
-              runSpacing: Spacing.s,
-              children: [
-                TonalButton(
-                  // The scanner and the form replace themselves with the
-                  // product page and close this page after "Hinzufügen"
-                  // (replaceInAddFlow), so nothing to wait for here.
-                  onPressed: () =>
-                      unawaited(context.push(Routes.addFoodScan(day, mealId))),
-                  icon: Icons.qr_code_scanner_rounded,
-                  label: l10n.addFoodScan,
+            child: _ActionButtons(
+              // The scanner and the form replace themselves with the
+              // product page and close this page after "Hinzufügen"
+              // (replaceInAddFlow), so nothing to wait for here.
+              scan: CtaButton(
+                onPressed: () =>
+                    unawaited(context.push(Routes.addFoodScan(day, mealId))),
+                icon: Icons.qr_code_scanner_rounded,
+                label: l10n.addFoodScan,
+              ),
+              createOwn: TonalButton(
+                large: true,
+                onPressed: () => unawaited(
+                  context.push(Routes.newFood(day: day, mealId: mealId)),
                 ),
-                TonalButton(
-                  onPressed: () => unawaited(
-                    context.push(Routes.newFood(day: day, mealId: mealId)),
-                  ),
-                  icon: Icons.add_rounded,
-                  label: l10n.addFoodCreateOwn,
-                ),
-              ],
+                icon: Icons.add_rounded,
+                label: l10n.addFoodCreateOwn,
+              ),
             ),
           ),
           if (_filter.isEmpty)
@@ -177,17 +173,17 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
     final (foods, emptyIcon, emptyText) = switch (_segment) {
       _Segment.recent => (
         ref.watch(recentlyUsedFoodsProvider),
-        Icons.history,
+        Icons.history_rounded,
         l10n.addFoodRecentEmpty,
       ),
       _Segment.favourites => (
         ref.watch(favouriteFoodsProvider),
-        Icons.star_border,
+        Icons.star_outline_rounded,
         l10n.addFoodFavouritesEmpty,
       ),
       _Segment.own => (
         ref.watch(ownFoodsProvider),
-        Icons.edit_note,
+        Icons.edit_note_rounded,
         l10n.addFoodOwnEmpty,
       ),
     };
@@ -199,25 +195,14 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
           Spacing.l,
           Spacing.s,
         ),
-        child: SegmentedButton<_Segment>(
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(
-              value: _Segment.recent,
-              label: Text(l10n.addFoodSegmentRecent),
-            ),
-            ButtonSegment(
-              value: _Segment.favourites,
-              label: Text(l10n.addFoodSegmentFavourites),
-            ),
-            ButtonSegment(
-              value: _Segment.own,
-              label: Text(l10n.addFoodSegmentOwn),
-            ),
+        child: PillChoices<_Segment>(
+          choices: [
+            PillChoice(l10n.addFoodSegmentRecent, _Segment.recent),
+            PillChoice(l10n.addFoodSegmentFavourites, _Segment.favourites),
+            PillChoice(l10n.addFoodSegmentOwn, _Segment.own),
           ],
-          selected: {_segment},
-          onSelectionChanged: (selection) =>
-              setState(() => _segment = selection.single),
+          selected: _segment,
+          onSelected: (segment) => setState(() => _segment = segment),
         ),
       ),
       _FoodList(
@@ -243,7 +228,7 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
         SectionHeader(l10n.searchLocalTitle),
         _FoodList(
           foods: local,
-          emptyIcon: Icons.search_off,
+          emptyIcon: Icons.search_off_rounded,
           // Points the user to the online search.
           emptyText: l10n.addFoodNoLocalMatches,
           onTap: openFood,
@@ -291,14 +276,17 @@ class _FoodList extends StatelessWidget {
         title: emptyText,
         compact: true,
       ),
-      AsyncData(value: final list) => Column(
-        children: [
-          for (final food in list)
-            FoodTile.food(food, onTap: () => onTap(food)),
-        ],
+      AsyncData(value: final list) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+        child: CardGroup(
+          children: [
+            for (final food in list)
+              FoodTile.food(food, onTap: () => onTap(food)),
+          ],
+        ),
       ),
       AsyncError() => StatusView(
-        icon: Icons.error_outline,
+        icon: Icons.error_outline_rounded,
         title: l10n.errorGeneric,
         compact: true,
       ),
@@ -307,6 +295,44 @@ class _FoodList extends StatelessWidget {
         child: Center(child: CircularProgressIndicator()),
       ),
     };
+  }
+}
+
+/// "Scannen" and "Eigenes Lebensmittel" side by side, or below each other
+/// when there is not enough room (narrow screen or large text).
+class _ActionButtons extends StatelessWidget {
+  const _ActionButtons({required this.scan, required this.createOwn});
+
+  final Widget scan;
+  final Widget createOwn;
+
+  @override
+  Widget build(BuildContext context) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (largeText || constraints.maxWidth < 340) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              scan,
+              const SizedBox(height: Spacing.s),
+              createOwn,
+            ],
+          );
+        }
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: scan),
+              const SizedBox(width: Spacing.s),
+              Expanded(child: createOwn),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

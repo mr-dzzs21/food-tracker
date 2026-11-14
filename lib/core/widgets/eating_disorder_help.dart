@@ -43,22 +43,17 @@ class EatingDisorderHelp extends StatelessWidget {
         Text(l10n.helpEdText),
         const SizedBox(height: Spacing.s),
         TextButton.icon(
-          icon: const Icon(Icons.phone_outlined),
+          icon: const Icon(Icons.phone_rounded),
           label: Text(l10n.helpEdCall(EatingDisorderHelpline.phoneNumber)),
           onPressed: () => openLink(context, EatingDisorderHelpline.phoneUri),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.m),
-          child: Text(
-            l10n.helpEdHours,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          child: Text(l10n.helpEdHours, style: theme.textTheme.bodySmall),
         ),
         const SizedBox(height: Spacing.xs),
         TextButton.icon(
-          icon: const Icon(Icons.open_in_new),
+          icon: const Icon(Icons.open_in_new_rounded),
           label: Text(l10n.helpEdWebsite(EatingDisorderHelpline.website)),
           onPressed: () => openLink(context, EatingDisorderHelpline.websiteUri),
         ),

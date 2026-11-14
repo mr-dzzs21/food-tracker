@@ -12,6 +12,7 @@ class IconSquare extends StatelessWidget {
     required this.foreground,
     this.size = 34,
     this.iconSize = 20,
+    this.radius = Radii.square,
   });
 
   final IconData icon;
@@ -20,6 +21,9 @@ class IconSquare extends StatelessWidget {
   final double size;
   final double iconSize;
 
+  /// Corner radius; bigger squares look better with a bigger one.
+  final double radius;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -27,7 +31,7 @@ class IconSquare extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(Radii.square),
+        borderRadius: BorderRadius.circular(radius),
       ),
       alignment: Alignment.center,
       child: Icon(icon, size: iconSize, color: foreground),

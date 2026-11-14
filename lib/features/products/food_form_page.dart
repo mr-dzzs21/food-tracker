@@ -7,8 +7,14 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/errors.dart';
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/section_header.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/bottom_cta_bar.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/card_list.dart';
+import '../../core/widgets/dialogs.dart';
 import '../../core/widgets/status_view.dart';
+import '../../core/widgets/switch_row.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router.dart';
@@ -255,24 +261,14 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
 
   Future<void> _delete(Food food) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.foodFormDeleteTitle(food.name)),
-        content: Text(l10n.foodFormDeleteText),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.actionDelete),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: l10n.foodFormDeleteTitle(food.name),
+      message: l10n.foodFormDeleteText,
+      confirmLabel: l10n.actionDelete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     await ref.read(productRepositoryProvider).deleteOwnFood(food.id);
@@ -288,21 +284,19 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final title = Text(
-      _isEdit ? l10n.foodFormEditTitle : l10n.foodFormNewTitle,
-    );
+    final title = _isEdit ? l10n.foodFormEditTitle : l10n.foodFormNewTitle;
 
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: title),
+        appBar: AppTopBar(title: title),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     final existing = _existing;
     if (_isEdit && existing == null) {
       return Scaffold(
-        appBar: AppBar(title: title),
-        body: StatusView(icon: Icons.no_food_outlined, title: l10n.productGone),
+        appBar: AppTopBar(title: title),
+        body: StatusView(icon: Icons.no_food_rounded, title: l10n.productGone),
       );
     }
 
@@ -312,17 +306,25 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
     const gap = SizedBox(height: Spacing.m);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppTopBar(
         title: title,
         actions: [
           // Only own foods can be deleted (cached products are kept).
           if (existing != null && _isEdit && existing.source == FoodSource.user)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
+            SquareIconButton(
+              icon: Icons.delete_outline_rounded,
               tooltip: l10n.actionDelete,
               onPressed: () => _delete(existing),
             ),
         ],
+      ),
+      // Always reachable, however long the form is.
+      bottomNavigationBar: BottomCtaBar(
+        child: CtaButton(
+          onPressed: _saving ? null : _save,
+          icon: Icons.check_rounded,
+          label: l10n.actionSave,
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -333,106 +335,122 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
         // Form can only check fields that are built. The form is short
         // enough to build at once.
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            Spacing.l,
-            Spacing.s,
-            Spacing.l,
-            Spacing.xxl,
-          ),
+          padding: const EdgeInsets.only(top: Spacing.s, bottom: Spacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _name,
-                textCapitalization: TextCapitalization.sentences,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: l10n.foodFormRequired(l10n.foodFormName),
-                ),
-                validator: (text) => _validateName(text, l10n),
-              ),
-              gap,
-              TextFormField(
-                controller: _brand,
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(labelText: l10n.foodFormBrand),
-              ),
-              if (barcode != null) ...[
-                gap,
-                // Comes from the scan; changing it would break the link to the
-                // package.
-                TextFormField(
-                  initialValue: barcode,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: l10n.foodFormBarcode,
-                    suffixIcon: const Icon(Icons.lock_outline),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+                child: AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextFormField(
+                        controller: _name,
+                        textCapitalization: TextCapitalization.sentences,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: l10n.foodFormRequired(l10n.foodFormName),
+                        ),
+                        validator: (text) => _validateName(text, l10n),
+                      ),
+                      gap,
+                      TextFormField(
+                        controller: _brand,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: l10n.foodFormBrand,
+                        ),
+                      ),
+                      if (barcode != null) ...[
+                        gap,
+                        // Comes from the scan; changing it would break the
+                        // link to the package.
+                        TextFormField(
+                          initialValue: barcode,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            labelText: l10n.foodFormBarcode,
+                            suffixIcon: const Icon(Icons.lock_outline_rounded),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: Spacing.xs),
+                      SwitchRow(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: Spacing.xs,
+                        ),
+                        title: l10n.foodFormIsLiquid,
+                        value: _isLiquid,
+                        onChanged: (value) => setState(() => _isLiquid = value),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-              gap,
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.foodFormIsLiquid),
-                value: _isLiquid,
-                onChanged: (value) => setState(() => _isLiquid = value),
               ),
-              SectionHeader(
-                _isLiquid
+              CardSection(
+                title: _isLiquid
                     ? l10n.foodFormNutrientsPer100ml
                     : l10n.foodFormNutrientsPer100g,
-              ),
-              for (final nutrient in Nutrient.values) ...[
-                TextFormField(
-                  controller: _values[nutrient],
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: nutrient == Nutrient.kcal
-                        ? l10n.foodFormRequired(nutrientName(nutrient, l10n))
-                        : nutrientName(nutrient, l10n),
-                    suffixText: nutrient == Nutrient.kcal ? 'kcal' : 'g',
-                  ),
-                  validator: (_) => _validateNutrient(nutrient, l10n),
-                ),
-                gap,
-              ],
-              Text(
-                l10n.foodFormRequiredHint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              SectionHeader(l10n.foodFormPortionTitle),
-              TextFormField(
-                controller: _servingSize,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: l10n.foodFormPortionSize,
-                  suffixText: unit,
-                ),
-                validator: (_) => _validateServingSize(l10n),
-              ),
-              gap,
-              TextFormField(
-                controller: _servingLabel,
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  labelText: l10n.foodFormPortionLabel,
-                  hintText: l10n.foodFormPortionLabelHint,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final nutrient in Nutrient.values) ...[
+                      if (nutrient != Nutrient.values.first) gap,
+                      TextFormField(
+                        controller: _values[nutrient],
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: nutrient == Nutrient.kcal
+                              ? l10n.foodFormRequired(
+                                  nutrientName(nutrient, l10n),
+                                )
+                              : nutrientName(nutrient, l10n),
+                          suffixText: nutrient == Nutrient.kcal ? 'kcal' : 'g',
+                        ),
+                        validator: (_) => _validateNutrient(nutrient, l10n),
+                      ),
+                    ],
+                    gap,
+                    Text(
+                      l10n.foodFormRequiredHint,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: Spacing.xl),
-              FilledButton.icon(
-                onPressed: _saving ? null : _save,
-                icon: const Icon(Icons.check),
-                label: Text(l10n.actionSave),
+              CardSection(
+                title: l10n.foodFormPortionTitle,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _servingSize,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: l10n.foodFormPortionSize,
+                        suffixText: unit,
+                      ),
+                      validator: (_) => _validateServingSize(l10n),
+                    ),
+                    gap,
+                    TextFormField(
+                      controller: _servingLabel,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: l10n.foodFormPortionLabel,
+                        hintText: l10n.foodFormPortionLabelHint,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -103,9 +103,12 @@ void main() {
     expect(bars.goal, 2000);
     expect(bars.todayIndex, 5); // Saturday, 14 Nov
     // Above or below the goal: the same green, never red.
-    final scheme = buildTheme(Brightness.light).colorScheme;
-    expect(bars.todayColor, scheme.primary);
-    expect(bars.barColor, scheme.primary.withValues(alpha: 0.6));
+    const colors = AppColors.light;
+    expect(bars.todayColor, colors.brand);
+    expect(bars.barColor, colors.brand.withValues(alpha: 0.55));
+    expect(bars.goalColor, colors.inkMuted);
+    // The current week also shows its number and dates.
+    expect(find.text('KW 46 · 9.–15. Nov.'), findsOneWidget);
 
     expect(
       find.bySemanticsLabel(

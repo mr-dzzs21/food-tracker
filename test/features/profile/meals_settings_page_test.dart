@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/app_card.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/products/food_source.dart';
@@ -47,7 +48,7 @@ void main() {
 
   /// The "anzeigen" switch in the row of [name].
   Finder switchOf(String name) => find.descendant(
-    of: find.widgetWithText(ListTile, name),
+    of: find.widgetWithText(AppCard, name),
     matching: find.byType(Switch),
   );
 
@@ -61,6 +62,9 @@ void main() {
     expect(find.text('Abendessen'), findsOneWidget);
     expect(find.text('ab 17:30'), findsOneWidget);
     expect(find.text('Snacks'), findsOneWidget);
+    // The meal icons of the Today tiles.
+    expect(find.byIcon(Icons.free_breakfast_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.cookie_rounded), findsOneWidget);
   });
 
   testWidgets('rename and remove the start time; empty name = default', (
@@ -182,11 +186,11 @@ void main() {
     await openMeals(tester);
     // Drag "Frühstück" (first row) below "Abendessen" (third row).
     final handle = find.descendant(
-      of: find.widgetWithText(ListTile, 'Frühstück'),
-      matching: find.byIcon(Icons.drag_handle),
+      of: find.widgetWithText(AppCard, 'Frühstück'),
+      matching: find.byIcon(Icons.drag_indicator_rounded),
     );
     final rowHeight = tester
-        .getSize(find.widgetWithText(ListTile, 'Mittagessen'))
+        .getSize(find.widgetWithText(AppCard, 'Mittagessen'))
         .height;
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 100));
@@ -209,6 +213,22 @@ void main() {
       tester.getTopLeft(find.text('Abendessen')).dy,
       lessThan(tester.getTopLeft(find.text('Frühstück')).dy),
     );
+  });
+
+  testWidgets('text scale 2.0 on a phone: rows and the add button fit', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await openMeals(tester);
+    tester.view.physicalSize = const Size(360, 720);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Mahlzeit hinzufügen'), findsOneWidget);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -2000));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('English: names and start times', (tester) async {

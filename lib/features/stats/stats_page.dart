@@ -4,6 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/clock.dart';
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/hero_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../l10n/app_localizations.dart';
 import '../diary/total_text.dart';
@@ -26,73 +29,116 @@ class StatsPage extends ConsumerWidget {
     final monday = ref.watch(selectedWeekProvider);
     final stats = ref.watch(weekStatsProvider(monday));
     final goal = ref.watch(goalProvider);
+    final hero = _WeekHero(monday: monday);
+
+    // Hero and message in a scroll view, so nothing overflows at large
+    // text sizes.
+    Widget withMessage(Widget message) => CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: hero),
+        SliverFillRemaining(hasScrollBody: false, child: message),
+      ],
+    );
 
     return Scaffold(
-      appBar: _WeekSwitcherBar(monday: monday),
       body: switch ((stats, goal)) {
         (AsyncData(value: final stats), AsyncData(value: final goal)) =>
           stats.isEmpty
-              ? StatusView(
-                  icon: Icons.bar_chart_outlined,
-                  title: l10n.statsEmptyTitle,
-                  message: l10n.statsEmptyText,
+              ? withMessage(
+                  StatusView(
+                    icon: Icons.bar_chart_rounded,
+                    title: l10n.statsEmptyTitle,
+                    message: l10n.statsEmptyText,
+                  ),
                 )
-              : _StatsContent(stats: stats, goalKcal: goal?.kcal),
-        (AsyncError(), _) || (_, AsyncError()) => StatusView(
-          icon: Icons.error_outline,
-          title: l10n.errorGeneric,
-          actionLabel: l10n.actionRetry,
-          onAction: () => ref
-            ..invalidate(weekStatsProvider(monday))
-            ..invalidate(goalProvider),
+              : _StatsContent(hero: hero, stats: stats, goalKcal: goal?.kcal),
+        (AsyncError(), _) || (_, AsyncError()) => withMessage(
+          StatusView(
+            icon: Icons.error_outline_rounded,
+            title: l10n.errorGeneric,
+            actionLabel: l10n.actionRetry,
+            onAction: () => ref
+              ..invalidate(weekStatsProvider(monday))
+              ..invalidate(goalProvider),
+          ),
         ),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => withMessage(const Center(child: CircularProgressIndicator())),
       },
     );
   }
 }
 
-/// App bar with ‹ "Diese Woche" ›, like the date switcher on "Heute".
-class _WeekSwitcherBar extends ConsumerWidget implements PreferredSizeWidget {
-  const _WeekSwitcherBar({required this.monday});
+/// The green header with ‹ week title ›, like the date switcher on "Heute".
+/// The current week also shows its number and dates below "Diese Woche".
+class _WeekHero extends ConsumerWidget {
+  const _WeekHero({required this.monday});
 
   final String monday;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colors = context.appColors;
     final current = currentMonday(ref.watch(clockProvider));
     final notifier = ref.read(selectedWeekProvider.notifier);
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.chevron_left),
-        tooltip: l10n.statsPreviousWeek,
-        onPressed: notifier.previous,
+    final isCurrent = monday == current;
+    return HeroHeader(
+      child: Row(
+        children: [
+          SquareIconButton(
+            icon: Icons.chevron_left_rounded,
+            tooltip: l10n.statsPreviousWeek,
+            onHero: true,
+            onPressed: notifier.previous,
+          ),
+          const SizedBox(width: Spacing.s),
+          Expanded(
+            child: Column(
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(
+                    weekTitle(monday, current: current, l10n: l10n),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge!.copyWith(
+                      color: colors.onHero,
+                    ),
+                  ),
+                ),
+                if (isCurrent)
+                  Text(
+                    weekNumberTitle(monday, current: current, l10n: l10n),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      color: colors.onHero,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: Spacing.s),
+          SquareIconButton(
+            icon: Icons.chevron_right_rounded,
+            tooltip: l10n.statsNextWeek,
+            onHero: true,
+            // The current week is the last one: the future has no entries.
+            onPressed: isCurrent ? null : notifier.next,
+          ),
+        ],
       ),
-      titleSpacing: 0,
-      title: Text(
-        weekTitle(monday, current: current, l10n: l10n),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          tooltip: l10n.statsNextWeek,
-          // The current week is the last one: the future has no entries.
-          onPressed: monday == current ? null : notifier.next,
-        ),
-      ],
     );
   }
 }
 
 class _StatsContent extends ConsumerWidget {
-  const _StatsContent({required this.stats, required this.goalKcal});
+  const _StatsContent({
+    required this.hero,
+    required this.stats,
+    required this.goalKcal,
+  });
 
+  final Widget hero;
   final WeekStats stats;
   final int? goalKcal;
 
@@ -100,94 +146,117 @@ class _StatsContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final goal = goalKcal;
     final averageKcal = _averageText(stats, Nutrient.kcal, l10n);
 
     return ListView(
-      padding: const EdgeInsets.all(Spacing.l),
+      padding: const EdgeInsets.only(bottom: Spacing.xl),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(Spacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.statsChartTitle, style: theme.textTheme.titleMedium),
-                const SizedBox(height: Spacing.l),
-                WeekBars(
-                  stats: stats,
-                  goalKcal: goal,
-                  today: todayKey(ref.watch(clockProvider)),
-                ),
-                if (goal != null) ...[
-                  const SizedBox(height: Spacing.m),
-                  Text(
-                    l10n.statsGoalLine(
-                      formatKcal(goal.toDouble(), l10n.localeName),
-                    ),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ],
-            ),
+        hero,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.l,
+            Spacing.l,
+            Spacing.l,
+            0,
           ),
-        ),
-        const SizedBox(height: Spacing.m),
-        // Both tiles get the height of the taller one (large text sizes).
-        IntrinsicHeight(
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: _StatTile(
-                  title: l10n.statsAverageKcalTitle,
-                  value: averageKcal,
-                  semanticsLabel: l10n.statsAverageKcalSemantics(averageKcal),
+              AppCard(
+                padding: const EdgeInsets.all(Spacing.page),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.statsChartTitle,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.l),
+                    WeekBars(
+                      stats: stats,
+                      goalKcal: goal,
+                      today: todayKey(ref.watch(clockProvider)),
+                    ),
+                    if (goal != null) ...[
+                      const SizedBox(height: Spacing.m),
+                      Text(
+                        l10n.statsGoalLine(
+                          formatKcal(goal.toDouble(), l10n.localeName),
+                        ),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const SizedBox(width: Spacing.m),
-              Expanded(
-                child: _StatTile(
-                  title: l10n.statsDaysLoggedTitle,
-                  value: l10n.statsDaysLoggedValue('${stats.daysLogged}'),
+              const SizedBox(height: Spacing.m),
+              // Both tiles get the height of the taller one (large text
+              // sizes).
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: _StatTile(
+                        title: l10n.statsAverageKcalTitle,
+                        value: averageKcal,
+                        semanticsLabel: l10n.statsAverageKcalSemantics(
+                          averageKcal,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.m),
+                    Expanded(
+                      child: _StatTile(
+                        title: l10n.statsDaysLoggedTitle,
+                        value: l10n.statsDaysLoggedValue('${stats.daysLogged}'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Spacing.m),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.statsAverageMacrosTitle,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.s),
+                    for (final (nutrient, color) in [
+                      (Nutrient.protein, colors.protein),
+                      (Nutrient.carbs, colors.carbs),
+                      (Nutrient.fat, colors.fat),
+                    ])
+                      _MacroAverageRow(
+                        name: nutrientName(nutrient, l10n),
+                        value: l10n.unitGrams(
+                          _averageText(stats, nutrient, l10n),
+                        ),
+                        color: color,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Spacing.m),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+                child: Text(
+                  l10n.statsAverageNote,
+                  style: theme.textTheme.bodySmall,
                 ),
               ),
             ],
-          ),
-        ),
-        const SizedBox(height: Spacing.m),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(Spacing.l),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.statsAverageMacrosTitle,
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: Spacing.s),
-                for (final (nutrient, color) in [
-                  (Nutrient.protein, context.appColors.protein),
-                  (Nutrient.carbs, context.appColors.carbs),
-                  (Nutrient.fat, context.appColors.fat),
-                ])
-                  _MacroAverageRow(
-                    name: nutrientName(nutrient, l10n),
-                    value: l10n.unitGrams(_averageText(stats, nutrient, l10n)),
-                    color: color,
-                  ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: Spacing.m),
-        Text(
-          l10n.statsAverageNote,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -230,27 +299,19 @@ class _StatTile extends StatelessWidget {
           AppLocalizations.of(context).nutrientWithValue(title, value),
       container: true,
       excludeSemantics: true,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(Spacing.l),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+      child: AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.bodySmall),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              value,
+              style: theme.textTheme.headlineSmall!.copyWith(
+                fontFeatures: tabularFigures,
               ),
-              const SizedBox(height: Spacing.xs),
-              Text(
-                value,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -294,8 +355,9 @@ class _MacroAverageRow extends StatelessWidget {
             const SizedBox(width: Spacing.s),
             Text(
               value,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+              style: theme.textTheme.bodyLarge!.copyWith(
+                fontWeight: FontWeight.w900,
+                fontFeatures: tabularFigures,
               ),
             ),
           ],

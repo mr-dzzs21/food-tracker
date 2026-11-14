@@ -3,11 +3,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/format.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/buttons.dart';
+import '../../../core/widgets/pill_choices.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../diary_repository.dart';
 import 'amount_field.dart';
-import 'meal_dropdown.dart';
 
 /// What the user chose in the [EntrySheet].
 enum EntrySheetResult { saved, delete }
@@ -27,7 +28,8 @@ Future<EntrySheetResult?> showEntrySheet(
   );
 }
 
-/// Bottom sheet: change the amount or meal of an entry, or delete it.
+/// Bottom sheet: change the amount or meal (pills) of an entry, or delete
+/// it.
 class EntrySheet extends ConsumerStatefulWidget {
   const EntrySheet({super.key, required this.entry, required this.slots});
 
@@ -80,58 +82,76 @@ class _EntrySheetState extends ConsumerState<EntrySheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final entry = widget.entry;
     return Padding(
       // Keeps the fields above the on-screen keyboard.
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          Spacing.xl,
-          0,
-          Spacing.xl,
-          Spacing.xl,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              entry.name.isEmpty ? l10n.productUnknownName : entry.name,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: Spacing.l),
-            AmountField(
-              controller: _amount,
-              isLiquid: entry.isLiquid,
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: Spacing.l),
-            MealDropdown(
-              slots: widget.slots,
-              selectedId: _slotId,
-              onChanged: (id) => setState(() => _slotId = id),
-            ),
-            const SizedBox(height: Spacing.xl),
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              spacing: Spacing.s,
-              runSpacing: Spacing.s,
-              children: [
-                TextButton.icon(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.page,
+            0,
+            Spacing.page,
+            Spacing.l,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  entry.name.isEmpty ? l10n.productUnknownName : entry.name,
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              const SizedBox(height: Spacing.l),
+              AmountField(
+                controller: _amount,
+                isLiquid: entry.isLiquid,
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: Spacing.l),
+              Text(
+                l10n.entryMealLabel,
+                style: theme.textTheme.labelMedium!.copyWith(
+                  color: colors.inkMuted,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+              PillChoices<int>(
+                // The visible meals, plus the entry's meal if it is hidden.
+                choices: [
+                  for (final slot in widget.slots)
+                    if (!slot.isHidden || slot.id == _slotId)
+                      PillChoice(mealSlotName(slot, l10n), slot.id),
+                ],
+                selected: _slotId,
+                onSelected: (id) => setState(() => _slotId = id),
+              ),
+              const SizedBox(height: Spacing.xl),
+              CtaButton(
+                icon: Icons.check_rounded,
+                label: l10n.actionSave,
+                onPressed: parseEntryAmount(_amount.text) == null
+                    ? null
+                    : _save,
+              ),
+              const SizedBox(height: Spacing.s),
+              Center(
+                child: TextButton.icon(
                   onPressed: () =>
                       Navigator.of(context).pop(EntrySheetResult.delete),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.ratingHigh,
+                  ),
                   icon: const Icon(Icons.delete_outline_rounded),
                   label: Text(l10n.actionDelete),
                 ),
-                FilledButton(
-                  onPressed: parseEntryAmount(_amount.text) == null
-                      ? null
-                      : _save,
-                  child: Text(l10n.actionSave),
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

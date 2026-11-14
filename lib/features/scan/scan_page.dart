@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/card_list.dart';
 import '../../core/widgets/search_field.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -43,7 +45,7 @@ class _ScanPageState extends ConsumerState<ScanPage> {
     final recent = ref.watch(recentlyViewedFoodsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabScan)),
+      appBar: AppTopBar(title: l10n.tabScan, large: true),
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [
@@ -53,10 +55,7 @@ class _ScanPageState extends ConsumerState<ScanPage> {
                 // About half of the screen for the camera, the rest stays
                 // for the search and the list.
                 height: constraints.maxHeight * 0.45,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(Radii.xl),
-                  child: scanner(_openProduct),
-                ),
+                child: CameraArea(child: scanner(_openProduct)),
               ),
             ),
             Expanded(
@@ -81,21 +80,26 @@ class _ScanPageState extends ConsumerState<ScanPage> {
                   switch (recent) {
                     AsyncData(value: final foods) when foods.isEmpty =>
                       StatusView(
-                        icon: Icons.history,
+                        icon: Icons.history_rounded,
                         title: l10n.scanRecentlyViewedEmpty,
                         compact: true,
                       ),
-                    AsyncData(value: final foods) => Column(
-                      children: [
-                        for (final food in foods)
-                          FoodTile.food(
-                            food,
-                            onTap: () => context.push(Routes.food(food.id)),
-                          ),
-                      ],
+                    AsyncData(value: final foods) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.l,
+                      ),
+                      child: CardGroup(
+                        children: [
+                          for (final food in foods)
+                            FoodTile.food(
+                              food,
+                              onTap: () => context.push(Routes.food(food.id)),
+                            ),
+                        ],
+                      ),
                     ),
                     AsyncError() => StatusView(
-                      icon: Icons.error_outline,
+                      icon: Icons.error_outline_rounded,
                       title: l10n.errorGeneric,
                       actionLabel: l10n.actionRetry,
                       onAction: () =>

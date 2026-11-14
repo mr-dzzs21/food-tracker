@@ -12,6 +12,8 @@ import '../../core/format.dart';
 import '../../core/links.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/hero_header.dart';
 import '../../core/widgets/pill_choices.dart';
@@ -224,7 +226,7 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(),
+    appBar: const AppTopBar(),
     body: const Center(child: CircularProgressIndicator()),
   );
 }
@@ -245,7 +247,7 @@ class _MessageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(),
+    appBar: const AppTopBar(),
     body: StatusView(
       icon: icon,
       title: title,
@@ -493,28 +495,15 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
         ],
       ),
       // Always reachable, however far the page is scrolled.
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.background,
-          boxShadow: colors.barShadow,
-        ),
-        child: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.fromLTRB(
-            Spacing.l,
-            Spacing.m,
-            Spacing.l,
-            Spacing.l,
-          ),
-          child: CtaButton(
-            label: (amount != null && slot != null)
-                ? _ctaLabel(l10n, slot, amount)
-                : l10n.actionAdd,
-            icon: Icons.add_rounded,
-            onPressed: canAdd
-                ? () => _add(slot: slot, amount: amount, day: day)
-                : null,
-          ),
+      bottomNavigationBar: BottomCtaBar(
+        child: CtaButton(
+          label: (amount != null && slot != null)
+              ? _ctaLabel(l10n, slot, amount)
+              : l10n.actionAdd,
+          icon: Icons.add_rounded,
+          onPressed: canAdd
+              ? () => _add(slot: slot, amount: amount, day: day)
+              : null,
         ),
       ),
     );

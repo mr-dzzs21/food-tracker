@@ -1,6 +1,8 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:food_tracker/core/theme/app_theme.dart';
+import 'package:food_tracker/core/widgets/card_list.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/goals/goal_page.dart';
@@ -170,6 +172,53 @@ void main() {
     // The goal card resets (the language follows the test device now).
     expect(find.text('No goal yet'), findsOneWidget);
     expect(find.text('Alle Daten wurden gelöscht.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'settings are card rows; "Alle Daten löschen" in rating colours',
+    (tester) async {
+      await openProfile(tester);
+      for (final title in [
+        'Mahlzeiten',
+        'Eigene Lebensmittel',
+        'Darstellung',
+        'Sprache',
+        'Hilfe bei Essstörungen',
+        'Über die App & Lizenzen',
+        'Alle Daten löschen',
+      ]) {
+        expect(
+          find.ancestor(of: find.text(title), matching: find.byType(CardRow)),
+          findsOneWidget,
+          reason: title,
+        );
+      }
+      final delete = tester.widget<Text>(find.text('Alle Daten löschen'));
+      expect(delete.style!.color, AppColors.light.ratingHigh);
+    },
+  );
+
+  testWidgets('dark mode and text scale 2.0 on a phone: no overflow', (
+    tester,
+  ) async {
+    await GoalsRepository(
+      db,
+      Clock.fixed(testNow),
+    ).saveGoal(kcal: 2300, protein: 64, carbs: 338, fat: 77);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    tester.view.physicalSize = const Size(360, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpFoodTrackerApp(tester, db: db, themeMode: ThemeMode.dark);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2.300 kcal pro Tag'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Alle Daten löschen'), findsOneWidget);
   });
 
   testWidgets('"Abbrechen" deletes nothing', (tester) async {

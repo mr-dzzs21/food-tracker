@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/products/food_form_page.dart';
 import 'package:food_tracker/features/products/food_source.dart';
@@ -47,8 +48,8 @@ void main() {
   testWidgets('empty: explains own foods and opens the form', (tester) async {
     await openMyFoods(tester);
     expect(find.text('Noch keine eigenen Lebensmittel'), findsOneWidget);
-    // Only one "create" button (no floating button on the empty page).
-    expect(find.byType(FloatingActionButton), findsNothing);
+    // Only one "create" button (no bottom button on the empty page).
+    expect(find.byType(CtaButton), findsNothing);
 
     await tester.tap(find.text('Eigenes Lebensmittel anlegen'));
     await tester.pumpAndSettle();
@@ -68,7 +69,7 @@ void main() {
       tester.getTopLeft(find.text('apfelmus')).dy,
       lessThan(tester.getTopLeft(find.text('Linsensuppe')).dy),
     );
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(CtaButton), findsOneWidget);
 
     // Tap → product page of that food.
     await tester.tap(find.text('Linsensuppe'));

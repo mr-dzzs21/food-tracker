@@ -52,11 +52,16 @@ class TonalButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.icon,
+    this.large = false,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+
+  /// As big as a [CtaButton] (full width, 58 px), for a second main action
+  /// next to one.
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
@@ -64,20 +69,24 @@ class TonalButton extends StatelessWidget {
     final style = FilledButton.styleFrom(
       backgroundColor: colors.tonal,
       foregroundColor: colors.onTonal,
+      minimumSize: large ? const Size.fromHeight(58) : null,
+      padding: large
+          ? const EdgeInsets.symmetric(
+              horizontal: Spacing.l,
+              vertical: Spacing.m,
+            )
+          : null,
     );
     final icon = this.icon;
+    final text = Text(label, textAlign: TextAlign.center);
     if (icon == null) {
-      return FilledButton(
-        onPressed: onPressed,
-        style: style,
-        child: Text(label),
-      );
+      return FilledButton(onPressed: onPressed, style: style, child: text);
     }
     return FilledButton.icon(
       onPressed: onPressed,
       style: style,
       icon: Icon(icon),
-      label: Text(label),
+      label: text,
     );
   }
 }

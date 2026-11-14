@@ -26,10 +26,6 @@ abstract final class Spacing {
 
   /// Side padding of hero headers (a bit more air than lists).
   static const double page = 20;
-
-  /// Empty space at the end of a list with a floating button, so the button
-  /// never hides the last row.
-  static const double belowFab = 96;
 }
 
 /// Corner radii. The named ones say where they belong; `s`…`xl` are general
@@ -63,6 +59,9 @@ abstract final class Radii {
 
   /// Top corners of bottom sheets and the navigation bar, dialogs.
   static const double sheet = 28;
+
+  /// The camera area on the Scan tab and the scanner page.
+  static const double camera = 28;
 
   /// Bottom corners of the green hero header.
   static const double hero = 36;
@@ -128,6 +127,9 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.carbs,
     required this.fat,
     required this.mealPalettes,
+    required this.camera,
+    required this.cameraScrim,
+    required this.onCamera,
   });
 
   /// Page background behind cards.
@@ -209,6 +211,17 @@ class AppColors extends ThemeExtension<AppColors> {
   /// `mealPaletteIndex` in the diary feature for which meal gets which.
   final List<MealPalette> mealPalettes;
 
+  /// Behind the camera picture (until it arrives) on the Scan tab.
+  final Color camera;
+
+  /// The dark frame around the viewfinder and the pills on the camera
+  /// picture (hint, torch). Dark enough that white text stays readable on
+  /// any picture, even a white one.
+  final Color cameraScrim;
+
+  /// Text, icons and viewfinder corners on the camera picture.
+  final Color onCamera;
+
   /// The green hero gradient (150°, like the design mock-up).
   LinearGradient get heroGradient => LinearGradient(
     begin: const Alignment(-0.5, -0.87),
@@ -279,6 +292,9 @@ class AppColors extends ThemeExtension<AppColors> {
       MealPalette(Color(0xFFD8ECFF), Color(0xFF1F5FA8)),
       MealPalette(Color(0xFFFFE0EA), Color(0xFFA8325E)),
     ],
+    camera: Color(0xFF102A1C),
+    cameraScrim: Color(0x99000000),
+    onCamera: Color(0xFFFFFFFF),
   );
 
   static const dark = AppColors(
@@ -320,6 +336,9 @@ class AppColors extends ThemeExtension<AppColors> {
       MealPalette(Color(0xFF16283D), Color(0xFF9CC8FF)),
       MealPalette(Color(0xFF3D1B28), Color(0xFFFFB0CB)),
     ],
+    camera: Color(0xFF050D09),
+    cameraScrim: Color(0x99000000),
+    onCamera: Color(0xFFFFFFFF),
   );
 
   /// The tokens are fixed per brightness; there is nothing to change.
@@ -370,6 +389,9 @@ class AppColors extends ThemeExtension<AppColors> {
             t,
           ),
       ],
+      camera: mix(camera, other.camera),
+      cameraScrim: mix(cameraScrim, other.cameraScrim),
+      onCamera: mix(onCamera, other.onCamera),
     );
   }
 }

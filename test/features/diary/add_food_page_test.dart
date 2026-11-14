@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
 import 'package:food_tracker/core/widgets/buttons.dart';
+import 'package:food_tracker/core/widgets/pill_choices.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/add_food_page.dart';
 import 'package:food_tracker/features/products/food_source.dart';
@@ -112,6 +113,54 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Mein Brot'), findsOneWidget);
     expect(find.text('Müsli'), findsNothing);
+  });
+
+  testWidgets('the segments are pills; the chosen one is selected', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await openAddFood(tester);
+
+    bool isSelected(String label) {
+      final pill = find.ancestor(
+        of: inPage(label),
+        matching: find.byType(Pill),
+      );
+      expect(
+        tester.getSemantics(pill),
+        isSemantics(
+          label: label,
+          isButton: true,
+          isSelected: tester.widget<Pill>(pill).selected,
+          isInMutuallyExclusiveGroup: true,
+        ),
+      );
+      return tester.widget<Pill>(pill).selected;
+    }
+
+    expect(isSelected('Zuletzt'), isTrue);
+    expect(isSelected('Favoriten'), isFalse);
+    await tester.tap(inPage('Favoriten'));
+    await tester.pumpAndSettle();
+    expect(isSelected('Favoriten'), isTrue);
+    expect(isSelected('Zuletzt'), isFalse);
+    expect(isSelected('Eigene'), isFalse);
+    // Scan and own food are the two big buttons at the top.
+    expect(
+      find.descendant(
+        of: find.byType(CtaButton),
+        matching: find.text('Scannen'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(TonalButton),
+        matching: find.text('Eigenes Lebensmittel'),
+      ),
+      findsOneWidget,
+    );
+    semantics.dispose();
   });
 
   testWidgets('empty lists explain what to do', (tester) async {

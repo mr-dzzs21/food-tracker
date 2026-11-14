@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/card_list.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../l10n/app_localizations.dart';
@@ -27,14 +29,17 @@ class SearchResultsPage extends ConsumerWidget {
     final query = this.query.trim();
     if (query.isEmpty) {
       return Scaffold(
-        appBar: AppBar(),
-        body: StatusView(icon: Icons.search, title: l10n.searchEmptyQuery),
+        appBar: const AppTopBar(),
+        body: StatusView(
+          icon: Icons.search_rounded,
+          title: l10n.searchEmptyQuery,
+        ),
       );
     }
 
     final local = ref.watch(localFoodSearchProvider(query)).value ?? const [];
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.searchResultsTitle(query))),
+      appBar: AppTopBar(title: l10n.searchResultsTitle(query)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
         children: [
@@ -42,11 +47,18 @@ class SearchResultsPage extends ConsumerWidget {
           // its own empty and error states.
           if (local.isNotEmpty) ...[
             SectionHeader(l10n.searchLocalTitle),
-            for (final food in local)
-              FoodTile.food(
-                food,
-                onTap: () => context.push(Routes.food(food.id)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+              child: CardGroup(
+                children: [
+                  for (final food in local)
+                    FoodTile.food(
+                      food,
+                      onTap: () => context.push(Routes.food(food.id)),
+                    ),
+                ],
               ),
+            ),
           ],
           SectionHeader(l10n.searchOnlineTitle),
           OnlineSearchResults(

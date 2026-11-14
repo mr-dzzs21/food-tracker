@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/buttons.dart';
+import '../../../core/widgets/card_list.dart';
 import '../../../core/widgets/status_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../off_product_mapper.dart';
@@ -66,7 +68,7 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
     final products = [for (final page in pages) ...?page.value?.products];
     if (products.isEmpty) {
       return StatusView(
-        icon: Icons.search_off,
+        icon: Icons.search_off_rounded,
         title: l10n.searchNoOnlineResults,
         message: l10n.searchNoResultsHint,
         compact: true,
@@ -77,19 +79,30 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final product in products)
-          FoodTile.offProduct(product, onTap: () => widget.onOpen(product)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+          child: CardGroup(
+            children: [
+              for (final product in products)
+                FoodTile.offProduct(
+                  product,
+                  onTap: () => widget.onOpen(product),
+                ),
+            ],
+          ),
+        ),
         switch (last) {
           AsyncError(:final error) when !last.isLoading => _ErrorView(
             error: error,
             onRetry: () => ref.invalidate(productSearchProvider(keys.last)),
           ),
           AsyncData(:final value) when value.hasMore => Padding(
-            padding: const EdgeInsets.all(Spacing.s),
+            padding: const EdgeInsets.all(Spacing.m),
             child: Center(
-              child: OutlinedButton(
+              child: TonalButton(
                 onPressed: () => setState(() => _pageCount++),
-                child: Text(l10n.searchLoadMore),
+                icon: Icons.expand_more_rounded,
+                label: l10n.searchLoadMore,
               ),
             ),
           ),
@@ -98,7 +111,7 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
         },
         Padding(
           padding: const EdgeInsets.fromLTRB(
-            Spacing.l,
+            Spacing.l + Spacing.xs,
             Spacing.s,
             Spacing.l,
             0,
@@ -135,7 +148,9 @@ class _ErrorView extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final error = this.error;
     return StatusView(
-      icon: error is Offline ? Icons.cloud_off : Icons.error_outline,
+      icon: error is Offline
+          ? Icons.cloud_off_rounded
+          : Icons.error_outline_rounded,
       title: error is AppFailure
           ? failureMessage(error, l10n)
           : l10n.errorGeneric,

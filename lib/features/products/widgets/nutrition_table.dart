@@ -26,7 +26,7 @@ class NutritionTable extends StatelessWidget {
     final hasServing = servingSize != null && servingSize > 0;
     final perServing = hasServing ? per100.scaled(servingSize) : null;
     final headerStyle = theme.textTheme.labelMedium!.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
+      color: context.appColors.inkMuted,
     );
     final valueStyle = theme.textTheme.bodyMedium!.copyWith(
       fontFeatures: tabularFigures,
@@ -97,9 +97,7 @@ class NutritionTable extends StatelessWidget {
                   TableRow(
                     decoration: BoxDecoration(
                       border: Border(
-                        top: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                        ),
+                        top: BorderSide(color: context.appColors.border),
                       ),
                     ),
                     children: [

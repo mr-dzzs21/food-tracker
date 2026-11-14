@@ -19,6 +19,16 @@ String weekTitle(
   required AppLocalizations l10n,
 }) {
   if (monday == current) return l10n.statsThisWeek;
+  return weekNumberTitle(monday, current: current, l10n: l10n);
+}
+
+/// The week number and dates of the week that starts on [monday], also for
+/// the current week: "KW 46 · 9.–15. Nov." (shown below "Diese Woche").
+String weekNumberTitle(
+  String monday, {
+  required String current,
+  required AppLocalizations l10n,
+}) {
   final week = '${isoWeekNumber(monday)}';
   final range = _dayRange(monday, l10n);
   final year = isoWeekYear(monday);

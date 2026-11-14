@@ -99,6 +99,24 @@ void main() {
           expectReadable(colors.onHero, stop, minimum: 3, what: 'scan icon');
         }
       });
+
+      test('text on the camera area, whatever the picture shows', () {
+        expectReadable(colors.onCamera, colors.camera, what: 'camera');
+        // The hint pill and the torch button lie on the picture: check the
+        // worst cases, a white and a black picture.
+        for (final picture in [const Color(0xFFFFFFFF), colors.camera]) {
+          expectReadable(
+            colors.onCamera,
+            over(colors.cameraScrim, picture),
+            what: 'on the camera scrim',
+          );
+        }
+      });
+
+      test('"Alle Daten löschen" in the rating colours', () {
+        expectReadable(colors.ratingHigh, colors.surface, what: 'title');
+        expectReadable(colors.ratingHigh, colors.ratingHighBg, what: 'icon');
+      });
     });
   }
 

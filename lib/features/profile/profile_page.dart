@@ -4,8 +4,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/buttons.dart';
+import '../../core/widgets/card_list.dart';
+import '../../core/widgets/dialogs.dart';
 import '../../core/widgets/eating_disorder_help.dart';
+import '../../core/widgets/hero_header.dart';
+import '../../core/widgets/icon_square.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/database.dart';
 import '../../data/settings_repository.dart';
@@ -27,57 +30,74 @@ class ProfilePage extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
     final language = _LanguageChoice.of(ref.watch(localeProvider).value);
 
+    final colors = context.appColors;
+    final palettes = colors.mealPalettes;
+    // A tinted icon square per row, in the colours of the meal tiles.
+    Widget icon(IconData icon, MealPalette palette) => IconSquare(
+      icon: icon,
+      background: palette.background,
+      foreground: palette.icon,
+    );
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabProfile)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xl),
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(Spacing.l, Spacing.s, Spacing.l, 0),
-            child: _GoalSummaryCard(),
-          ),
+          const _GoalHero(),
           SectionHeader(l10n.profileSettingsTitle),
-          ListTile(
-            leading: const Icon(Icons.restaurant_outlined),
-            title: Text(l10n.mealsTitle),
-            subtitle: Text(l10n.mealsSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(Routes.meals),
-          ),
-          ListTile(
-            leading: const Icon(Icons.kitchen_outlined),
-            title: Text(l10n.myFoodsTitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(Routes.myFoods),
-          ),
-          ListTile(
-            leading: const Icon(Icons.brightness_6_outlined),
-            title: Text(l10n.profileTheme),
-            subtitle: Text(_themeLabel(themeMode, l10n)),
-            onTap: () => _chooseTheme(context, ref, themeMode),
-          ),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: Text(l10n.profileLanguage),
-            subtitle: Text(language.label(l10n)),
-            onTap: () => _chooseLanguage(context, ref, language),
+          _Group(
+            children: [
+              CardRow(
+                leading: icon(Icons.restaurant_rounded, palettes[0]),
+                title: l10n.mealsTitle,
+                subtitle: l10n.mealsSubtitle,
+                onTap: () => context.push(Routes.meals),
+              ),
+              CardRow(
+                leading: icon(Icons.kitchen_rounded, palettes[1]),
+                title: l10n.myFoodsTitle,
+                onTap: () => context.push(Routes.myFoods),
+              ),
+              CardRow(
+                leading: icon(Icons.dark_mode_rounded, palettes[2]),
+                title: l10n.profileTheme,
+                subtitle: _themeLabel(themeMode, l10n),
+                onTap: () => _chooseTheme(context, ref, themeMode),
+              ),
+              CardRow(
+                leading: icon(Icons.language_rounded, palettes[4]),
+                title: l10n.profileLanguage,
+                subtitle: language.label(l10n),
+                onTap: () => _chooseLanguage(context, ref, language),
+              ),
+            ],
           ),
           SectionHeader(l10n.profileInfoTitle),
-          ListTile(
-            leading: const Icon(Icons.support_outlined),
-            title: Text(l10n.helpEdTitle),
-            onTap: () => showEatingDisorderHelp(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(l10n.profileAbout),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(Routes.about),
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_forever_outlined),
-            title: Text(l10n.profileDeleteAll),
-            onTap: () => _deleteAllData(context, ref),
+          _Group(
+            children: [
+              CardRow(
+                leading: icon(Icons.support_rounded, palettes[5]),
+                title: l10n.helpEdTitle,
+                onTap: () => showEatingDisorderHelp(context),
+              ),
+              CardRow(
+                leading: icon(Icons.info_rounded, palettes[3]),
+                title: l10n.profileAbout,
+                onTap: () => context.push(Routes.about),
+              ),
+              // In the "hoch" rating colours: it cannot be undone.
+              CardRow(
+                leading: IconSquare(
+                  icon: Icons.delete_forever_rounded,
+                  background: colors.ratingHighBg,
+                  foreground: colors.ratingHigh,
+                ),
+                title: l10n.profileDeleteAll,
+                titleColor: colors.ratingHigh,
+                showChevron: false,
+                onTap: () => _deleteAllData(context, ref),
+              ),
+            ],
           ),
         ],
       ),
@@ -90,7 +110,7 @@ class ProfilePage extends ConsumerWidget {
     ThemeMode current,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final chosen = await _showChoiceDialog(
+    final chosen = await showChoiceSheet(
       context,
       title: l10n.profileTheme,
       current: current,
@@ -107,7 +127,7 @@ class ProfilePage extends ConsumerWidget {
     _LanguageChoice current,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final chosen = await _showChoiceDialog(
+    final chosen = await showChoiceSheet(
       context,
       title: l10n.profileLanguage,
       current: current,
@@ -123,24 +143,14 @@ class ProfilePage extends ConsumerWidget {
 
   Future<void> _deleteAllData(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.profileDeleteAllTitle),
-        content: Text(l10n.profileDeleteAllText),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.profileDeleteAllConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: l10n.profileDeleteAllTitle,
+      message: l10n.profileDeleteAllText,
+      confirmLabel: l10n.profileDeleteAllConfirm,
+      destructive: true,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     // Read before the settings are cleared (the language may change).
@@ -187,96 +197,93 @@ enum _LanguageChoice {
   };
 }
 
-/// A dialog with one radio button per option. Choosing one closes it and
-/// returns that value; "Abbrechen" returns `null`.
-Future<T?> _showChoiceDialog<T extends Object>(
-  BuildContext context, {
-  required String title,
-  required T current,
-  required Map<T, String> options,
-}) {
-  return showDialog<T>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      contentPadding: const EdgeInsets.symmetric(vertical: Spacing.m),
-      content: SingleChildScrollView(
-        child: RadioGroup<T>(
-          groupValue: current,
-          onChanged: (value) => Navigator.of(context).pop(value),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final MapEntry(key: value, value: label) in options.entries)
-                RadioListTile<T>(value: value, title: Text(label)),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppLocalizations.of(context).actionCancel),
-        ),
-      ],
-    ),
+/// A [CardGroup] with the page's side padding.
+class _Group extends StatelessWidget {
+  const _Group({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+    child: CardGroup(children: children),
   );
 }
 
-/// "Dein Tagesziel": kcal and macros, or "Noch kein Ziel".
-class _GoalSummaryCard extends ConsumerWidget {
-  const _GoalSummaryCard();
+/// The green header: "Dein Tagesziel" with the big kcal number and the
+/// macros, or "Noch kein Ziel"; a white pill opens the goal page.
+class _GoalHero extends ConsumerWidget {
+  const _GoalHero();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final locale = l10n.localeName;
     final goal = ref.watch(goalProvider).value;
     final macros = goal == null ? '' : _macroText(goal, l10n);
+    // Theme styles carry the ink colour: on the hero always white.
+    TextStyle white(TextStyle? style) => style!.copyWith(color: colors.onHero);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Semantics(
-              header: true,
-              child: Text(
-                l10n.profileGoalTitle,
-                style: theme.textTheme.titleMedium,
-              ),
+    return HeroHeader(
+      top: SizedBox(
+        height: 48,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Semantics(
+            header: true,
+            child: Text(
+              l10n.tabProfile,
+              style: white(theme.textTheme.titleLarge),
             ),
-            const SizedBox(height: Spacing.s),
-            if (goal == null) ...[
-              Text(l10n.profileGoalNone, style: theme.textTheme.headlineSmall),
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: Spacing.s),
+          Semantics(
+            header: true,
+            child: Text(
+              l10n.profileGoalTitle,
+              style: white(theme.textTheme.labelMedium).copyWith(fontSize: 13),
+            ),
+          ),
+          const SizedBox(height: Spacing.xs),
+          if (goal == null) ...[
+            Text(
+              l10n.profileGoalNone,
+              style: white(theme.textTheme.headlineSmall),
+            ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              l10n.profileGoalNoneText,
+              style: white(theme.textTheme.bodySmall),
+            ),
+          ] else ...[
+            Text(
+              l10n.profileGoalKcal(formatKcal(goal.kcal.toDouble(), locale)),
+              style: white(theme.textTheme.headlineMedium),
+            ),
+            if (macros.isNotEmpty) ...[
               const SizedBox(height: Spacing.xs),
-              Text(
-                l10n.profileGoalNoneText,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ] else ...[
-              Text(
-                l10n.profileGoalKcal(formatKcal(goal.kcal.toDouble(), locale)),
-                style: theme.textTheme.headlineSmall,
-              ),
-              if (macros.isNotEmpty) ...[
-                const SizedBox(height: Spacing.xs),
-                Text(macros, style: theme.textTheme.bodyMedium),
-              ],
+              Text(macros, style: white(theme.textTheme.bodySmall)),
             ],
-            const SizedBox(height: Spacing.m),
-            TonalButton(
+          ],
+          const SizedBox(height: Spacing.m),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: HeroPill(
+              filled: true,
               onPressed: () => context.push(Routes.goal),
               label: goal == null
                   ? l10n.profileGoalSet
                   : l10n.profileGoalChange,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

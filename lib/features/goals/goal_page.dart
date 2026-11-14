@@ -4,8 +4,15 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/bottom_cta_bar.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/card_list.dart';
 import '../../core/widgets/eating_disorder_help.dart';
+import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/section_header.dart';
+import '../../core/widgets/selectable_card.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
@@ -29,13 +36,13 @@ class GoalPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final goal = ref.watch(goalProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.goalTitle)),
+      appBar: AppTopBar(title: l10n.goalTitle),
       body: switch (goal) {
         // The form reads the saved goal only once, when it is created, so
         // the user's typing is not overwritten by later updates.
         AsyncData(:final value) => _GoalForm(saved: value),
         AsyncError() => StatusView(
-          icon: Icons.error_outline,
+          icon: Icons.error_outline_rounded,
           title: l10n.errorGeneric,
           actionLabel: l10n.actionRetry,
           onAction: () => ref.invalidate(goalProvider),
@@ -296,164 +303,187 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final input = _input;
+    final result = input == null ? null : calculateGoal(input);
 
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      // Not a ListView: the Form can only validate fields that are built.
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          Spacing.l,
-          Spacing.s,
-          Spacing.l,
-          Spacing.xxl,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SegmentedButton<_Mode>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(
-                  value: _Mode.calculate,
-                  icon: const Icon(Icons.calculate_outlined),
-                  label: Text(l10n.goalModeCalculate),
-                ),
-                ButtonSegment(
-                  value: _Mode.manual,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: Text(l10n.goalModeManual),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: (selection) =>
-                  setState(() => _mode = selection.first),
-            ),
-            const SizedBox(height: Spacing.l),
-            if (_mode == _Mode.calculate)
-              ..._calculatorFields(l10n)
-            else
-              ..._manualFields(l10n),
-            const SizedBox(height: Spacing.xl),
-            const Divider(),
-            const SizedBox(height: Spacing.l),
-            Text(
-              l10n.disclaimerGoals,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+    return Column(
+      children: [
+        Expanded(
+          child: Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            // Not a ListView: the Form can only validate fields that are
+            // built.
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                top: Spacing.s,
+                bottom: Spacing.xl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+                    child: PillChoices<_Mode>(
+                      choices: [
+                        PillChoice(l10n.goalModeCalculate, _Mode.calculate),
+                        PillChoice(l10n.goalModeManual, _Mode.manual),
+                      ],
+                      selected: _mode,
+                      onSelected: (mode) => setState(() => _mode = mode),
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.s),
+                  if (_mode == _Mode.calculate)
+                    ..._calculatorFields(l10n, result)
+                  else
+                    ..._manualFields(l10n),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Spacing.l + Spacing.xs,
+                      Spacing.xl,
+                      Spacing.l + Spacing.xs,
+                      0,
+                    ),
+                    child: Text(
+                      l10n.disclaimerGoals,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      Spacing.l,
+                      Spacing.l,
+                      Spacing.l,
+                      0,
+                    ),
+                    child: AppCard(child: EatingDisorderHelp()),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: Spacing.l),
-            const EatingDisorderHelp(),
-          ],
+          ),
         ),
-      ),
+        // Always reachable, below the scrolling form.
+        BottomCtaBar(
+          child: _mode == _Mode.calculate
+              ? CtaButton(
+                  icon: Icons.check_rounded,
+                  label: l10n.goalApply,
+                  onPressed: result == null || input == null || _saving
+                      ? null
+                      : () => _saveCalculated(result, input),
+                )
+              : CtaButton(
+                  icon: Icons.check_rounded,
+                  label: l10n.actionSave,
+                  onPressed: _saving ? null : _saveManual,
+                ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _calculatorFields(AppLocalizations l10n) {
+  List<Widget> _calculatorFields(AppLocalizations l10n, GoalResult? result) {
     const gap = SizedBox(height: Spacing.m);
-    final input = _input;
-    final result = input == null ? null : calculateGoal(input);
     final age = _ageValue;
 
     return [
-      _Label(l10n.goalSexLabel),
-      Wrap(
-        spacing: Spacing.s,
-        children: [
-          for (final sex in Sex.values)
-            ChoiceChip(
-              label: Text(_sexLabel(sex, l10n)),
-              selected: _sex == sex,
-              onSelected: (_) => setState(() => _sex = sex),
-            ),
-        ],
+      Padding(
+        padding: const EdgeInsets.fromLTRB(Spacing.l, Spacing.s, Spacing.l, 0),
+        child: AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _Label(l10n.goalSexLabel),
+              PillChoices<Sex>(
+                choices: [
+                  for (final sex in Sex.values)
+                    PillChoice(_sexLabel(sex, l10n), sex),
+                ],
+                selected: _sex,
+                onSelected: (sex) => setState(() => _sex = sex),
+              ),
+              gap,
+              _NumberField(
+                controller: _age,
+                label: l10n.goalAgeLabel,
+                suffix: l10n.goalAgeSuffix,
+                decimal: false,
+                validator: _numberValidator((text) {
+                  final value = int.tryParse(text);
+                  return value != null && isValidAge(value);
+                }, l10n.goalAgeInvalid),
+                onChanged: () => setState(() {}),
+              ),
+              gap,
+              _NumberField(
+                controller: _height,
+                label: l10n.goalHeightLabel,
+                suffix: 'cm',
+                validator: _numberValidator((text) {
+                  final value = parseUserNumber(text);
+                  return value != null && isValidHeightCm(value);
+                }, l10n.goalHeightInvalid),
+                onChanged: () => setState(() {}),
+              ),
+              gap,
+              _NumberField(
+                controller: _weight,
+                label: l10n.goalWeightLabel,
+                suffix: 'kg',
+                validator: _numberValidator((text) {
+                  final value = parseUserNumber(text);
+                  return value != null && isValidWeightKg(value);
+                }, l10n.goalWeightInvalid),
+                onChanged: () => setState(() {}),
+              ),
+            ],
+          ),
+        ),
       ),
-      gap,
-      _NumberField(
-        controller: _age,
-        label: l10n.goalAgeLabel,
-        suffix: l10n.goalAgeSuffix,
-        decimal: false,
-        validator: _numberValidator((text) {
-          final value = int.tryParse(text);
-          return value != null && isValidAge(value);
-        }, l10n.goalAgeInvalid),
-        onChanged: () => setState(() {}),
-      ),
-      gap,
-      _NumberField(
-        controller: _height,
-        label: l10n.goalHeightLabel,
-        suffix: 'cm',
-        validator: _numberValidator((text) {
-          final value = parseUserNumber(text);
-          return value != null && isValidHeightCm(value);
-        }, l10n.goalHeightInvalid),
-        onChanged: () => setState(() {}),
-      ),
-      gap,
-      _NumberField(
-        controller: _weight,
-        label: l10n.goalWeightLabel,
-        suffix: 'kg',
-        validator: _numberValidator((text) {
-          final value = parseUserNumber(text);
-          return value != null && isValidWeightKg(value);
-        }, l10n.goalWeightInvalid),
-        onChanged: () => setState(() {}),
-      ),
-      const SizedBox(height: Spacing.l),
-      _Label(l10n.goalActivityLabel),
-      RadioGroup<ActivityLevel>(
-        groupValue: _activity,
-        onChanged: (value) {
-          if (value != null) setState(() => _activity = value);
-        },
+      SectionHeader(l10n.goalActivityLabel),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (final level in ActivityLevel.values)
-              RadioListTile<ActivityLevel>(
-                contentPadding: EdgeInsets.zero,
-                value: level,
-                title: Text(_activityLabel(level, l10n)),
-                subtitle: Text(_activityText(level, l10n)),
+              Padding(
+                padding: const EdgeInsets.only(bottom: Spacing.s),
+                child: SelectableCard(
+                  title: _activityLabel(level, l10n),
+                  subtitle: _activityText(level, l10n),
+                  selected: _activity == level,
+                  onTap: () => setState(() => _activity = level),
+                ),
               ),
           ],
         ),
       ),
-      const SizedBox(height: Spacing.s),
-      _Label(l10n.goalTypeLabel),
-      RadioGroup<GoalType>(
-        groupValue: _goalType,
-        onChanged: (value) {
-          if (value != null) setState(() => _goalType = value);
-        },
-        child: Column(
-          children: [
+      CardSection(
+        title: l10n.goalTypeLabel,
+        child: PillChoices<GoalType>(
+          choices: [
             for (final type in GoalType.values)
-              RadioListTile<GoalType>(
-                contentPadding: EdgeInsets.zero,
-                value: type,
-                title: Text(_goalTypeLabel(type, l10n)),
-              ),
+              PillChoice(_goalTypeLabel(type, l10n), type),
           ],
+          selected: _goalType,
+          onSelected: (type) => setState(() => _goalType = type),
         ),
       ),
       const SizedBox(height: Spacing.l),
       // Shown as soon as the age is known, even before the result.
       if (age != null && isValidAge(age) && isMinor(age)) ...[
-        const _MinorHintCard(),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: Spacing.l),
+          child: _MinorHintCard(),
+        ),
         gap,
       ],
-      _ResultCard(result: result),
-      const SizedBox(height: Spacing.l),
-      FilledButton(
-        onPressed: result == null || input == null || _saving
-            ? null
-            : () => _saveCalculated(result, input),
-        child: Text(l10n.goalApply),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+        child: _ResultCard(result: result),
       ),
     ];
   }
@@ -462,44 +492,48 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
     final theme = Theme.of(context);
     final maxGrams = formatKcal(_maxMacroGrams, l10n.localeName);
     return [
-      _NumberField(
-        controller: _manualKcal,
-        label: l10n.goalManualKcal,
-        suffix: 'kcal',
-        decimal: false,
-        validator: (text) {
-          final value = parseUserNumber(text ?? '');
-          return value == null || value.round() < 1 || value > _maxManualKcal
-              ? l10n.goalManualKcalInvalid(
-                  formatKcal(_maxManualKcal.toDouble(), l10n.localeName),
-                )
-              : null;
-        },
-      ),
-      SectionHeader(l10n.goalManualMacrosTitle),
-      Text(
-        l10n.goalManualMacrosHint,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(Spacing.l, Spacing.s, Spacing.l, 0),
+        child: AppCard(
+          child: _NumberField(
+            controller: _manualKcal,
+            label: l10n.goalManualKcal,
+            suffix: 'kcal',
+            decimal: false,
+            validator: (text) {
+              final value = parseUserNumber(text ?? '');
+              return value == null ||
+                      value.round() < 1 ||
+                      value > _maxManualKcal
+                  ? l10n.goalManualKcalInvalid(
+                      formatKcal(_maxManualKcal.toDouble(), l10n.localeName),
+                    )
+                  : null;
+            },
+          ),
         ),
       ),
-      for (final MapEntry(key: nutrient, value: controller)
-          in _macros.entries) ...[
-        const SizedBox(height: Spacing.m),
-        _NumberField(
-          controller: controller,
-          label: nutrientName(nutrient, l10n),
-          suffix: 'g',
-          validator: _numberValidator((text) {
-            final value = parseUserNumber(text);
-            return value != null && value >= 0 && value <= _maxMacroGrams;
-          }, l10n.goalMacroInvalid(maxGrams)),
+      CardSection(
+        title: l10n.goalManualMacrosTitle,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.goalManualMacrosHint, style: theme.textTheme.bodySmall),
+            for (final MapEntry(key: nutrient, value: controller)
+                in _macros.entries) ...[
+              const SizedBox(height: Spacing.m),
+              _NumberField(
+                controller: controller,
+                label: nutrientName(nutrient, l10n),
+                suffix: 'g',
+                validator: _numberValidator((text) {
+                  final value = parseUserNumber(text);
+                  return value != null && value >= 0 && value <= _maxMacroGrams;
+                }, l10n.goalMacroInvalid(maxGrams)),
+              ),
+            ],
+          ],
         ),
-      ],
-      const SizedBox(height: Spacing.l),
-      FilledButton(
-        onPressed: _saving ? null : _saveManual,
-        child: Text(l10n.actionSave),
       ),
     ];
   }
@@ -599,40 +633,35 @@ class _MinorHintCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return Card(
-      color: theme.colorScheme.secondaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.l),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: theme.colorScheme.onSecondaryContainer,
-            ),
-            const SizedBox(width: Spacing.m),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.goalMinorTitle,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSecondaryContainer,
-                    ),
+    final colors = context.appColors;
+    return AppCard(
+      color: colors.tonal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_rounded, color: colors.onTonal),
+          const SizedBox(width: Spacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.goalMinorTitle,
+                  style: theme.textTheme.titleSmall!.copyWith(
+                    color: colors.onTonal,
                   ),
-                  const SizedBox(height: Spacing.xs),
-                  Text(
-                    l10n.goalMinorText,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSecondaryContainer,
-                    ),
+                ),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  l10n.goalMinorText,
+                  style: theme.textTheme.bodyMedium!.copyWith(
+                    color: colors.onTonal,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -648,6 +677,7 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final locale = l10n.localeName;
     final result = this.result;
 
@@ -655,71 +685,74 @@ class _ResultCard extends StatelessWidget {
     String approx(double kcal) =>
         l10n.goalApprox(formatKcal(roundToTen(kcal), locale));
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Semantics(
-              header: true,
-              child: Text(
-                l10n.goalResultTitle,
-                style: theme.textTheme.titleMedium,
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              l10n.goalResultTitle,
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: Spacing.m),
+          if (result == null)
+            Text(l10n.goalResultMissing, style: theme.textTheme.bodySmall)
+          else ...[
+            _ValueRow(l10n.goalResultBmr, approx(result.bmr)),
+            _ValueRow(l10n.goalResultTotal, approx(result.totalNeed)),
+            const SizedBox(height: Spacing.s),
+            // The number that matters, in a soft green box.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.tonal,
+                borderRadius: BorderRadius.circular(Radii.input),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.l,
+                  vertical: Spacing.m,
+                ),
+                child: _ValueRow(
+                  l10n.goalResultGoal,
+                  l10n.unitKcal(formatKcal(result.kcal, locale)),
+                  emphasised: true,
+                ),
               ),
             ),
-            const SizedBox(height: Spacing.m),
-            if (result == null)
-              Text(
-                l10n.goalResultMissing,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              )
-            else ...[
-              _ValueRow(l10n.goalResultBmr, approx(result.bmr)),
-              _ValueRow(l10n.goalResultTotal, approx(result.totalNeed)),
+            if (result.wasClamped) ...[
               const SizedBox(height: Spacing.s),
-              _ValueRow(
-                l10n.goalResultGoal,
-                l10n.unitKcal(formatKcal(result.kcal, locale)),
-                emphasised: true,
-              ),
-              if (result.wasClamped) ...[
-                const SizedBox(height: Spacing.s),
-                Text(
-                  l10n.goalFloorNote(formatKcal(result.floor, locale)),
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-              const SizedBox(height: Spacing.m),
-              // Protein and fibre are minimums (DGE), shown as "mind.".
-              _ValueRow(
-                nutrientName(Nutrient.protein, l10n),
-                l10n.totalAtLeast(grams(result.macros.protein)),
-              ),
-              _ValueRow(
-                nutrientName(Nutrient.carbs, l10n),
-                grams(result.macros.carbs),
-              ),
-              _ValueRow(
-                nutrientName(Nutrient.fat, l10n),
-                grams(result.macros.fat),
-              ),
-              _ValueRow(
-                nutrientName(Nutrient.fibre, l10n),
-                l10n.totalAtLeast(grams(result.macros.fibre)),
-              ),
-              const SizedBox(height: Spacing.m),
               Text(
-                l10n.goalEstimateNote,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                l10n.goalFloorNote(formatKcal(result.floor, locale)),
+                style: theme.textTheme.bodyMedium,
               ),
             ],
+            const SizedBox(height: Spacing.m),
+            // Protein and fibre are minimums (DGE), shown as "mind.".
+            _ValueRow(
+              nutrientName(Nutrient.protein, l10n),
+              l10n.totalAtLeast(grams(result.macros.protein)),
+              dot: colors.protein,
+            ),
+            _ValueRow(
+              nutrientName(Nutrient.carbs, l10n),
+              grams(result.macros.carbs),
+              dot: colors.carbs,
+            ),
+            _ValueRow(
+              nutrientName(Nutrient.fat, l10n),
+              grams(result.macros.fat),
+              dot: colors.fat,
+            ),
+            _ValueRow(
+              nutrientName(Nutrient.fibre, l10n),
+              l10n.totalAtLeast(grams(result.macros.fibre)),
+            ),
+            const SizedBox(height: Spacing.m),
+            Text(l10n.goalEstimateNote, style: theme.textTheme.bodySmall),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -728,28 +761,66 @@ class _ResultCard extends StatelessWidget {
 /// "Grundumsatz ........ ca. 1.780 kcal". Both sides may wrap, so large
 /// text does not overflow.
 class _ValueRow extends StatelessWidget {
-  const _ValueRow(this.label, this.value, {this.emphasised = false});
+  const _ValueRow(this.label, this.value, {this.emphasised = false, this.dot});
 
   final String label;
   final String value;
   final bool emphasised;
 
+  /// The macro colour (same as in the statistics), or none.
+  final Color? dot;
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final style = emphasised ? textTheme.titleMedium : textTheme.bodyMedium;
+    final colors = context.appColors;
+    final style = emphasised
+        ? textTheme.titleMedium!.copyWith(color: colors.onTonal)
+        : textTheme.bodyMedium!;
+    final valueStyle = emphasised
+        ? textTheme.headlineSmall!.copyWith(
+            color: colors.onTonal,
+            fontFeatures: tabularFigures,
+          )
+        : style.copyWith(
+            fontWeight: FontWeight.w900,
+            fontFeatures: tabularFigures,
+          );
+    final dot = this.dot;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: emphasised
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
         children: [
+          if (dot != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: _Dot(color: dot),
+            ),
+            const SizedBox(width: Spacing.s),
+          ],
           Expanded(child: Text(label, style: style)),
           const SizedBox(width: Spacing.m),
           Flexible(
-            child: Text(value, style: style, textAlign: TextAlign.end),
+            child: Text(value, style: valueStyle, textAlign: TextAlign.end),
           ),
         ],
       ),
     );
   }
+}
+
+class _Dot extends StatelessWidget {
+  const _Dot({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 10,
+    height: 10,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 }

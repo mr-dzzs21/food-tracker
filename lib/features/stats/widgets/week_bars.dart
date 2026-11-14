@@ -15,8 +15,9 @@ import '../week_stats.dart';
 /// Seven bars (kcal per day, Monday to Sunday) with the weekday below each
 /// bar and, when a goal is set, a dashed goal line.
 ///
-/// All bars have the same calm colour – also above the goal (no red, no
-/// warning). Today's bar is a bit stronger and its weekday bold.
+/// All bars have the same calm green – also above the goal (no red, no
+/// warning). Today's bar is solid, the others lighter; the bars have round
+/// tops and sit on a thin track.
 class WeekBars extends StatelessWidget {
   const WeekBars({
     super.key,
@@ -37,11 +38,14 @@ class WeekBars extends StatelessWidget {
   /// also with large text sizes.
   static const double chartHeight = 160;
 
+  /// Opacity of the bars of the other days (today's bar is solid).
+  static const double barAlpha = 0.55;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final colors = context.appColors;
     final todayIndex = stats.days.indexOf(today);
     final goal = goalKcal;
 
@@ -62,10 +66,10 @@ class WeekBars extends StatelessWidget {
                 ],
                 goal: goal?.toDouble(),
                 todayIndex: todayIndex < 0 ? null : todayIndex,
-                barColor: colors.primary.withValues(alpha: 0.6),
-                todayColor: colors.primary,
-                trackColor: colors.surfaceContainerHighest,
-                goalColor: colors.onSurfaceVariant,
+                barColor: colors.brand.withValues(alpha: barAlpha),
+                todayColor: colors.brand,
+                trackColor: colors.surfaceAlt,
+                goalColor: colors.inkMuted,
               ),
             ),
           ),
@@ -79,13 +83,13 @@ class WeekBars extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       DateFormat.E(l10n.localeName).format(parseDayKey(day)),
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: theme.textTheme.labelMedium!.copyWith(
                         fontWeight: index == todayIndex
-                            ? FontWeight.bold
+                            ? FontWeight.w900
                             : null,
                         color: index == todayIndex
-                            ? colors.primary
-                            : colors.onSurfaceVariant,
+                            ? colors.brand
+                            : colors.inkMuted,
                       ),
                     ),
                   ),
@@ -167,7 +171,7 @@ class WeekBarsPainter extends CustomPainter {
 
     for (final (index, value) in values.indexed) {
       final left = index * slot + (slot - barWidth) / 2;
-      final radius = Radius.circular(barWidth / 4);
+      final radius = Radius.circular(math.min(barWidth / 3, 8));
       // Track first: a day without entries shows only this line.
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -184,10 +188,14 @@ class WeekBarsPainter extends CustomPainter {
       if (top <= 0 || value <= 0) continue;
       // At least the track's height, so tiny values are still visible.
       final height = math.max(size.height * value / top, _trackHeight);
+      // Round tops only; the bottom stands on the track.
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
+        RRect.fromRectAndCorners(
           Rect.fromLTWH(left, size.height - height, barWidth, height),
-          radius,
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: const Radius.circular(_trackHeight / 2),
+          bottomRight: const Radius.circular(_trackHeight / 2),
         ),
         Paint()..color = index == todayIndex ? todayColor : barColor,
       );

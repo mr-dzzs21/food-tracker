@@ -1,14 +1,19 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/format.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/card_list.dart';
+import '../../../core/widgets/icon_square.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../off_product_mapper.dart';
 
 /// One food in a list (recents, favourites, own foods, search results):
-/// name, brand and kcal per 100 g/ml.
+/// name, brand and kcal per 100 g/ml – a [CardRow], so put several of them
+/// into a `CardGroup`.
 ///
-/// No product photos in lists: fewer downloads, and the list stays calm.
+/// No product photos in lists: fewer downloads, and the list stays calm. A
+/// small icon square says "food" or "drink" instead.
 class FoodTile extends StatelessWidget {
   const FoodTile({
     super.key,
@@ -19,19 +24,25 @@ class FoodTile extends StatelessWidget {
     required this.onTap,
     this.nutriScore,
     this.isFavourite = false,
+    this.trailing,
   });
 
   /// A food stored on the device.
-  FoodTile.food(Food food, {Key? key, required VoidCallback onTap})
-    : this(
-        key: key,
-        name: food.name,
-        brand: food.brand,
-        kcal: food.kcal,
-        isLiquid: food.isLiquid,
-        isFavourite: food.isFavourite,
-        onTap: onTap,
-      );
+  FoodTile.food(
+    Food food, {
+    Key? key,
+    required VoidCallback onTap,
+    Widget? trailing,
+  }) : this(
+         key: key,
+         name: food.name,
+         brand: food.brand,
+         kcal: food.kcal,
+         isLiquid: food.isLiquid,
+         isFavourite: food.isFavourite,
+         onTap: onTap,
+         trailing: trailing,
+       );
 
   /// A hit of the Open Food Facts search.
   FoodTile.offProduct(
@@ -61,6 +72,9 @@ class FoodTile extends StatelessWidget {
   final bool isFavourite;
   final VoidCallback onTap;
 
+  /// Replaces the chevron (or star), e.g. with a "more" menu button.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -71,16 +85,24 @@ class FoodTile extends StatelessWidget {
       // Plain text only – no logo, no colours (owner decision).
       if (nutriScore != null) l10n.searchNutriScore(nutriScore),
     ].join(' · ');
-    return ListTile(
-      title: Text(name.isEmpty ? l10n.productUnknownName : name),
-      subtitle: Text(brand == null ? details : '$brand\n$details'),
-      trailing: isFavourite
-          ? Icon(
-              Icons.star,
-              semanticLabel: l10n.addFoodSegmentFavourites,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : const Icon(Icons.chevron_right),
+    final colors = context.appColors;
+    return CardRow(
+      leading: IconSquare(
+        icon: isLiquid ? Icons.local_drink_rounded : Icons.restaurant_rounded,
+        background: colors.tonal,
+        foreground: colors.onTonal,
+      ),
+      title: name.isEmpty ? l10n.productUnknownName : name,
+      subtitle: brand == null ? details : '$brand\n$details',
+      trailing:
+          trailing ??
+          (isFavourite
+              ? Icon(
+                  Icons.star_rounded,
+                  semanticLabel: l10n.addFoodSegmentFavourites,
+                  color: colors.brand,
+                )
+              : null),
       onTap: onTap,
     );
   }

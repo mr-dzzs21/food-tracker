@@ -1,7 +1,12 @@
+import 'dart:ui' show Tristate;
+
 import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
+import 'package:food_tracker/core/widgets/pill_choices.dart';
+import 'package:food_tracker/core/widgets/selectable_card.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/goals/goal_enums.dart';
 import 'package:food_tracker/features/goals/goal_page.dart';
@@ -75,9 +80,7 @@ void main() {
     // Saving is not possible without a result.
     expect(
       tester
-          .widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Ziel übernehmen'),
-          )
+          .widget<CtaButton>(find.widgetWithText(CtaButton, 'Ziel übernehmen'))
           .onPressed,
       isNull,
     );
@@ -263,6 +266,47 @@ void main() {
       );
       expect(await goals.getGoal(), isNull);
     });
+  });
+
+  testWidgets('pills and activity cards select their values', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openGoalPage(tester);
+
+    bool selected(String label, Type type) {
+      final widget = find.ancestor(
+        of: find.text(label),
+        matching: find.byType(type),
+      );
+      final data = tester.getSemantics(widget).getSemanticsData();
+      return data.flagsCollection.isSelected == Tristate.isTrue;
+    }
+
+    // The defaults: calculator, "keine Angabe", "Wenig aktiv", "halten".
+    expect(selected('Berechnen', Pill), isTrue);
+    expect(selected('keine Angabe', Pill), isTrue);
+    expect(selected('Wenig aktiv', SelectableCard), isTrue);
+    expect(selected('Gewicht halten', Pill), isTrue);
+
+    await tapText(tester, 'weiblich');
+    await tapText(tester, 'Aktiv');
+    await tapText(tester, 'Langsam zunehmen (0,25 kg/Woche)');
+    expect(selected('weiblich', Pill), isTrue);
+    expect(selected('keine Angabe', Pill), isFalse);
+    expect(selected('Aktiv', SelectableCard), isTrue);
+    expect(selected('Wenig aktiv', SelectableCard), isFalse);
+    expect(selected('Langsam zunehmen (0,25 kg/Woche)', Pill), isTrue);
+    expect(selected('Gewicht halten', Pill), isFalse);
+
+    // The choices are saved with the goal.
+    await enter(tester, 'Alter', '30');
+    await enter(tester, 'Größe', '170');
+    await enter(tester, 'Gewicht', '60');
+    await tapText(tester, 'Ziel übernehmen');
+    final goal = (await goals.getGoal())!;
+    expect(goal.sex, Sex.female);
+    expect(goal.activity, ActivityLevel.active);
+    expect(goal.goalType, GoalType.gainSlow);
+    semantics.dispose();
   });
 
   testWidgets('English: result and help text', (tester) async {

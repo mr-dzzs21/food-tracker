@@ -1,8 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../theme/app_theme.dart';
+import 'buttons.dart';
 
-/// A text field for searching, with a search button at the end.
+/// A text field for searching, with a search button at the end. White on
+/// the page background (with the card shadow), the button is a small dark
+/// square.
 ///
 /// [onSubmitted] runs on the keyboard's search key and on the button, and
 /// only with non-empty text (trimmed). Online searches belong there, not in
@@ -30,18 +34,33 @@ class SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return TextField(
-      controller: controller,
-      textInputAction: TextInputAction.search,
-      onChanged: onChanged,
-      onSubmitted: (_) => _submit(),
-      decoration: InputDecoration(
-        hintText: hintText,
-        prefixIcon: const Icon(Icons.search),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.arrow_forward),
-          tooltip: l10n.searchSubmit,
-          onPressed: _submit,
+    final colors = context.appColors;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Radii.input),
+        boxShadow: colors.cardShadow,
+      ),
+      child: TextField(
+        controller: controller,
+        textInputAction: TextInputAction.search,
+        onChanged: onChanged,
+        onSubmitted: (_) => _submit(),
+        decoration: InputDecoration(
+          hintText: hintText,
+          fillColor: colors.surface,
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: Padding(
+            padding: const EdgeInsetsDirectional.only(end: Spacing.xs),
+            child: SquareIconButton(
+              icon: Icons.arrow_forward_rounded,
+              tooltip: l10n.searchSubmit,
+              size: 36,
+              iconSize: 20,
+              background: colors.cta,
+              foreground: colors.onCta,
+              onPressed: _submit,
+            ),
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_theme.dart';
 import 'buttons.dart';
+import 'icon_square.dart';
 
 /// A friendly centred message: for empty lists, errors and "offline".
 ///
@@ -30,6 +31,7 @@ class StatusView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final actionLabel = this.actionLabel;
     final message = this.message;
     return Center(
@@ -38,10 +40,16 @@ class StatusView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: compact ? 32 : 48,
-              color: theme.colorScheme.onSurfaceVariant,
+            // Decoration: the title says the same.
+            ExcludeSemantics(
+              child: IconSquare(
+                icon: icon,
+                background: colors.tonal,
+                foreground: colors.onTonal,
+                size: compact ? 48 : 64,
+                iconSize: compact ? 26 : 34,
+                radius: compact ? Radii.l : Radii.button,
+              ),
             ),
             const SizedBox(height: Spacing.m),
             Text(
@@ -56,7 +64,7 @@ class StatusView extends StatelessWidget {
               Text(
                 message,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: colors.inkMuted,
                 ),
                 textAlign: TextAlign.center,
               ),
