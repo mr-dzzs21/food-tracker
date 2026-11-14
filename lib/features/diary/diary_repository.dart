@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +13,17 @@ import '../products/nutrients.dart';
 
 /// One diary entry together with the meal it belongs to.
 typedef DayEntry = ({DiaryEntry entry, MealSlot slot});
+
+/// What happened when the user tried to delete a meal.
+enum MealSlotDeleteResult {
+  deleted,
+
+  /// Not deleted: diary entries use this meal (it can only be hidden).
+  hasEntries,
+
+  /// Not deleted: it is the only visible meal.
+  lastVisible,
+}
 
 /// All access to the diary (what was eaten when) and to the meal slots.
 /// The UI never touches the `DiaryEntries` table directly.
@@ -164,6 +177,113 @@ class DiaryRepository {
           .into(_db.diaryEntries)
           .insert(restored, mode: InsertMode.insertOrReplace);
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Meal slots (settings page "Mahlzeiten")
+
+  /// Whether any diary entry (on any day) belongs to meal [slotId].
+  Future<bool> mealSlotHasEntries(int slotId) async {
+    final first =
+        await (_db.select(_db.diaryEntries)
+              ..where((e) => e.mealSlotId.equals(slotId))
+              ..limit(1))
+            .getSingleOrNull();
+    return first != null;
+  }
+
+  /// Adds a meal at the end of the list and returns its id.
+  Future<int> addMealSlot({required String name, int? startMinute}) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) throw ArgumentError.value(name, 'name', 'empty');
+    _checkStartMinute(startMinute);
+    return _db.transaction(() async {
+      final positions = (await _db.select(_db.mealSlots).get()).map(
+        (s) => s.position,
+      );
+      final nextPosition = positions.isEmpty
+          ? 0
+          : positions.reduce(math.max) + 1;
+      return _db
+          .into(_db.mealSlots)
+          .insert(
+            MealSlotsCompanion.insert(
+              customName: Value(trimmed),
+              position: nextPosition,
+              startMinute: Value(startMinute),
+            ),
+          );
+    });
+  }
+
+  /// Changes the name and the start time of a meal.
+  ///
+  /// An empty [customName] removes the own name, so the four built-in meals
+  /// show their translated default name again ("Frühstück", …).
+  /// [startMinute] is minutes after midnight, `null` = no start time.
+  Future<void> updateMealSlot(
+    int id, {
+    required String? customName,
+    required int? startMinute,
+  }) {
+    _checkStartMinute(startMinute);
+    final trimmed = customName?.trim();
+    return (_db.update(_db.mealSlots)..where((s) => s.id.equals(id))).write(
+      MealSlotsCompanion(
+        customName: Value(trimmed == null || trimmed.isEmpty ? null : trimmed),
+        startMinute: Value(startMinute),
+      ),
+    );
+  }
+
+  /// Hides or shows a meal. Returns `false` (and changes nothing) when it is
+  /// the last visible meal: there must always be a meal to add food to.
+  Future<bool> setMealSlotHidden(int id, {required bool hidden}) {
+    return _db.transaction(() async {
+      if (hidden && await _isLastVisibleSlot(id)) return false;
+      await (_db.update(_db.mealSlots)..where((s) => s.id.equals(id))).write(
+        MealSlotsCompanion(isHidden: Value(hidden)),
+      );
+      return true;
+    });
+  }
+
+  /// Deletes a meal, but only if no diary entry uses it (past days must stay
+  /// complete) and it is not the last visible meal.
+  Future<MealSlotDeleteResult> deleteMealSlot(int id) {
+    return _db.transaction(() async {
+      if (await mealSlotHasEntries(id)) return MealSlotDeleteResult.hasEntries;
+      if (await _isLastVisibleSlot(id)) return MealSlotDeleteResult.lastVisible;
+      await (_db.delete(_db.mealSlots)..where((s) => s.id.equals(id))).go();
+      return MealSlotDeleteResult.deleted;
+    });
+  }
+
+  /// Saves a new order: [idsInOrder] lists every meal id from top to bottom.
+  Future<void> reorderMealSlots(List<int> idsInOrder) {
+    return _db.batch((b) {
+      for (final (position, id) in idsInOrder.indexed) {
+        b.update(
+          _db.mealSlots,
+          MealSlotsCompanion(position: Value(position)),
+          where: (s) => s.id.equals(id),
+        );
+      }
+    });
+  }
+
+  /// True when [id] is visible and no other meal is.
+  Future<bool> _isLastVisibleSlot(int id) async {
+    final visible = await (_db.select(
+      _db.mealSlots,
+    )..where((s) => s.isHidden.equals(false))).get();
+    return visible.length == 1 && visible.single.id == id;
+  }
+
+  static void _checkStartMinute(int? minute) {
+    if (minute != null && (minute < 0 || minute >= 24 * 60)) {
+      throw ArgumentError.value(minute, 'startMinute', 'must be 0–1439');
+    }
   }
 
   static void _checkAmount(double amount) {

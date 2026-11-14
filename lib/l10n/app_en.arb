@@ -359,7 +359,6 @@
   "productAttribution": "Data: Open Food Facts (ODbL)",
   "productCorrectHint": "Wrong data? You can correct it on Open Food Facts.",
   "productOpenOff": "View on Open Food Facts",
-  "productLinkFailed": "The link could not be opened.",
   "productCreateOwn": "Add it yourself",
   "@productCreateOwn": {
     "description": "Button when Open Food Facts does not know a barcode"
@@ -543,5 +542,288 @@
         "type": "String"
       }
     }
-  }
+  },
+  "linkOpenFailed": "The link could not be opened.",
+  "disclaimerGoals": "These are estimates for healthy adults. If you are ill, pregnant, breastfeeding or unsure, talk to a doctor or a registered dietitian.",
+  "@disclaimerGoals": {
+    "description": "Disclaimer on the goal page and the about page"
+  },
+  "helpEdTitle": "Help with eating disorders",
+  "helpEdText": "If food or weight is weighing heavily on you, talk to someone you trust or a doctor. In Germany, the eating disorder helpline of the BIÖG (Federal Institute for Public Health) gives anonymous advice in German:",
+  "@helpEdText": {
+    "description": "English: generic sentence plus the German service (there is no English helpline in the app)"
+  },
+  "helpEdCall": "Call {number}",
+  "@helpEdCall": {
+    "description": "Button that calls the helpline",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "helpEdHours": "Mon–Thu 10 am–10 pm, Fri–Sun 10 am–6 pm (German time)",
+  "@helpEdHours": {
+    "description": "Opening hours of the BIÖG helpline"
+  },
+  "helpEdWebsite": "Website: {address}",
+  "@helpEdWebsite": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "goalTitle": "Daily goal",
+  "goalModeCalculate": "Calculate",
+  "goalModeManual": "Enter myself",
+  "goalSexLabel": "Sex",
+  "goalSexMale": "male",
+  "goalSexFemale": "female",
+  "goalSexUnspecified": "not specified",
+  "goalAgeLabel": "Age",
+  "goalAgeSuffix": "years",
+  "goalHeightLabel": "Height",
+  "goalWeightLabel": "Weight",
+  "goalAgeInvalid": "Please enter an age from 1 to 120 years.",
+  "goalHeightInvalid": "Please enter a height from 100 to 250 cm.",
+  "goalWeightInvalid": "Please enter a weight from 30 to 300 kg.",
+  "goalActivityLabel": "How active are you?",
+  "goalActivityLow": "Not very active",
+  "goalActivityLowText": "Mostly sitting, little exercise in your free time",
+  "goalActivityLight": "Somewhat active",
+  "goalActivityLightText": "Sitting, but regularly walking or cycling, or sport 1–2 times a week",
+  "goalActivityActive": "Active",
+  "goalActivityActiveText": "A lot of standing or walking at work, or sport 3–5 times a week",
+  "goalActivityVeryActive": "Very active",
+  "goalActivityVeryActiveText": "Hard physical work or a lot of sport",
+  "goalTypeLabel": "Your goal",
+  "goalTypeMaintain": "Keep my weight",
+  "goalTypeLoseSlow": "Lose slowly (0.25 kg/week)",
+  "goalTypeLose": "Lose weight (0.5 kg/week)",
+  "goalTypeGainSlow": "Gain slowly (0.25 kg/week)",
+  "goalResultTitle": "Your result",
+  "goalResultMissing": "Fill in age, height and weight to see your result here.",
+  "goalResultBmr": "Basal metabolic rate",
+  "@goalResultBmr": {
+    "description": "Energy used at complete rest"
+  },
+  "goalResultTotal": "Total need",
+  "@goalResultTotal": {
+    "description": "Basal rate × activity"
+  },
+  "goalResultGoal": "Daily goal",
+  "goalApprox": "approx. {kcal} kcal",
+  "@goalApprox": {
+    "description": "A rounded estimate",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "goalEstimateNote": "These are estimates. Your body adapts over time, so your weight usually changes more slowly than calculated.",
+  "goalFloorNote": "We do not suggest less than {kcal} kcal per day.",
+  "@goalFloorNote": {
+    "description": "Shown when the calculated goal was raised to the lower bound",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "goalMinorTitle": "Note for under-18s",
+  "goalMinorText": "The formula was developed for adults. While you are still growing, you often need more energy. If you have questions, talk to your paediatrician or family doctor.",
+  "goalApply": "Use this goal",
+  "goalSaved": "Your daily goal has been saved.",
+  "goalManualKcal": "Calories per day",
+  "goalManualKcalInvalid": "Please enter a value from 1 to {max} kcal.",
+  "@goalManualKcalInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "goalManualMacrosTitle": "Macronutrients (optional)",
+  "goalManualMacrosHint": "Empty fields are filled with defaults: 15 % protein, 30 % fat and the rest carbohydrates.",
+  "goalMacroInvalid": "Please enter a value from 0 to {max} g.",
+  "@goalMacroInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "goalBelowFloorTitle": "Less than {kcal} kcal?",
+  "@goalBelowFloorTitle": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "goalBelowFloorText": "Your goal is below {kcal} kcal per day. Eating this little for a longer time is best done with medical support. Do you want to save it anyway?",
+  "@goalBelowFloorText": {
+    "description": "Gentle confirm dialog for a manual goal below the lower bound",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "goalBelowFloorChange": "Change",
+  "goalBelowFloorSave": "Save anyway",
+  "profileSettingsTitle": "Settings",
+  "profileInfoTitle": "Help & info",
+  "profileGoalTitle": "Your daily goal",
+  "profileGoalNone": "No goal yet",
+  "profileGoalNoneText": "With a goal, the ring on “Today” shows how much is left.",
+  "profileGoalSet": "Set a goal",
+  "profileGoalChange": "Change goal",
+  "profileGoalKcal": "{kcal} kcal per day",
+  "@profileGoalKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTheme": "Appearance",
+  "profileLanguage": "Language",
+  "settingSystem": "System default",
+  "@settingSystem": {
+    "description": "Theme or language follows the device setting"
+  },
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Always written in German"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Always written in English"
+  },
+  "profileAbout": "About the app & licences",
+  "profileDeleteAll": "Delete all data",
+  "profileDeleteAllTitle": "Delete all data?",
+  "profileDeleteAllText": "Your diary, your own and saved foods, your goal and your settings will be deleted, and the meals are reset. This cannot be undone.",
+  "profileDeleteAllConfirm": "Delete everything",
+  "profileDeleteAllDone": "All data has been deleted.",
+  "mealsTitle": "Meals",
+  "mealsSubtitle": "Rename, hide, reorder",
+  "@mealsSubtitle": {
+    "description": "Subtitle of the meals entry on the profile tab"
+  },
+  "mealsHint": "Drag the handle to change the order. The time decides which meal is suggested when you add food.",
+  "mealsStartTime": "from {time}",
+  "@mealsStartTime": {
+    "description": "Start time of a meal, e.g. \"ab 11:00\"",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsNoStartTime": "no time",
+  "mealsHidden": "hidden",
+  "mealsShow": "Show {meal}",
+  "@mealsShow": {
+    "description": "Screen reader label of the visibility switch",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsMove": "Move {meal}",
+  "@mealsMove": {
+    "description": "Screen reader label of the drag handle",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsAdd": "Add meal",
+  "mealsEditTitle": "Edit meal",
+  "mealsNewTitle": "New meal",
+  "mealsNameLabel": "Name",
+  "mealsNameDefaultHint": "Leave empty for “{name}”",
+  "@mealsNameDefaultHint": {
+    "description": "Hint for built-in meals: an empty name restores the default",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsNameMissing": "Please enter a name.",
+  "mealsStartTimeLabel": "Suggested from",
+  "mealsPickTime": "Choose time",
+  "mealsClearTime": "No time",
+  "mealsLastVisible": "At least one meal must stay visible.",
+  "mealsDeleteTitle": "Delete “{meal}”?",
+  "@mealsDeleteTitle": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsDeleteText": "This meal has no diary entries and will be removed.",
+  "mealsDeleted": "“{meal}” deleted",
+  "@mealsDeleted": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsInUseTitle": "This meal is in use",
+  "mealsInUseText": "Your diary has entries in “{meal}”. So that past days stay complete, it cannot be deleted – but you can hide it.",
+  "@mealsInUseText": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsInUseHide": "Hide",
+  "myFoodsTitle": "My foods",
+  "myFoodsEmpty": "No own foods yet",
+  "myFoodsEmptyText": "Create foods that Open Food Facts does not know – for example something you cooked yourself.",
+  "myFoodsCreate": "Create own food",
+  "myFoodsMore": "More for {name}",
+  "@myFoodsMore": {
+    "description": "Tooltip of the menu button of one own food",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutTitle": "About the app",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutOpenSource": "Open source (MIT)",
+  "aboutOpenSourceText": "The source code is public. You may read it, improve it and share it.",
+  "aboutSourceCode": "Source code on GitHub",
+  "aboutDataSourceTitle": "Data source",
+  "aboutDataSourceText": "Product data comes from Open Food Facts (openfoodfacts.org) and is available under the Open Database License (ODbL); individual contents under the Database Contents License (DbCL), product photos under Creative Commons BY-SA. The data is maintained by volunteers and may be incomplete or wrong – when in doubt, check the package.",
+  "@aboutDataSourceText": {
+    "description": "Full Open Food Facts attribution (required by the licence)"
+  },
+  "aboutOpenOff": "Open openfoodfacts.org",
+  "aboutNotesTitle": "Good to know",
+  "aboutPrivacyTitle": "Privacy",
+  "aboutPrivacyText": "All data stays on your device. The app has no account, no ads and no tracking. Only product searches are sent to Open Food Facts.",
+  "aboutLicenses": "Open-source licences"
 }

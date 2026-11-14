@@ -388,9 +388,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productOpenOff => 'Auf Open Food Facts ansehen';
 
   @override
-  String get productLinkFailed => 'Der Link konnte nicht geöffnet werden.';
-
-  @override
   String get productCreateOwn => 'Selbst eintragen';
 
   @override
@@ -613,4 +610,415 @@ class AppLocalizationsDe extends AppLocalizations {
   String foodFormDeleted(String name) {
     return '„$name“ gelöscht';
   }
+
+  @override
+  String get linkOpenFailed => 'Der Link konnte nicht geöffnet werden.';
+
+  @override
+  String get disclaimerGoals =>
+      'Die Werte sind Schätzungen für gesunde Erwachsene. Bei Krankheit, Schwangerschaft, Stillzeit oder wenn du unsicher bist, sprich mit einer Ärztin, einem Arzt oder einer Ernährungsfachkraft.';
+
+  @override
+  String get helpEdTitle => 'Hilfe bei Essstörungen';
+
+  @override
+  String get helpEdText =>
+      'Wenn Essen oder Gewicht dich stark belasten: Das Info-Telefon des BIÖG zu Essstörungen hilft anonym.';
+
+  @override
+  String helpEdCall(String number) {
+    return '$number anrufen';
+  }
+
+  @override
+  String get helpEdHours => 'Mo–Do 10–22 Uhr, Fr–So 10–18 Uhr';
+
+  @override
+  String helpEdWebsite(String address) {
+    return 'Webseite: $address';
+  }
+
+  @override
+  String get goalTitle => 'Tagesziel';
+
+  @override
+  String get goalModeCalculate => 'Berechnen';
+
+  @override
+  String get goalModeManual => 'Selbst eingeben';
+
+  @override
+  String get goalSexLabel => 'Geschlecht';
+
+  @override
+  String get goalSexMale => 'männlich';
+
+  @override
+  String get goalSexFemale => 'weiblich';
+
+  @override
+  String get goalSexUnspecified => 'keine Angabe';
+
+  @override
+  String get goalAgeLabel => 'Alter';
+
+  @override
+  String get goalAgeSuffix => 'Jahre';
+
+  @override
+  String get goalHeightLabel => 'Größe';
+
+  @override
+  String get goalWeightLabel => 'Gewicht';
+
+  @override
+  String get goalAgeInvalid => 'Bitte gib ein Alter von 1 bis 120 Jahren ein.';
+
+  @override
+  String get goalHeightInvalid =>
+      'Bitte gib eine Größe von 100 bis 250 cm ein.';
+
+  @override
+  String get goalWeightInvalid =>
+      'Bitte gib ein Gewicht von 30 bis 300 kg ein.';
+
+  @override
+  String get goalActivityLabel => 'Wie aktiv bist du?';
+
+  @override
+  String get goalActivityLow => 'Wenig aktiv';
+
+  @override
+  String get goalActivityLowText =>
+      'Meist sitzend, kaum Bewegung in der Freizeit';
+
+  @override
+  String get goalActivityLight => 'Etwas aktiv';
+
+  @override
+  String get goalActivityLightText =>
+      'Sitzend, aber regelmäßig zu Fuß/Rad oder 1–2× Sport pro Woche';
+
+  @override
+  String get goalActivityActive => 'Aktiv';
+
+  @override
+  String get goalActivityActiveText =>
+      'Viel Stehen/Gehen im Job oder 3–5× Sport pro Woche';
+
+  @override
+  String get goalActivityVeryActive => 'Sehr aktiv';
+
+  @override
+  String get goalActivityVeryActiveText =>
+      'Körperlich harte Arbeit oder sehr viel Sport';
+
+  @override
+  String get goalTypeLabel => 'Dein Ziel';
+
+  @override
+  String get goalTypeMaintain => 'Gewicht halten';
+
+  @override
+  String get goalTypeLoseSlow => 'Langsam abnehmen (0,25 kg/Woche)';
+
+  @override
+  String get goalTypeLose => 'Abnehmen (0,5 kg/Woche)';
+
+  @override
+  String get goalTypeGainSlow => 'Langsam zunehmen (0,25 kg/Woche)';
+
+  @override
+  String get goalResultTitle => 'Dein Ergebnis';
+
+  @override
+  String get goalResultMissing =>
+      'Fülle Alter, Größe und Gewicht aus, dann siehst du hier dein Ergebnis.';
+
+  @override
+  String get goalResultBmr => 'Grundumsatz';
+
+  @override
+  String get goalResultTotal => 'Gesamtbedarf';
+
+  @override
+  String get goalResultGoal => 'Tagesziel';
+
+  @override
+  String goalApprox(String kcal) {
+    return 'ca. $kcal kcal';
+  }
+
+  @override
+  String get goalEstimateNote =>
+      'Das sind Schätzungen. Dein Körper passt sich mit der Zeit an, deshalb ändert sich dein Gewicht meist langsamer als berechnet.';
+
+  @override
+  String goalFloorNote(String kcal) {
+    return 'Wir schlagen nicht weniger als $kcal kcal pro Tag vor.';
+  }
+
+  @override
+  String get goalMinorTitle => 'Hinweis für unter 18-Jährige';
+
+  @override
+  String get goalMinorText =>
+      'Die Formel wurde für Erwachsene entwickelt. Solange du noch wächst, brauchst du oft mehr Energie. Sprich bei Fragen mit deiner Kinder- oder Hausarztpraxis.';
+
+  @override
+  String get goalApply => 'Ziel übernehmen';
+
+  @override
+  String get goalSaved => 'Dein Tagesziel ist gespeichert.';
+
+  @override
+  String get goalManualKcal => 'Kalorien pro Tag';
+
+  @override
+  String goalManualKcalInvalid(String max) {
+    return 'Bitte gib einen Wert von 1 bis $max kcal ein.';
+  }
+
+  @override
+  String get goalManualMacrosTitle => 'Makronährstoffe (optional)';
+
+  @override
+  String get goalManualMacrosHint =>
+      'Leere Felder füllen wir mit Standardwerten: 15 % Eiweiß, 30 % Fett und der Rest Kohlenhydrate.';
+
+  @override
+  String goalMacroInvalid(String max) {
+    return 'Bitte gib einen Wert von 0 bis $max g ein.';
+  }
+
+  @override
+  String goalBelowFloorTitle(String kcal) {
+    return 'Weniger als $kcal kcal?';
+  }
+
+  @override
+  String goalBelowFloorText(String kcal) {
+    return 'Dein Ziel liegt unter $kcal kcal pro Tag. So wenig solltest du länger nur mit ärztlicher Begleitung essen. Möchtest du es trotzdem speichern?';
+  }
+
+  @override
+  String get goalBelowFloorChange => 'Ändern';
+
+  @override
+  String get goalBelowFloorSave => 'Trotzdem speichern';
+
+  @override
+  String get profileSettingsTitle => 'Einstellungen';
+
+  @override
+  String get profileInfoTitle => 'Hilfe & Info';
+
+  @override
+  String get profileGoalTitle => 'Dein Tagesziel';
+
+  @override
+  String get profileGoalNone => 'Noch kein Ziel';
+
+  @override
+  String get profileGoalNoneText =>
+      'Mit einem Ziel zeigt dir der Ring auf „Heute“, wie viel noch übrig ist.';
+
+  @override
+  String get profileGoalSet => 'Ziel festlegen';
+
+  @override
+  String get profileGoalChange => 'Ziel ändern';
+
+  @override
+  String profileGoalKcal(String kcal) {
+    return '$kcal kcal pro Tag';
+  }
+
+  @override
+  String get profileTheme => 'Darstellung';
+
+  @override
+  String get profileLanguage => 'Sprache';
+
+  @override
+  String get settingSystem => 'Wie das System';
+
+  @override
+  String get themeLight => 'Hell';
+
+  @override
+  String get themeDark => 'Dunkel';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get profileAbout => 'Über die App & Lizenzen';
+
+  @override
+  String get profileDeleteAll => 'Alle Daten löschen';
+
+  @override
+  String get profileDeleteAllTitle => 'Alle Daten löschen?';
+
+  @override
+  String get profileDeleteAllText =>
+      'Dein Tagebuch, deine eigenen und gespeicherten Lebensmittel, dein Ziel und deine Einstellungen werden gelöscht, und die Mahlzeiten werden zurückgesetzt. Das kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get profileDeleteAllConfirm => 'Alles löschen';
+
+  @override
+  String get profileDeleteAllDone => 'Alle Daten wurden gelöscht.';
+
+  @override
+  String get mealsTitle => 'Mahlzeiten';
+
+  @override
+  String get mealsSubtitle => 'Umbenennen, ausblenden, sortieren';
+
+  @override
+  String get mealsHint =>
+      'Zieh am Griff, um die Reihenfolge zu ändern. Die Uhrzeit bestimmt, welche Mahlzeit beim Hinzufügen vorgeschlagen wird.';
+
+  @override
+  String mealsStartTime(String time) {
+    return 'ab $time';
+  }
+
+  @override
+  String get mealsNoStartTime => 'keine Uhrzeit';
+
+  @override
+  String get mealsHidden => 'ausgeblendet';
+
+  @override
+  String mealsShow(String meal) {
+    return '$meal anzeigen';
+  }
+
+  @override
+  String mealsMove(String meal) {
+    return '$meal verschieben';
+  }
+
+  @override
+  String get mealsAdd => 'Mahlzeit hinzufügen';
+
+  @override
+  String get mealsEditTitle => 'Mahlzeit bearbeiten';
+
+  @override
+  String get mealsNewTitle => 'Neue Mahlzeit';
+
+  @override
+  String get mealsNameLabel => 'Name';
+
+  @override
+  String mealsNameDefaultHint(String name) {
+    return 'Leer lassen für „$name“';
+  }
+
+  @override
+  String get mealsNameMissing => 'Bitte gib einen Namen ein.';
+
+  @override
+  String get mealsStartTimeLabel => 'Vorgeschlagen ab';
+
+  @override
+  String get mealsPickTime => 'Uhrzeit wählen';
+
+  @override
+  String get mealsClearTime => 'Keine Uhrzeit';
+
+  @override
+  String get mealsLastVisible =>
+      'Mindestens eine Mahlzeit muss sichtbar bleiben.';
+
+  @override
+  String mealsDeleteTitle(String meal) {
+    return '„$meal“ löschen?';
+  }
+
+  @override
+  String get mealsDeleteText =>
+      'Diese Mahlzeit hat keine Einträge im Tagebuch und wird entfernt.';
+
+  @override
+  String mealsDeleted(String meal) {
+    return '„$meal“ gelöscht';
+  }
+
+  @override
+  String get mealsInUseTitle => 'Diese Mahlzeit wird verwendet';
+
+  @override
+  String mealsInUseText(String meal) {
+    return 'In deinem Tagebuch gibt es Einträge bei „$meal“. Damit alte Tage vollständig bleiben, kannst du sie nicht löschen – aber ausblenden.';
+  }
+
+  @override
+  String get mealsInUseHide => 'Ausblenden';
+
+  @override
+  String get myFoodsTitle => 'Eigene Lebensmittel';
+
+  @override
+  String get myFoodsEmpty => 'Noch keine eigenen Lebensmittel';
+
+  @override
+  String get myFoodsEmptyText =>
+      'Lege Lebensmittel an, die Open Food Facts nicht kennt – zum Beispiel selbst Gekochtes.';
+
+  @override
+  String get myFoodsCreate => 'Eigenes Lebensmittel anlegen';
+
+  @override
+  String myFoodsMore(String name) {
+    return 'Mehr zu $name';
+  }
+
+  @override
+  String get aboutTitle => 'Über die App';
+
+  @override
+  String aboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get aboutOpenSource => 'Open Source (MIT)';
+
+  @override
+  String get aboutOpenSourceText =>
+      'Der Quellcode ist öffentlich. Du darfst ihn lesen, verbessern und weitergeben.';
+
+  @override
+  String get aboutSourceCode => 'Quellcode auf GitHub';
+
+  @override
+  String get aboutDataSourceTitle => 'Datenquelle';
+
+  @override
+  String get aboutDataSourceText =>
+      'Produktdaten stammen von Open Food Facts (openfoodfacts.org) und stehen unter der Open Database License (ODbL); einzelne Inhalte unter der Database Contents License (DbCL), Produktfotos unter Creative Commons BY-SA. Die Daten werden von Freiwilligen gepflegt und können unvollständig oder fehlerhaft sein – prüf im Zweifel die Verpackung.';
+
+  @override
+  String get aboutOpenOff => 'openfoodfacts.org öffnen';
+
+  @override
+  String get aboutNotesTitle => 'Gut zu wissen';
+
+  @override
+  String get aboutPrivacyTitle => 'Datenschutz';
+
+  @override
+  String get aboutPrivacyText =>
+      'Alle Daten bleiben auf deinem Gerät. Die App hat kein Konto, keine Werbung und kein Tracking. Nur Produktsuchen werden an Open Food Facts gesendet.';
+
+  @override
+  String get aboutLicenses => 'Open-Source-Lizenzen';
 }

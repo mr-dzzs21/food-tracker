@@ -716,12 +716,6 @@ abstract class AppLocalizations {
   /// **'View on Open Food Facts'**
   String get productOpenOff;
 
-  /// No description provided for @productLinkFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The link could not be opened.'**
-  String get productLinkFailed;
-
   /// Button when Open Food Facts does not know a barcode
   ///
   /// In en, this message translates to:
@@ -1105,6 +1099,714 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'“{name}” deleted'**
   String foodFormDeleted(String name);
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The link could not be opened.'**
+  String get linkOpenFailed;
+
+  /// Disclaimer on the goal page and the about page
+  ///
+  /// In en, this message translates to:
+  /// **'These are estimates for healthy adults. If you are ill, pregnant, breastfeeding or unsure, talk to a doctor or a registered dietitian.'**
+  String get disclaimerGoals;
+
+  /// No description provided for @helpEdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help with eating disorders'**
+  String get helpEdTitle;
+
+  /// English: generic sentence plus the German service (there is no English helpline in the app)
+  ///
+  /// In en, this message translates to:
+  /// **'If food or weight is weighing heavily on you, talk to someone you trust or a doctor. In Germany, the eating disorder helpline of the BIÖG (Federal Institute for Public Health) gives anonymous advice in German:'**
+  String get helpEdText;
+
+  /// Button that calls the helpline
+  ///
+  /// In en, this message translates to:
+  /// **'Call {number}'**
+  String helpEdCall(String number);
+
+  /// Opening hours of the BIÖG helpline
+  ///
+  /// In en, this message translates to:
+  /// **'Mon–Thu 10 am–10 pm, Fri–Sun 10 am–6 pm (German time)'**
+  String get helpEdHours;
+
+  /// No description provided for @helpEdWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website: {address}'**
+  String helpEdWebsite(String address);
+
+  /// No description provided for @goalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get goalTitle;
+
+  /// No description provided for @goalModeCalculate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate'**
+  String get goalModeCalculate;
+
+  /// No description provided for @goalModeManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter myself'**
+  String get goalModeManual;
+
+  /// No description provided for @goalSexLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get goalSexLabel;
+
+  /// No description provided for @goalSexMale.
+  ///
+  /// In en, this message translates to:
+  /// **'male'**
+  String get goalSexMale;
+
+  /// No description provided for @goalSexFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'female'**
+  String get goalSexFemale;
+
+  /// No description provided for @goalSexUnspecified.
+  ///
+  /// In en, this message translates to:
+  /// **'not specified'**
+  String get goalSexUnspecified;
+
+  /// No description provided for @goalAgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get goalAgeLabel;
+
+  /// No description provided for @goalAgeSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'years'**
+  String get goalAgeSuffix;
+
+  /// No description provided for @goalHeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get goalHeightLabel;
+
+  /// No description provided for @goalWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get goalWeightLabel;
+
+  /// No description provided for @goalAgeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an age from 1 to 120 years.'**
+  String get goalAgeInvalid;
+
+  /// No description provided for @goalHeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a height from 100 to 250 cm.'**
+  String get goalHeightInvalid;
+
+  /// No description provided for @goalWeightInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a weight from 30 to 300 kg.'**
+  String get goalWeightInvalid;
+
+  /// No description provided for @goalActivityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How active are you?'**
+  String get goalActivityLabel;
+
+  /// No description provided for @goalActivityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not very active'**
+  String get goalActivityLow;
+
+  /// No description provided for @goalActivityLowText.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly sitting, little exercise in your free time'**
+  String get goalActivityLowText;
+
+  /// No description provided for @goalActivityLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Somewhat active'**
+  String get goalActivityLight;
+
+  /// No description provided for @goalActivityLightText.
+  ///
+  /// In en, this message translates to:
+  /// **'Sitting, but regularly walking or cycling, or sport 1–2 times a week'**
+  String get goalActivityLightText;
+
+  /// No description provided for @goalActivityActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get goalActivityActive;
+
+  /// No description provided for @goalActivityActiveText.
+  ///
+  /// In en, this message translates to:
+  /// **'A lot of standing or walking at work, or sport 3–5 times a week'**
+  String get goalActivityActiveText;
+
+  /// No description provided for @goalActivityVeryActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Very active'**
+  String get goalActivityVeryActive;
+
+  /// No description provided for @goalActivityVeryActiveText.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard physical work or a lot of sport'**
+  String get goalActivityVeryActiveText;
+
+  /// No description provided for @goalTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal'**
+  String get goalTypeLabel;
+
+  /// No description provided for @goalTypeMaintain.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my weight'**
+  String get goalTypeMaintain;
+
+  /// No description provided for @goalTypeLoseSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose slowly (0.25 kg/week)'**
+  String get goalTypeLoseSlow;
+
+  /// No description provided for @goalTypeLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight (0.5 kg/week)'**
+  String get goalTypeLose;
+
+  /// No description provided for @goalTypeGainSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain slowly (0.25 kg/week)'**
+  String get goalTypeGainSlow;
+
+  /// No description provided for @goalResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your result'**
+  String get goalResultTitle;
+
+  /// No description provided for @goalResultMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in age, height and weight to see your result here.'**
+  String get goalResultMissing;
+
+  /// Energy used at complete rest
+  ///
+  /// In en, this message translates to:
+  /// **'Basal metabolic rate'**
+  String get goalResultBmr;
+
+  /// Basal rate × activity
+  ///
+  /// In en, this message translates to:
+  /// **'Total need'**
+  String get goalResultTotal;
+
+  /// No description provided for @goalResultGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get goalResultGoal;
+
+  /// A rounded estimate
+  ///
+  /// In en, this message translates to:
+  /// **'approx. {kcal} kcal'**
+  String goalApprox(String kcal);
+
+  /// No description provided for @goalEstimateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'These are estimates. Your body adapts over time, so your weight usually changes more slowly than calculated.'**
+  String get goalEstimateNote;
+
+  /// Shown when the calculated goal was raised to the lower bound
+  ///
+  /// In en, this message translates to:
+  /// **'We do not suggest less than {kcal} kcal per day.'**
+  String goalFloorNote(String kcal);
+
+  /// No description provided for @goalMinorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for under-18s'**
+  String get goalMinorTitle;
+
+  /// No description provided for @goalMinorText.
+  ///
+  /// In en, this message translates to:
+  /// **'The formula was developed for adults. While you are still growing, you often need more energy. If you have questions, talk to your paediatrician or family doctor.'**
+  String get goalMinorText;
+
+  /// No description provided for @goalApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this goal'**
+  String get goalApply;
+
+  /// No description provided for @goalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily goal has been saved.'**
+  String get goalSaved;
+
+  /// No description provided for @goalManualKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per day'**
+  String get goalManualKcal;
+
+  /// No description provided for @goalManualKcalInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a value from 1 to {max} kcal.'**
+  String goalManualKcalInvalid(String max);
+
+  /// No description provided for @goalManualMacrosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Macronutrients (optional)'**
+  String get goalManualMacrosTitle;
+
+  /// No description provided for @goalManualMacrosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty fields are filled with defaults: 15 % protein, 30 % fat and the rest carbohydrates.'**
+  String get goalManualMacrosHint;
+
+  /// No description provided for @goalMacroInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a value from 0 to {max} g.'**
+  String goalMacroInvalid(String max);
+
+  /// No description provided for @goalBelowFloorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than {kcal} kcal?'**
+  String goalBelowFloorTitle(String kcal);
+
+  /// Gentle confirm dialog for a manual goal below the lower bound
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal is below {kcal} kcal per day. Eating this little for a longer time is best done with medical support. Do you want to save it anyway?'**
+  String goalBelowFloorText(String kcal);
+
+  /// No description provided for @goalBelowFloorChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get goalBelowFloorChange;
+
+  /// No description provided for @goalBelowFloorSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save anyway'**
+  String get goalBelowFloorSave;
+
+  /// No description provided for @profileSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get profileSettingsTitle;
+
+  /// No description provided for @profileInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & info'**
+  String get profileInfoTitle;
+
+  /// No description provided for @profileGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily goal'**
+  String get profileGoalTitle;
+
+  /// No description provided for @profileGoalNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal yet'**
+  String get profileGoalNone;
+
+  /// No description provided for @profileGoalNoneText.
+  ///
+  /// In en, this message translates to:
+  /// **'With a goal, the ring on “Today” shows how much is left.'**
+  String get profileGoalNoneText;
+
+  /// No description provided for @profileGoalSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a goal'**
+  String get profileGoalSet;
+
+  /// No description provided for @profileGoalChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change goal'**
+  String get profileGoalChange;
+
+  /// No description provided for @profileGoalKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per day'**
+  String profileGoalKcal(String kcal);
+
+  /// No description provided for @profileTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get profileTheme;
+
+  /// No description provided for @profileLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLanguage;
+
+  /// Theme or language follows the device setting
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get settingSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// Always written in German
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageGerman;
+
+  /// Always written in English
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @profileAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About the app & licences'**
+  String get profileAbout;
+
+  /// No description provided for @profileDeleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all data'**
+  String get profileDeleteAll;
+
+  /// No description provided for @profileDeleteAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all data?'**
+  String get profileDeleteAllTitle;
+
+  /// No description provided for @profileDeleteAllText.
+  ///
+  /// In en, this message translates to:
+  /// **'Your diary, your own and saved foods, your goal and your settings will be deleted, and the meals are reset. This cannot be undone.'**
+  String get profileDeleteAllText;
+
+  /// No description provided for @profileDeleteAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete everything'**
+  String get profileDeleteAllConfirm;
+
+  /// No description provided for @profileDeleteAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All data has been deleted.'**
+  String get profileDeleteAllDone;
+
+  /// No description provided for @mealsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get mealsTitle;
+
+  /// Subtitle of the meals entry on the profile tab
+  ///
+  /// In en, this message translates to:
+  /// **'Rename, hide, reorder'**
+  String get mealsSubtitle;
+
+  /// No description provided for @mealsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the handle to change the order. The time decides which meal is suggested when you add food.'**
+  String get mealsHint;
+
+  /// Start time of a meal, e.g. "ab 11:00"
+  ///
+  /// In en, this message translates to:
+  /// **'from {time}'**
+  String mealsStartTime(String time);
+
+  /// No description provided for @mealsNoStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'no time'**
+  String get mealsNoStartTime;
+
+  /// No description provided for @mealsHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'hidden'**
+  String get mealsHidden;
+
+  /// Screen reader label of the visibility switch
+  ///
+  /// In en, this message translates to:
+  /// **'Show {meal}'**
+  String mealsShow(String meal);
+
+  /// Screen reader label of the drag handle
+  ///
+  /// In en, this message translates to:
+  /// **'Move {meal}'**
+  String mealsMove(String meal);
+
+  /// No description provided for @mealsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal'**
+  String get mealsAdd;
+
+  /// No description provided for @mealsEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit meal'**
+  String get mealsEditTitle;
+
+  /// No description provided for @mealsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New meal'**
+  String get mealsNewTitle;
+
+  /// No description provided for @mealsNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get mealsNameLabel;
+
+  /// Hint for built-in meals: an empty name restores the default
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for “{name}”'**
+  String mealsNameDefaultHint(String name);
+
+  /// No description provided for @mealsNameMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name.'**
+  String get mealsNameMissing;
+
+  /// No description provided for @mealsStartTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from'**
+  String get mealsStartTimeLabel;
+
+  /// No description provided for @mealsPickTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose time'**
+  String get mealsPickTime;
+
+  /// No description provided for @mealsClearTime.
+  ///
+  /// In en, this message translates to:
+  /// **'No time'**
+  String get mealsClearTime;
+
+  /// No description provided for @mealsLastVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one meal must stay visible.'**
+  String get mealsLastVisible;
+
+  /// No description provided for @mealsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{meal}”?'**
+  String mealsDeleteTitle(String meal);
+
+  /// No description provided for @mealsDeleteText.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal has no diary entries and will be removed.'**
+  String get mealsDeleteText;
+
+  /// No description provided for @mealsDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'“{meal}” deleted'**
+  String mealsDeleted(String meal);
+
+  /// No description provided for @mealsInUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal is in use'**
+  String get mealsInUseTitle;
+
+  /// No description provided for @mealsInUseText.
+  ///
+  /// In en, this message translates to:
+  /// **'Your diary has entries in “{meal}”. So that past days stay complete, it cannot be deleted – but you can hide it.'**
+  String mealsInUseText(String meal);
+
+  /// No description provided for @mealsInUseHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get mealsInUseHide;
+
+  /// No description provided for @myFoodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My foods'**
+  String get myFoodsTitle;
+
+  /// No description provided for @myFoodsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No own foods yet'**
+  String get myFoodsEmpty;
+
+  /// No description provided for @myFoodsEmptyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Create foods that Open Food Facts does not know – for example something you cooked yourself.'**
+  String get myFoodsEmptyText;
+
+  /// No description provided for @myFoodsCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create own food'**
+  String get myFoodsCreate;
+
+  /// Tooltip of the menu button of one own food
+  ///
+  /// In en, this message translates to:
+  /// **'More for {name}'**
+  String myFoodsMore(String name);
+
+  /// No description provided for @aboutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About the app'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String aboutVersion(String version);
+
+  /// No description provided for @aboutOpenSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Open source (MIT)'**
+  String get aboutOpenSource;
+
+  /// No description provided for @aboutOpenSourceText.
+  ///
+  /// In en, this message translates to:
+  /// **'The source code is public. You may read it, improve it and share it.'**
+  String get aboutOpenSourceText;
+
+  /// No description provided for @aboutSourceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Source code on GitHub'**
+  String get aboutSourceCode;
+
+  /// No description provided for @aboutDataSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data source'**
+  String get aboutDataSourceTitle;
+
+  /// Full Open Food Facts attribution (required by the licence)
+  ///
+  /// In en, this message translates to:
+  /// **'Product data comes from Open Food Facts (openfoodfacts.org) and is available under the Open Database License (ODbL); individual contents under the Database Contents License (DbCL), product photos under Creative Commons BY-SA. The data is maintained by volunteers and may be incomplete or wrong – when in doubt, check the package.'**
+  String get aboutDataSourceText;
+
+  /// No description provided for @aboutOpenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Open openfoodfacts.org'**
+  String get aboutOpenOff;
+
+  /// No description provided for @aboutNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to know'**
+  String get aboutNotesTitle;
+
+  /// No description provided for @aboutPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get aboutPrivacyTitle;
+
+  /// No description provided for @aboutPrivacyText.
+  ///
+  /// In en, this message translates to:
+  /// **'All data stays on your device. The app has no account, no ads and no tracking. Only product searches are sent to Open Food Facts.'**
+  String get aboutPrivacyText;
+
+  /// No description provided for @aboutLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get aboutLicenses;
 }
 
 class _AppLocalizationsDelegate

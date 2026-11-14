@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/clock.dart';
 import '../../core/errors.dart';
 import '../../core/format.dart';
+import '../../core/links.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -339,20 +339,10 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     await navigator.maybePop(true);
   }
 
-  Future<void> _openOnOff(String barcode) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final failed = AppLocalizations.of(context).productLinkFailed;
-    var opened = false;
-    try {
-      opened = await launchUrl(
-        Uri.https('world.openfoodfacts.org', '/product/$barcode'),
-        mode: LaunchMode.externalApplication,
-      );
-    } on PlatformException {
-      opened = false;
-    }
-    if (!opened) messenger.showSnackBar(SnackBar(content: Text(failed)));
-  }
+  Future<void> _openOnOff(String barcode) => openLink(
+    context,
+    Uri.https('world.openfoodfacts.org', '/product/$barcode'),
+  );
 
   @override
   Widget build(BuildContext context) {
