@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'core/clock.dart';
+import 'core/widgets/app_nav_bar.dart';
 import 'features/diary/add_food_page.dart';
 import 'features/diary/today_page.dart';
 import 'features/goals/goal_page.dart';
@@ -203,7 +206,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// The frame around the four tabs: the page of the current tab plus the
-/// navigation bar at the bottom.
+/// app's own navigation bar at the bottom.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.shell});
 
@@ -213,32 +216,44 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: shell,
-      bottomNavigationBar: NavigationBar(
+      // The page reaches behind the bar, so it shows next to the raised scan
+      // button. The Scaffold then reports the bar's height as bottom padding.
+      extendBody: true,
+      body: Builder(
+        builder: (context) {
+          final barHeight = MediaQuery.paddingOf(context).bottom;
+          // Only the strip next to the raised button overlaps the page; the
+          // bar itself never covers content. With the keyboard open the
+          // Scaffold reports no bar, so there is no extra space then.
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: math.max(0, barHeight - AppNavBar.raise),
+            ),
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              child: shell,
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: AppNavBar(
         selectedIndex: shell.currentIndex,
+        raisedIndex: 1,
         // Tapping the open tab again goes back to its first page.
-        onDestinationSelected: (index) =>
+        onSelected: (index) =>
             shell.goBranch(index, initialLocation: index == shell.currentIndex),
         destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.today_outlined),
-            selectedIcon: const Icon(Icons.today),
-            label: l10n.tabToday,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.qr_code_scanner),
+          AppNavDestination(icon: Icons.today_rounded, label: l10n.tabToday),
+          AppNavDestination(
+            icon: Icons.qr_code_scanner_rounded,
             label: l10n.tabScan,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.bar_chart_outlined),
-            selectedIcon: const Icon(Icons.bar_chart),
+          AppNavDestination(
+            icon: Icons.bar_chart_rounded,
             label: l10n.tabStats,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            selectedIcon: const Icon(Icons.person),
-            label: l10n.tabProfile,
-          ),
+          AppNavDestination(icon: Icons.person_rounded, label: l10n.tabProfile),
         ],
       ),
     );

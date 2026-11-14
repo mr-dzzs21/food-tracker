@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/add_food_page.dart';
 import 'package:food_tracker/features/products/food_source.dart';
@@ -259,8 +260,8 @@ void main() {
       Routes.food(id, day: '2026-11-14', mealId: breakfast.id),
     );
 
-    await tester.ensureVisible(find.text('Hinzufügen'));
-    await tester.tap(find.text('Hinzufügen'));
+    // The sticky button on the product page.
+    await tester.tap(find.byType(CtaButton));
     await tester.pumpAndSettle();
 
     expect(router.state.uri.toString(), Routes.today);

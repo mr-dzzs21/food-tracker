@@ -137,11 +137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dayJumpToday => 'Today';
 
   @override
-  String get todayGoalCardTitle => 'Set a goal';
-
-  @override
-  String get todayGoalCardText =>
-      'With a daily goal, the ring shows how much is left for today.';
+  String get todayGoalCardTitle => 'Set your daily goal';
 
   @override
   String get todayGoalCardButton => 'Set goal';
@@ -202,6 +198,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String todayMacroOfGoal(String eaten, String goal) {
     return '$eaten of $goal g';
   }
+
+  @override
+  String todayMacroCompact(String eaten, String goal) {
+    return '$eaten/$goal g';
+  }
+
+  @override
+  String todayMealEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+      zero: 'Nothing yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayMealTileSemantics(String meal, String entries, String kcal) {
+    return '$meal: $entries, $kcal kcal';
+  }
+
+  @override
+  String get todayMealTileHint => 'Show entries';
+
+  @override
+  String get mealSheetEmpty => 'Nothing logged here yet.';
 
   @override
   String nutrientWithValue(String nutrient, String value) {
@@ -355,6 +379,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String productAdded(String meal) {
     return 'Added to $meal';
+  }
+
+  @override
+  String productAddToMeal(
+    String amount,
+    String slot,
+    String meal,
+    String kcal,
+  ) {
+    return 'Add $amount to $meal · $kcal';
   }
 
   @override

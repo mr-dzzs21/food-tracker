@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/buttons.dart';
 import '../../core/widgets/search_field.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -140,21 +141,21 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
               spacing: Spacing.s,
               runSpacing: Spacing.s,
               children: [
-                FilledButton.tonalIcon(
+                TonalButton(
                   // The scanner and the form replace themselves with the
                   // product page and close this page after "Hinzufügen"
                   // (replaceInAddFlow), so nothing to wait for here.
                   onPressed: () =>
                       unawaited(context.push(Routes.addFoodScan(day, mealId))),
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: Text(l10n.addFoodScan),
+                  icon: Icons.qr_code_scanner_rounded,
+                  label: l10n.addFoodScan,
                 ),
-                FilledButton.tonalIcon(
+                TonalButton(
                   onPressed: () => unawaited(
                     context.push(Routes.newFood(day: day, mealId: mealId)),
                   ),
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.addFoodCreateOwn),
+                  icon: Icons.add_rounded,
+                  label: l10n.addFoodCreateOwn,
                 ),
               ],
             ),

@@ -5,11 +5,14 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
+import 'package:food_tracker/core/widgets/pill_choices.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/features/products/product_repository.dart';
+import 'package:food_tracker/features/products/widgets/rating_section.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -79,6 +82,21 @@ void main() {
     return router;
   }
 
+  /// Whether the pill with [label] is the selected one. Also checks that
+  /// screen readers hear the same (a button, selected or not).
+  bool isSelectedPill(WidgetTester tester, String label) {
+    final pill = find.ancestor(
+      of: find.text(label),
+      matching: find.byType(Pill),
+    );
+    final selected = tester.widget<Pill>(pill).selected;
+    expect(
+      tester.getSemantics(pill),
+      isSemantics(label: label, isButton: true, isSelected: selected),
+    );
+    return selected;
+  }
+
   Future<MealSlot> slot(String builtIn) => (db.select(
     db.mealSlots,
   )..where((s) => s.builtIn.equals(builtIn))).getSingle();
@@ -90,13 +108,23 @@ void main() {
     expect(find.text('chipsfrisch ungarisch'), findsOneWidget);
     expect(find.text('funny-frisch'), findsOneWidget);
     expect(find.text('Bewertung pro 100 g'), findsOneWidget);
-    expect(find.text('hoch · 33 g'), findsOneWidget); // fat
-    expect(find.text('mittel · 3 g'), findsOneWidget); // saturates
-    expect(find.text('niedrig · 2,5 g'), findsOneWidget); // sugars
-    expect(find.text('mittel · 1,5 g'), findsOneWidget); // salt
-    expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_downward), findsOneWidget);
+    // Value and word of each level: fat high, saturates and salt medium,
+    // sugars low.
+    Finder inRating(String text) => find.descendant(
+      of: find.byType(RatingSection),
+      matching: find.text(text),
+    );
+    expect(inRating('33 g'), findsOneWidget);
+    expect(inRating('hoch'), findsOneWidget);
+    expect(inRating('mittel'), findsNWidgets(2));
+    expect(inRating('niedrig'), findsOneWidget);
+    expect(inRating('2,5 g'), findsOneWidget);
+    expect(inRating('1,5 g'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.remove_rounded), findsNWidgets(2));
+    expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
     expect(find.bySemanticsLabel('Fett: hoch, 33 g'), findsOneWidget);
+    expect(find.bySemanticsLabel('Zucker: niedrig, 2,5 g'), findsOneWidget);
     expect(find.text('Ballaststoffquelle · 4,5 g'), findsOneWidget);
     expect(find.text('Nutri-Score: D (laut Open Food Facts)'), findsOneWidget);
 
@@ -124,8 +152,8 @@ void main() {
       find.textContaining('Für diese Produktart gibt es keine Ampel-Bewertung'),
       findsOneWidget,
     );
-    expect(find.textContaining('hoch ·'), findsNothing);
-    expect(find.textContaining('niedrig ·'), findsNothing);
+    expect(find.text('hoch'), findsNothing);
+    expect(find.text('niedrig'), findsNothing);
   });
 
   testWidgets('not rated (English): unknown product type', (tester) async {
@@ -140,7 +168,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('per 100 g'), findsOneWidget);
-    expect(find.text('Add'), findsOneWidget);
+    expect(find.text('Lunch'), findsOneWidget); // meal pill
+    expect(
+      find.textContaining(RegExp(r'^Add .+ g to Lunch · .+ kcal$')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('not found: offers to create the food with this barcode', (
@@ -208,20 +240,23 @@ void main() {
     // Starts with one portion; the meal comes from the route.
     expect(find.widgetWithText(TextField, '30'), findsOneWidget);
     expect(find.text('160 kcal'), findsWidgets);
-    expect(find.text('Abendessen'), findsOneWidget);
+    expect(isSelectedPill(tester, 'Abendessen'), isTrue);
+    expect(isSelectedPill(tester, 'Mittagessen'), isFalse);
     expect(find.text('Tag: Gestern, 13. Nov.'), findsOneWidget);
+    // The sticky button says what will happen.
+    expect(find.text('30 g zum Abendessen · 160 kcal'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '45,5');
     await tester.pumpAndSettle();
     // 533 kcal × 45.5 / 100 = 242.5 → 243
     expect(find.text('243 kcal'), findsOneWidget);
 
-    await tester.tap(find.text('Abendessen'));
+    await tester.tap(find.text('Snacks'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Snacks').last);
-    await tester.pumpAndSettle();
+    expect(isSelectedPill(tester, 'Snacks'), isTrue);
+    expect(find.text('45,5 g zu den Snacks · 243 kcal'), findsOneWidget);
 
-    await tester.tap(find.text('Hinzufügen'));
+    await tester.tap(find.byType(CtaButton));
     await tester.pumpAndSettle();
 
     final entry = (await db.select(db.diaryEntries).get()).single;
@@ -260,14 +295,17 @@ void main() {
     );
     await open(tester, Routes.food(food.id));
 
-    expect(find.text('Mittagessen'), findsOneWidget);
+    expect(isSelectedPill(tester, 'Mittagessen'), isTrue);
     expect(find.text('Tag: Heute, 14. Nov.'), findsOneWidget);
     expect(find.widgetWithText(TextField, '100'), findsOneWidget);
+    expect(isSelectedPill(tester, '100 g'), isTrue);
     await tester.tap(find.text('Zuletzt: 80 g'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(TextField, '80'), findsOneWidget);
+    expect(isSelectedPill(tester, 'Zuletzt: 80 g'), isTrue);
+    expect(find.text('80 g zum Mittagessen · 72 kcal'), findsOneWidget);
 
-    await tester.tap(find.text('Hinzufügen'));
+    await tester.tap(find.byType(CtaButton));
     await tester.pumpAndSettle();
     final entries = await (db.select(
       db.diaryEntries,

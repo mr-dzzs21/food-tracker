@@ -5,6 +5,8 @@ import 'package:food_tracker/core/theme/app_theme.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/diary/widgets/calorie_ring.dart';
+import 'package:food_tracker/features/diary/widgets/meal_sheet.dart';
+import 'package:food_tracker/features/diary/widgets/meal_tile.dart';
 import 'package:food_tracker/features/goals/goals_repository.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:material_ui/material_ui.dart';
@@ -71,6 +73,15 @@ void main() {
     await pumpFoodTrackerApp(tester, db: db, locale: locale);
   }
 
+  /// Opens the entries of [meal] (taps its tile).
+  Future<void> openMeal(WidgetTester tester, String meal) async {
+    await tester.ensureVisible(find.text(meal));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(meal));
+    await tester.pumpAndSettle();
+    expect(find.byType(MealSheet), findsOneWidget);
+  }
+
   /// The colour the calorie ring is painted with.
   CalorieRingPainter ringPainter(WidgetTester tester) =>
       tester
@@ -83,25 +94,31 @@ void main() {
               .painter!
           as CalorieRingPainter;
 
-  testWidgets('no goal: goal card, eaten kcal, card can be closed', (
+  testWidgets('no goal: goal prompt, eaten kcal, prompt can be closed', (
     tester,
   ) async {
     await log(amount: 200); // 500 kcal
     await pumpTall(tester);
 
     expect(find.text('Heute, 14. Nov.'), findsOneWidget);
-    // Title and button of the card.
-    expect(find.text('Ziel festlegen'), findsNWidgets(2));
+    expect(find.text('Leg dein Tagesziel fest'), findsOneWidget);
+    expect(find.text('Ziel festlegen'), findsOneWidget);
     expect(find.text('500'), findsOneWidget);
     expect(find.text('kcal gegessen'), findsOneWidget);
     expect(
       find.bySemanticsLabel('500 kcal gegessen. Kein Tagesziel festgelegt.'),
       findsOneWidget,
     );
+    // One tile per meal; the breakfast tile sums up its entries.
+    expect(find.byType(MealTile), findsNWidgets(4));
     expect(find.text('Frühstück'), findsOneWidget);
-    expect(find.text('Haferflocken'), findsOneWidget);
-    expect(find.text('200 g'), findsOneWidget);
-    expect(find.text('500 kcal'), findsWidgets); // entry row + meal sum
+    expect(find.text('1 Eintrag'), findsOneWidget);
+    expect(find.text('Noch nichts'), findsNWidgets(3));
+    expect(find.text('500 kcal'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Frühstück: 1 Eintrag, 500 kcal'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byTooltip('Hinweis ausblenden'));
     await tester.pumpAndSettle();
@@ -109,17 +126,24 @@ void main() {
     expect(await SharedPreferencesAsync().getBool('goal_card_dismissed'), true);
   });
 
+  testWidgets('"Ziel festlegen" opens the goal page', (tester) async {
+    await pumpTall(tester);
+    await tester.tap(find.text('Ziel festlegen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tagesziel'), findsOneWidget);
+  });
+
   testWidgets('with goal: kcal left and macros of the goal', (tester) async {
     await goals.saveGoal(kcal: 2490, protein: 120, carbs: 300, fat: 80);
     await log(amount: 500); // 1250 kcal, 50 g protein
     await pumpTall(tester);
 
-    expect(find.text('Ziel festlegen'), findsNothing);
+    expect(find.text('Leg dein Tagesziel fest'), findsNothing);
     expect(find.text('1.240'), findsOneWidget);
     expect(find.text('kcal übrig'), findsOneWidget);
     expect(find.text('von 2.490'), findsOneWidget);
     expect(find.text('Gegessen: 1.250 kcal'), findsOneWidget);
-    expect(find.text('50 von 120 g'), findsOneWidget);
+    expect(find.text('50/120 g'), findsOneWidget);
     expect(
       find.bySemanticsLabel(
         '1.240 kcal übrig von 2.490 kcal. Gegessen: 1.250 kcal.',
@@ -129,9 +153,7 @@ void main() {
     expect(find.bySemanticsLabel('Eiweiß: 50 von 120 g'), findsOneWidget);
   });
 
-  testWidgets('over the goal: full ring in the normal colour, neutral text', (
-    tester,
-  ) async {
+  testWidgets('over the goal: full white ring, neutral text', (tester) async {
     await goals.saveGoal(kcal: 2000);
     await log(kcal: 290, amount: 800); // 2320 kcal
     await pumpTall(tester);
@@ -143,12 +165,14 @@ void main() {
     final theme = Theme.of(context);
     final painter = ringPainter(tester);
     expect(painter.progress, greaterThanOrEqualTo(1));
-    expect(painter.color, theme.colorScheme.primary);
-    // Nothing on the screen is painted in a warning colour.
+    // The same white as below the goal – never a warning colour.
+    expect(painter.color, context.appColors.onHero);
     final warningColours = {
       theme.colorScheme.error,
       context.appColors.ratingHigh,
+      context.appColors.ratingHighBg,
     };
+    expect(warningColours, isNot(contains(painter.color)));
     for (final text in tester.widgetList<Text>(find.byType(Text))) {
       expect(warningColours, isNot(contains(text.style?.color)));
     }
@@ -163,9 +187,14 @@ void main() {
 
     expect(find.text('mind. 500'), findsOneWidget); // ring
     expect(find.text('Für 1 Eintrag fehlen Angaben'), findsOneWidget);
-    expect(find.text('mind. 20 g'), findsOneWidget); // protein bar
-    expect(find.text('mind. 500 kcal'), findsOneWidget); // breakfast sum
+    expect(find.text('mind. 20 g'), findsOneWidget); // protein pill
+    expect(find.text('mind. 500 kcal'), findsOneWidget); // breakfast tile
+
+    await openMeal(tester, 'Frühstück');
+    expect(find.text('mind. 500 kcal'), findsNWidgets(2)); // tile + sheet
     expect(find.text('–'), findsOneWidget); // the soup's kcal
+    // Screen readers hear "keine Angabe" instead of "–".
+    expect(find.bySemanticsLabel(RegExp('keine Angabe')), findsOneWidget);
   });
 
   testWidgets('missing values with a goal: "höchstens" left', (tester) async {
@@ -178,20 +207,65 @@ void main() {
     expect(find.text('Gegessen: mind. 500 kcal'), findsOneWidget);
   });
 
+  testWidgets('a meal tile opens its entries; empty meals say so', (
+    tester,
+  ) async {
+    await log(amount: 200);
+    await log(name: 'Milch', kcal: 50, amount: 250);
+    await pumpTall(tester);
+
+    expect(find.text('2 Einträge'), findsOneWidget);
+    await openMeal(tester, 'Frühstück');
+    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(find.text('200 g'), findsOneWidget);
+    expect(find.text('250 g'), findsOneWidget);
+    expect(find.text('500 kcal'), findsOneWidget); // oats
+    expect(find.text('125 kcal'), findsOneWidget); // milk
+    expect(find.text('625 kcal'), findsNWidgets(2)); // tile + sheet header
+
+    // Close the sheet, open an empty meal.
+    await tester.tapAt(const Offset(400, 20));
+    await tester.pumpAndSettle();
+    expect(find.byType(MealSheet), findsNothing);
+    await openMeal(tester, 'Abendessen');
+    expect(find.text('Hier ist noch nichts eingetragen.'), findsOneWidget);
+  });
+
+  testWidgets('"Hinzufügen" in the meal sheet opens the add page', (
+    tester,
+  ) async {
+    await pumpTall(tester);
+    await openMeal(tester, 'Abendessen');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(MealSheet),
+        matching: find.text('Hinzufügen'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MealSheet), findsNothing);
+    expect(find.text('Abendessen · Heute, 14. Nov.'), findsOneWidget);
+  });
+
   testWidgets('swipe deletes an entry, "Rückgängig" brings it back', (
     tester,
   ) async {
     await log();
     await pumpTall(tester);
+    await openMeal(tester, 'Frühstück');
 
     await tester.drag(find.text('Haferflocken'), const Offset(-600, 0));
     await tester.pumpAndSettle();
 
     expect(find.text('Haferflocken'), findsNothing);
-    expect(find.text('Eintrag gelöscht'), findsOneWidget);
+    // Shown in the sheet (and behind it, on the tab).
+    expect(find.text('Eintrag gelöscht'), findsWidgets);
     expect(await db.select(db.diaryEntries).get(), isEmpty);
+    expect(find.text('Hier ist noch nichts eingetragen.'), findsOneWidget);
 
-    await tester.tap(find.text('Rückgängig'));
+    await tester.tap(find.text('Rückgängig').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Haferflocken'), findsOneWidget);
@@ -203,6 +277,7 @@ void main() {
   ) async {
     await log();
     await pumpTall(tester);
+    await openMeal(tester, 'Frühstück');
 
     await tester.tap(find.text('Haferflocken'));
     await tester.pumpAndSettle();
@@ -213,7 +288,27 @@ void main() {
 
     final entry = (await db.select(db.diaryEntries).get()).single;
     expect(entry.amount, 150.5);
+    // The meal sheet is still open and shows the new amount.
     expect(find.text('150,5 g'), findsOneWidget);
+  });
+
+  testWidgets('"Löschen" in the entry sheet also offers "Rückgängig"', (
+    tester,
+  ) async {
+    await log();
+    await pumpTall(tester);
+    await openMeal(tester, 'Frühstück');
+
+    await tester.tap(find.text('Haferflocken'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Löschen'));
+    await tester.pumpAndSettle();
+
+    expect(await db.select(db.diaryEntries).get(), isEmpty);
+    expect(find.text('Haferflocken'), findsNothing);
+    await tester.tap(find.text('Rückgängig').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Haferflocken'), findsOneWidget);
   });
 
   testWidgets('date switcher: previous day, back to today', (tester) async {
@@ -227,16 +322,21 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.text('1 Eintrag'), findsNothing);
     await tester.tap(find.byTooltip('Vorheriger Tag'));
     await tester.pumpAndSettle();
 
     expect(find.text('Gestern, 13. Nov.'), findsOneWidget);
+    expect(find.text('1 Eintrag'), findsOneWidget);
+    await openMeal(tester, 'Frühstück');
     expect(find.text('Gestern gegessen'), findsOneWidget);
+    await tester.tapAt(const Offset(400, 20));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(TextButton, 'Heute'));
     await tester.pumpAndSettle();
     expect(find.text('Heute, 14. Nov.'), findsOneWidget);
-    expect(find.text('Gestern gegessen'), findsNothing);
+    expect(find.text('1 Eintrag'), findsNothing);
   });
 
   testWidgets('hidden meals only show up when they have entries', (
@@ -246,10 +346,12 @@ void main() {
         .write(const MealSlotsCompanion(isHidden: Value(true)));
     await pumpTall(tester);
     expect(find.text('Snacks'), findsNothing);
+    expect(find.byType(MealTile), findsNWidgets(3));
 
     await log(name: 'Apfel', meal: 'snacks');
     await tester.pumpAndSettle();
     expect(find.text('Snacks'), findsOneWidget);
+    await openMeal(tester, 'Snacks');
     expect(find.text('Apfel'), findsOneWidget);
   });
 
@@ -272,8 +374,28 @@ void main() {
     expect(find.text('kcal left'), findsOneWidget);
     expect(find.text('of 2,490'), findsOneWidget);
     expect(find.text('Breakfast'), findsOneWidget);
-    expect(find.text('50 of 120 g'), findsOneWidget);
+    expect(find.text('1 entry'), findsOneWidget);
+    expect(find.text('Nothing yet'), findsNWidgets(3));
+    expect(find.text('50/120 g'), findsOneWidget);
     expect(find.byTooltip('Add to Lunch'), findsOneWidget);
+  });
+
+  testWidgets('dark mode renders with the dark tokens', (tester) async {
+    await goals.saveGoal(kcal: 2000, protein: 100);
+    await log(amount: 300);
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpFoodTrackerApp(tester, db: db, themeMode: ThemeMode.dark);
+
+    final context = tester.element(find.byType(MealTile).first);
+    expect(Theme.of(context).brightness, Brightness.dark);
+    expect(context.appColors.background, AppColors.dark.background);
+    expect(ringPainter(tester).color, AppColors.dark.onHero);
+    expect(find.text('1.250'), findsOneWidget);
+    await openMeal(tester, 'Frühstück');
+    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   for (final withGoal in [true, false]) {
@@ -296,6 +418,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('Snacks'), findsOneWidget);
+
+      // The sheet with a long entry name, too.
+      await openMeal(tester, 'Frühstück');
+      expect(tester.takeException(), isNull);
     });
   }
 }

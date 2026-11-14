@@ -323,14 +323,8 @@ abstract class AppLocalizations {
   /// No description provided for @todayGoalCardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Set a goal'**
+  /// **'Set your daily goal'**
   String get todayGoalCardTitle;
-
-  /// No description provided for @todayGoalCardText.
-  ///
-  /// In en, this message translates to:
-  /// **'With a daily goal, the ring shows how much is left for today.'**
-  String get todayGoalCardText;
 
   /// No description provided for @todayGoalCardButton.
   ///
@@ -409,6 +403,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{eaten} of {goal} g'**
   String todayMacroOfGoal(String eaten, String goal);
+
+  /// Short macro value in the pills on the Today hero, e.g. '37/75 g'
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten}/{goal} g'**
+  String todayMacroCompact(String eaten, String goal);
+
+  /// Subtitle of a meal tile on Today
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing yet} =1{1 entry} other{{count} entries}}'**
+  String todayMealEntries(int count);
+
+  /// Screen-reader label of a meal tile, e.g. 'Breakfast: 3 entries, 520 kcal'
+  ///
+  /// In en, this message translates to:
+  /// **'{meal}: {entries}, {kcal} kcal'**
+  String todayMealTileSemantics(String meal, String entries, String kcal);
+
+  /// Screen-reader hint: tapping a meal tile opens its entries
+  ///
+  /// In en, this message translates to:
+  /// **'Show entries'**
+  String get todayMealTileHint;
+
+  /// Empty state in the meal sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged here yet.'**
+  String get mealSheetEmpty;
 
   /// A nutrient with its value, e.g. 'Eiweiß: 45 g'
   ///
@@ -661,6 +685,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Added to {meal}'**
   String productAdded(String meal);
+
+  /// Sticky button on the product page, e.g. 'Add 30 g to Lunch · 161 kcal'. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles), otherwise 'other'.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} to {meal} · {kcal}'**
+  String productAddToMeal(String amount, String slot, String meal, String kcal);
 
   /// No description provided for @productNutritionTitle.
   ///

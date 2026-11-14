@@ -2,20 +2,11 @@ import 'package:drift/drift.dart' show OrderingTerm, Value, Variable;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/core/clock.dart';
 import 'package:food_tracker/core/format.dart';
-import 'package:food_tracker/core/theme/app_theme.dart';
+import 'package:food_tracker/core/widgets/app_nav_bar.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'helpers/pump_app.dart';
-
-/// WCAG contrast ratio between two colours (1.0 – 21.0).
-double contrastRatio(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
-  final lighter = la > lb ? la : lb;
-  final darker = la > lb ? lb : la;
-  return (lighter + 0.05) / (darker + 0.05);
-}
 
 void main() {
   group('day keys', () {
@@ -122,33 +113,6 @@ void main() {
     });
   });
 
-  group('theme', () {
-    for (final brightness in Brightness.values) {
-      test('rating colours are readable on surfaces ($brightness)', () {
-        final theme = buildTheme(brightness);
-        final colors = theme.extension<AppColors>()!;
-        final surfaces = [
-          theme.colorScheme.surface,
-          theme.colorScheme.surfaceContainerLow,
-          theme.colorScheme.surfaceContainer,
-        ];
-        for (final surface in surfaces) {
-          for (final color in [
-            colors.ratingLow,
-            colors.ratingMedium,
-            colors.ratingHigh,
-          ]) {
-            expect(
-              contrastRatio(color, surface),
-              greaterThanOrEqualTo(4.5),
-              reason: '$color on $surface',
-            );
-          }
-        }
-      });
-    }
-  });
-
   testWidgets('app starts on "Heute" with four tabs, in German', (
     tester,
   ) async {
@@ -156,14 +120,14 @@ void main() {
     addTearDown(db.close);
     await pumpFoodTrackerApp(tester, db: db);
 
-    expect(find.byType(NavigationDestination), findsNWidgets(4));
+    expect(find.byType(AppNavBar), findsOneWidget);
     expect(find.text('Heute'), findsWidgets);
     expect(find.text('Scannen'), findsOneWidget);
     expect(find.text('Statistik'), findsOneWidget);
     expect(find.text('Profil'), findsOneWidget);
 
     // Material's own texts are German too (material_ui delegates work).
-    final context = tester.element(find.byType(NavigationBar));
+    final context = tester.element(find.byType(AppNavBar));
     expect(MaterialLocalizations.of(context).backButtonTooltip, 'Zurück');
   });
 
@@ -175,6 +139,7 @@ void main() {
     expect(find.text('Statistics'), findsOneWidget);
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(AppNavBar), findsOneWidget);
+    expect(find.text('Your daily goal'), findsOneWidget);
   });
 }

@@ -276,6 +276,14 @@ void main() {
     await scrollDown(tester, 500);
     await shot(tester, '02-today-meals');
 
+    // Tapping a meal tile opens its entries in a sheet.
+    await tester.ensureVisible(find.text('Frühstück'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Frühstück'));
+    await shot(tester, '02b-today-meal-sheet');
+    await tester.tapAt(const Offset(20, 60)); // outside the sheet: close it
+    await tester.pumpAndSettle();
+
     app.go(Routes.food(crispsId));
     await shot(tester, '03-product');
     await scrollDown(tester, 600);

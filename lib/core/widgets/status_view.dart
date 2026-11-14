@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_theme.dart';
+import 'buttons.dart';
 
 /// A friendly centred message: for empty lists, errors and "offline".
 ///
@@ -62,7 +63,7 @@ class StatusView extends StatelessWidget {
             ],
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: Spacing.l),
-              FilledButton.tonal(onPressed: onAction, child: Text(actionLabel)),
+              TonalButton(label: actionLabel, onPressed: onAction),
             ],
           ],
         ),

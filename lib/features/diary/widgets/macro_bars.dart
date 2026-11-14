@@ -8,11 +8,12 @@ import '../../products/nutrient_format.dart';
 import '../../products/nutrients.dart';
 import '../total_text.dart';
 
-/// Protein, carbohydrates and fat of the day.
+/// Protein, carbohydrates and fat of the day as three translucent pills on
+/// the green hero.
 ///
-/// With a macro goal each row shows "45 von 120 g" and a bar in the macro's
-/// colour. Without a goal only the eaten grams are shown (no bar). Above the
-/// goal the bar is simply full – same colour, no warning.
+/// With a macro goal each pill shows "45/120 g" and a thin white bar.
+/// Without a goal only the eaten grams are shown (no bar). Above the goal the
+/// bar is simply full – same colour, no warning.
 class MacroBars extends StatelessWidget {
   const MacroBars({super.key, required this.totals, required this.goal});
 
@@ -21,97 +22,113 @@ class MacroBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final goal = this.goal;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _MacroRow(
+        _MacroPill(
           nutrient: Nutrient.protein,
           totals: totals,
           goalGrams: goal?.protein,
-          color: colors.protein,
         ),
-        const SizedBox(height: Spacing.m),
-        _MacroRow(
+        const SizedBox(height: Spacing.s),
+        _MacroPill(
           nutrient: Nutrient.carbs,
           totals: totals,
           goalGrams: goal?.carbs,
-          color: colors.carbs,
         ),
-        const SizedBox(height: Spacing.m),
-        _MacroRow(
+        const SizedBox(height: Spacing.s),
+        _MacroPill(
           nutrient: Nutrient.fat,
           totals: totals,
           goalGrams: goal?.fat,
-          color: colors.fat,
         ),
       ],
     );
   }
 }
 
-class _MacroRow extends StatelessWidget {
-  const _MacroRow({
+class _MacroPill extends StatelessWidget {
+  const _MacroPill({
     required this.nutrient,
     required this.totals,
     required this.goalGrams,
-    required this.color,
   });
 
   final Nutrient nutrient;
   final NutrientTotals totals;
   final double? goalGrams;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final eatenText = totalText(totals, nutrient, l10n);
     final goal = goalGrams;
     final hasGoal = goal != null && goal > 0;
-    final value = hasGoal
-        ? l10n.todayMacroOfGoal(eatenText, formatGrams(goal, l10n.localeName))
-        : l10n.unitGrams(eatenText);
+    final goalText = hasGoal ? formatGrams(goal, l10n.localeName) : '';
     final name = nutrientName(nutrient, l10n);
+    final style = theme.textTheme.bodySmall!.copyWith(
+      color: colors.onHero,
+      fontWeight: FontWeight.w800,
+    );
 
     return Semantics(
-      label: l10n.nutrientWithValue(name, value),
+      label: l10n.nutrientWithValue(
+        name,
+        hasGoal
+            ? l10n.todayMacroOfGoal(eatenText, goalText)
+            : l10n.unitGrams(eatenText),
+      ),
       // Own node, so screen readers stop here separately.
       container: true,
       excludeSemantics: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Wrap instead of Row: with large text the value moves to the next
-          // line instead of overflowing.
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            spacing: Spacing.s,
-            children: [
-              Text(name, style: theme.textTheme.bodyMedium),
-              Text(
-                value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.m,
+          vertical: Spacing.s,
+        ),
+        decoration: BoxDecoration(
+          color: colors.heroGlass,
+          borderRadius: BorderRadius.circular(Radii.input),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Wrap instead of Row: with large text the value moves to the
+            // next line instead of overflowing.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              spacing: Spacing.s,
+              children: [
+                Text(name, style: style),
+                Text(
+                  hasGoal
+                      ? l10n.todayMacroCompact(eatenText, goalText)
+                      : l10n.unitGrams(eatenText),
+                  style: style.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: tabularFigures,
+                  ),
+                ),
+              ],
+            ),
+            if (hasGoal) ...[
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 4,
+                child: CustomPaint(
+                  painter: MacroBarPainter(
+                    fraction: totals[nutrient].value / goal,
+                    color: colors.onHero,
+                    trackColor: colors.onHero.withValues(alpha: 0.25),
+                  ),
                 ),
               ),
             ],
-          ),
-          if (hasGoal) ...[
-            const SizedBox(height: Spacing.xs),
-            SizedBox(
-              height: 8,
-              child: CustomPaint(
-                painter: MacroBarPainter(
-                  fraction: totals[nutrient].value / goal,
-                  color: color,
-                  trackColor: theme.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }

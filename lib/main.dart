@@ -4,9 +4,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'app.dart';
 import 'core/app_info.dart';
+import 'core/licenses.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerAppLicenses();
   final info = await PackageInfo.fromPlatform();
 
   runApp(

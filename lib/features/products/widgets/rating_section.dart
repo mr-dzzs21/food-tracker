@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/icon_square.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
@@ -9,9 +11,10 @@ import '../nutrient_format.dart';
 import '../nutrients.dart';
 
 /// The "Bewertung" part of the product page (brief R1–R7):
-/// four rows (fat, saturates, sugars, salt) with icon + word + value, plus
-/// points, the Nutri-Score as plain text, and notes when the product is not
-/// rated or its values look wrong. There is no overall score on purpose.
+/// four cards (fat, saturates, sugars, salt) with icon + nutrient + value +
+/// word, plus points, and notes when the product is not rated or its values
+/// look wrong. There is no overall score on purpose. (The Nutri-Score is
+/// shown as plain text in the page header.)
 class RatingSection extends StatelessWidget {
   const RatingSection({super.key, required this.food});
 
@@ -20,13 +23,22 @@ class RatingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.appColors;
     final rating = rateFood(food);
     final title = switch (rating) {
       Rated(basis: RatingBasis.food) => l10n.ratingTitleFood,
       Rated(basis: RatingBasis.drink) => l10n.ratingTitleDrink,
       NotRated() => l10n.ratingTitle,
     };
-    final nutriScore = food.nutriScore;
+    final rows = switch (rating) {
+      Rated() => _ratedRows(rating, l10n, colors),
+      NotRated(reason: NotRatedReason.unknownType) => [
+        _Note(icon: Icons.info_outline_rounded, text: l10n.ratingNoCategory),
+      ],
+      NotRated(reason: NotRatedReason.excludedType) => [
+        _Note(icon: Icons.info_outline_rounded, text: l10n.ratingNotRated),
+      ],
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,23 +49,9 @@ class RatingSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...switch (rating) {
-                Rated() => _ratedRows(rating, l10n),
-                NotRated(reason: NotRatedReason.unknownType) => [
-                  _Note(icon: Icons.info_outline, text: l10n.ratingNoCategory),
-                ],
-                NotRated(reason: NotRatedReason.excludedType) => [
-                  _Note(icon: Icons.info_outline, text: l10n.ratingNotRated),
-                ],
-              },
-              if (nutriScore != null && 'ABCDE'.contains(nutriScore)) ...[
-                const SizedBox(height: Spacing.m),
-                // Plain text in a neutral chip: no logo, no colour strip
-                // (owner decision, Nutri-Score trademark rules).
-                Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Chip(label: Text(l10n.productNutriScore(nutriScore))),
-                ),
+              for (final (index, row) in rows.indexed) ...[
+                if (index > 0) const SizedBox(height: Spacing.s),
+                row,
               ],
             ],
           ),
@@ -62,7 +60,11 @@ class RatingSection extends StatelessWidget {
     );
   }
 
-  List<Widget> _ratedRows(Rated rating, AppLocalizations l10n) {
+  List<Widget> _ratedRows(
+    Rated rating,
+    AppLocalizations l10n,
+    AppColors colors,
+  ) {
     return [
       for (final nutrient in RatedNutrient.values)
         _LevelRow(
@@ -72,12 +74,18 @@ class RatingSection extends StatelessWidget {
         ),
       for (final point in rating.plusPoints) _PlusPointRow(point: point),
       if (rating.suspicious)
-        _Note(icon: Icons.report_outlined, text: l10n.ratingSuspicious),
+        _Note(
+          icon: Icons.report_problem_rounded,
+          text: l10n.ratingSuspicious,
+          background: colors.ratingMediumBg,
+          iconColor: colors.ratingMedium,
+        ),
     ];
   }
 }
 
-/// One traffic-light row: icon + nutrient + word + value. Never colour only.
+/// One traffic-light card: icon square + nutrient + value + word pill.
+/// Never colour only: the icon and the word say the same.
 class _LevelRow extends StatelessWidget {
   const _LevelRow({
     required this.nutrient,
@@ -96,26 +104,30 @@ class _LevelRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colors = context.appColors;
-    final (icon, word, color) = switch (level) {
+    final (icon, word, background, foreground) = switch (level) {
       Level.low => (
-        Icons.arrow_downward,
+        Icons.arrow_downward_rounded,
         l10n.ratingLevelLow,
+        colors.ratingLowBg,
         colors.ratingLow,
       ),
       Level.medium => (
-        Icons.remove,
+        Icons.remove_rounded,
         l10n.ratingLevelMedium,
+        colors.ratingMediumBg,
         colors.ratingMedium,
       ),
       Level.high => (
-        Icons.arrow_upward,
+        Icons.arrow_upward_rounded,
         l10n.ratingLevelHigh,
+        colors.ratingHighBg,
         colors.ratingHigh,
       ),
       null => (
-        Icons.help_outline,
+        Icons.help_outline_rounded,
         l10n.ratingNoData,
-        theme.colorScheme.onSurfaceVariant,
+        colors.surfaceAlt,
+        colors.inkMuted,
       ),
     };
     final value = this.value;
@@ -124,28 +136,51 @@ class _LevelRow extends StatelessWidget {
         ? ''
         : formatNutrientValue(nutrient.nutrient, value, l10n);
     final name = nutrientName(nutrient.nutrient, l10n);
+    final textStyle = theme.textTheme.bodyMedium!.copyWith(
+      fontSize: 14,
+      fontWeight: FontWeight.w800,
+    );
 
     return Semantics(
       label: l10n.ratingRowSemantics(name, word, valueText),
       // Own node, so screen readers stop here separately.
       container: true,
       excludeSemantics: true,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 48),
+      child: AppCard(
+        radius: Radii.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.m,
+          vertical: 10,
+        ),
         child: Row(
           children: [
-            Icon(icon, color: color),
-            const SizedBox(width: Spacing.m),
-            Expanded(child: Text(name, style: theme.textTheme.bodyLarge)),
+            IconSquare(
+              icon: icon,
+              background: background,
+              foreground: foreground,
+            ),
+            const SizedBox(width: 10),
+            Expanded(child: Text(name, style: textStyle)),
             const SizedBox(width: Spacing.s),
+            // Value and word move below each other when the text is large.
             Flexible(
-              child: Text(
-                valueText.isEmpty ? word : '$word · $valueText',
-                textAlign: TextAlign.end,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: Spacing.s,
+                runSpacing: Spacing.xs,
+                children: [
+                  if (valueText.isNotEmpty)
+                    Text(
+                      valueText,
+                      style: textStyle.copyWith(fontFeatures: tabularFigures),
+                    ),
+                  _WordPill(
+                    word: word,
+                    background: background,
+                    foreground: foreground,
+                  ),
+                ],
               ),
             ),
           ],
@@ -155,6 +190,36 @@ class _LevelRow extends StatelessWidget {
   }
 }
 
+/// "hoch" / "mittel" / "niedrig" in a small pill of the level's colours.
+class _WordPill extends StatelessWidget {
+  const _WordPill({
+    required this.word,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String word;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: ShapeDecoration(
+        color: background,
+        shape: const StadiumBorder(),
+      ),
+      child: Text(
+        word,
+        style: Theme.of(context).textTheme.labelMedium!
+            .copyWith(color: foreground),
+      ),
+    );
+  }
+}
+
+/// "Ballaststoffquelle · 4,5 g" in the brand colour with a leaf.
 class _PlusPointRow extends StatelessWidget {
   const _PlusPointRow({required this.point});
 
@@ -163,6 +228,7 @@ class _PlusPointRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.appColors;
     final label = switch ((point.nutrient, point.strength)) {
       (PlusPointNutrient.fibre, PlusPointStrength.source) =>
         l10n.plusFibreSource,
@@ -181,33 +247,56 @@ class _PlusPointRow extends StatelessWidget {
         l10n.localeName,
       ),
     );
-    return _Note(
-      icon: Icons.add_circle_outline,
-      text: l10n.plusPointRow(label, value),
-      color: context.appColors.ratingLow,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.xs,
+        vertical: Spacing.xs,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.eco_rounded, color: colors.brand, size: 20),
+          const SizedBox(width: Spacing.s),
+          Expanded(
+            child: Text(
+              l10n.plusPointRow(label, value),
+              style: Theme.of(context).textTheme.bodyMedium!
+                  .copyWith(color: colors.brand, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// An icon with a sentence, used for plus points and hints.
+/// A tinted card with an icon and a sentence (not rated, odd values).
 class _Note extends StatelessWidget {
-  const _Note({required this.icon, required this.text, this.color});
+  const _Note({
+    required this.icon,
+    required this.text,
+    this.background,
+    this.iconColor,
+  });
 
   final IconData icon;
   final String text;
-  final Color? color;
+  final Color? background;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.s),
+    final colors = context.appColors;
+    return AppCard(
+      radius: Radii.button,
+      color: background ?? colors.surfaceAlt,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color ?? theme.colorScheme.onSurfaceVariant),
+          Icon(icon, color: iconColor ?? colors.inkMuted),
           const SizedBox(width: Spacing.m),
-          Expanded(child: Text(text, style: theme.textTheme.bodyMedium)),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          ),
         ],
       ),
     );

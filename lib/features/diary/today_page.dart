@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/hero_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../data/settings_repository.dart';
@@ -15,12 +17,13 @@ import 'day_label.dart';
 import 'diary_repository.dart';
 import 'total_text.dart';
 import 'widgets/calorie_ring.dart';
-import 'widgets/entry_sheet.dart';
-import 'widgets/goal_card.dart';
+import 'widgets/goal_prompt.dart';
 import 'widgets/macro_bars.dart';
-import 'widgets/meal_section.dart';
+import 'widgets/meal_sheet.dart';
+import 'widgets/meal_tile.dart';
 
-/// Tab "Heute": calorie ring, macros and the meals of the selected day.
+/// Tab "Heute": green hero with date, calorie ring and macros, below it one
+/// colourful tile per meal. Tapping a tile opens its entries in a sheet.
 class TodayPage extends ConsumerWidget {
   const TodayPage({super.key});
 
@@ -32,7 +35,6 @@ class TodayPage extends ConsumerWidget {
     final goal = ref.watch(goalProvider);
 
     return Scaffold(
-      appBar: _DateSwitcherBar(day: day),
       body: switch ((entries, slots, goal)) {
         (
           AsyncData(value: final entries),
@@ -42,30 +44,56 @@ class TodayPage extends ConsumerWidget {
           _TodayContent(day: day, entries: entries, slots: slots, goal: goal),
         (AsyncError(), _, _) ||
         (_, AsyncError(), _) ||
-        (_, _, AsyncError()) => StatusView(
-          icon: Icons.error_outline,
-          title: AppLocalizations.of(context).errorGeneric,
-          actionLabel: AppLocalizations.of(context).actionRetry,
-          onAction: () => ref
-            ..invalidate(dayEntriesProvider(day))
-            ..invalidate(mealSlotsProvider)
-            ..invalidate(goalProvider),
+        (_, _, AsyncError()) => _HeroOnly(
+          day: day,
+          child: StatusView(
+            icon: Icons.error_outline_rounded,
+            title: AppLocalizations.of(context).errorGeneric,
+            actionLabel: AppLocalizations.of(context).actionRetry,
+            onAction: () => ref
+              ..invalidate(dayEntriesProvider(day))
+              ..invalidate(mealSlotsProvider)
+              ..invalidate(goalProvider),
+          ),
         ),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => _HeroOnly(
+          day: day,
+          child: const Padding(
+            padding: EdgeInsets.all(Spacing.xxl),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ),
       },
     );
   }
 }
 
-/// App bar with ‹ "Heute, 14. Nov." ›. Tapping the title opens a date picker;
-/// "Heute" jumps back when another day is shown.
-class _DateSwitcherBar extends ConsumerWidget implements PreferredSizeWidget {
-  const _DateSwitcherBar({required this.day});
+/// While loading or after an error: the hero with the date, then [child].
+class _HeroOnly extends StatelessWidget {
+  const _HeroOnly({required this.day, required this.child});
 
   final String day;
+  final Widget child;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Widget build(BuildContext context) => ListView(
+    padding: EdgeInsets.zero,
+    children: [
+      HeroHeader(
+        top: _DateSwitcher(day: day),
+        child: const SizedBox.shrink(),
+      ),
+      child,
+    ],
+  );
+}
+
+/// ‹ "Heute, 14. Nov." › on the hero. Tapping the title opens a date picker;
+/// the "Heute" pill jumps back when another day is shown.
+class _DateSwitcher extends ConsumerWidget {
+  const _DateSwitcher({required this.day});
+
+  final String day;
 
   Future<void> _pickDay(BuildContext context, WidgetRef ref) async {
     final now = ref.read(clockProvider).now();
@@ -83,33 +111,38 @@ class _DateSwitcherBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.appColors;
     final today = todayKey(ref.watch(clockProvider));
     final notifier = ref.read(selectedDayProvider.notifier);
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.chevron_left),
-        tooltip: l10n.dayPrevious,
-        onPressed: notifier.previous,
-      ),
-      titleSpacing: 0,
-      title: Tooltip(
-        message: l10n.dayPick,
-        child: TextButton(
-          onPressed: () => _pickDay(context, ref),
-          child: Text(
-            dayLabel(day, today: today, l10n: l10n),
-            style: Theme.of(context).textTheme.titleLarge,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+    return Row(
+      children: [
+        SquareIconButton(
+          icon: Icons.chevron_left_rounded,
+          tooltip: l10n.dayPrevious,
+          onHero: true,
+          onPressed: notifier.previous,
+        ),
+        Expanded(
+          child: Tooltip(
+            message: l10n.dayPick,
+            child: TextButton(
+              onPressed: () => _pickDay(context, ref),
+              style: TextButton.styleFrom(foregroundColor: colors.onHero),
+              child: Text(
+                dayLabel(day, today: today, l10n: l10n),
+                style: Theme.of(context).textTheme.titleLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ),
-      ),
-      actions: [
         if (day != today)
-          TextButton(onPressed: notifier.today, child: Text(l10n.dayJumpToday)),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
+          HeroPill(label: l10n.dayJumpToday, onPressed: notifier.today),
+        SquareIconButton(
+          icon: Icons.chevron_right_rounded,
           tooltip: l10n.dayNext,
+          onHero: true,
           onPressed: notifier.next,
         ),
       ],
@@ -117,7 +150,7 @@ class _DateSwitcherBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 }
 
-class _TodayContent extends ConsumerStatefulWidget {
+class _TodayContent extends ConsumerWidget {
   const _TodayContent({
     required this.day,
     required this.entries,
@@ -131,130 +164,150 @@ class _TodayContent extends ConsumerStatefulWidget {
   final UserGoalRow? goal;
 
   @override
-  ConsumerState<_TodayContent> createState() => _TodayContentState();
-}
-
-class _TodayContentState extends ConsumerState<_TodayContent> {
-  /// Entries that were swiped away. A swiped [Dismissible] must leave the
-  /// tree at once, but the database stream only reports the deletion a
-  /// moment later – so these are hidden right away.
-  final _removedIds = <int>{};
-
-  Future<void> _delete(DiaryEntry entry) async {
-    setState(() => _removedIds.add(entry.id));
-    final repository = ref.read(diaryRepositoryProvider);
-    final messenger = ScaffoldMessenger.of(context);
-    final l10n = AppLocalizations.of(context);
-    await repository.deleteEntry(entry.id);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(l10n.diaryEntryDeleted),
-          // A SnackBar with an action stays until closed by default; this one
-          // should disappear on its own.
-          persist: false,
-          action: SnackBarAction(
-            label: l10n.actionUndo,
-            onPressed: () async {
-              await repository.restoreEntry(entry);
-              if (mounted) setState(() => _removedIds.remove(entry.id));
-            },
-          ),
-        ),
-      );
-  }
-
-  Future<void> _openEntry(DiaryEntry entry) async {
-    final result = await showEntrySheet(
-      context,
-      entry: entry,
-      slots: widget.slots,
-    );
-    if (result == EntrySheetResult.delete) await _delete(entry);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final goal = widget.goal;
-    final entries = [
-      for (final item in widget.entries)
-        if (!_removedIds.contains(item.entry.id)) item,
-    ];
     final totals = DayTotals.of(entries);
-    final missingKcal = totals.all[Nutrient.kcal].missingCount;
-    final showGoalCard =
+    final showGoalPrompt =
         goal == null && ref.watch(goalCardDismissedProvider).value == false;
 
     // Visible meals, plus hidden meals that have entries on this day.
     final slotIdsWithEntries = {for (final item in entries) item.slot.id};
     final shownSlots = [
-      for (final slot in widget.slots)
+      for (final slot in slots)
         if (!slot.isHidden || slotIdsWithEntries.contains(slot.id)) slot,
     ];
 
     return ListView(
-      padding: const EdgeInsets.all(Spacing.l),
+      padding: const EdgeInsets.only(bottom: Spacing.xxl),
       children: [
-        if (showGoalCard) ...[
-          GoalCard(
-            onSetGoal: () => context.go(Routes.goal),
-            onDismiss: () =>
-                ref.read(goalCardDismissedProvider.notifier).dismiss(),
-          ),
-          const SizedBox(height: Spacing.l),
-        ],
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(Spacing.xl),
-            child: Column(
-              children: [
-                CalorieRing(totals: totals.all, goalKcal: goal?.kcal),
-                if (goal != null) ...[
-                  const SizedBox(height: Spacing.m),
-                  Text(
-                    l10n.todayEatenLine(
-                      totalText(totals.all, Nutrient.kcal, l10n),
-                    ),
-                    style: theme.textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-                if (missingKcal > 0) ...[
-                  const SizedBox(height: Spacing.s),
-                  _MissingValuesHint(count: missingKcal),
-                ],
-                const SizedBox(height: Spacing.xl),
-                MacroBars(totals: totals.all, goal: goal),
+        HeroHeader(
+          top: _DateSwitcher(day: day),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: Spacing.m),
+              _DaySummary(totals: totals.all, goal: goal),
+              if (showGoalPrompt) ...[
+                const SizedBox(height: Spacing.l),
+                GoalPrompt(
+                  onSetGoal: () => context.go(Routes.goal),
+                  onDismiss: () =>
+                      ref.read(goalCardDismissedProvider.notifier).dismiss(),
+                ),
               ],
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.l,
+            Spacing.l,
+            Spacing.l,
+            0,
+          ),
+          child: _MealGrid(
+            slots: shownSlots,
+            entries: entries,
+            totals: totals,
+            onOpen: (slot) => showMealSheet(
+              context,
+              day: day,
+              slot: slot,
+              onAdd: () => context.push(Routes.addFood(day, slot.id)),
             ),
+            onAdd: (slot) => context.push(Routes.addFood(day, slot.id)),
           ),
         ),
         if (entries.isEmpty)
           Padding(
-            padding: const EdgeInsets.all(Spacing.l),
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.xl,
+              Spacing.xl,
+              Spacing.xl,
+              0,
+            ),
             child: Text(
               l10n.todayEmptyDay,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              style: theme.textTheme.bodySmall,
             ),
           ),
-        for (final slot in shownSlots) ...[
+      ],
+    );
+  }
+}
+
+/// Ring, "Gegessen: …" and the macro pills. Side by side on a normal phone;
+/// stacked when the space is narrow or the text is very large.
+class _DaySummary extends StatelessWidget {
+  const _DaySummary({required this.totals, required this.goal});
+
+  final NutrientTotals totals;
+  final UserGoalRow? goal;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.appColors;
+    final style = Theme.of(context).textTheme.labelMedium!
+        .copyWith(color: colors.onHero);
+    final goal = this.goal;
+    final missingKcal = totals[Nutrient.kcal].missingCount;
+
+    final ring = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CalorieRing(totals: totals, goalKcal: goal?.kcal),
+        if (goal != null) ...[
+          const SizedBox(height: Spacing.s),
+          Text(
+            l10n.todayEatenLine(totalText(totals, Nutrient.kcal, l10n)),
+            style: style,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+    final macros = MacroBars(totals: totals, goal: goal);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked =
+                constraints.maxWidth < 300 ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.5;
+            if (stacked) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(child: ring),
+                  const SizedBox(height: Spacing.l),
+                  macros,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                ring,
+                const SizedBox(width: 18),
+                Expanded(child: macros),
+              ],
+            );
+          },
+        ),
+        if (missingKcal > 0) ...[
           const SizedBox(height: Spacing.m),
-          MealSection(
-            slot: slot,
-            entries: [
-              for (final item in entries)
-                if (item.slot.id == slot.id) item.entry,
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded, size: 18, color: colors.onHero),
+              const SizedBox(width: Spacing.xs),
+              Flexible(
+                child: Text(l10n.todayMissingValues(missingKcal), style: style),
+              ),
             ],
-            totals: totals.forMeal(slot.id),
-            onAdd: () => context.push(Routes.addFood(widget.day, slot.id)),
-            onTapEntry: _openEntry,
-            onDelete: _delete,
           ),
         ],
       ],
@@ -262,27 +315,54 @@ class _TodayContentState extends ConsumerState<_TodayContent> {
   }
 }
 
-/// "Für 2 Einträge fehlen Angaben" with an info icon (brief R16).
-class _MissingValuesHint extends StatelessWidget {
-  const _MissingValuesHint({required this.count});
+/// The meal tiles in two columns (one column with very large text).
+class _MealGrid extends StatelessWidget {
+  const _MealGrid({
+    required this.slots,
+    required this.entries,
+    required this.totals,
+    required this.onOpen,
+    required this.onAdd,
+  });
 
-  final int count;
+  final List<MealSlot> slots;
+  final List<DayEntry> entries;
+  final DayTotals totals;
+  final ValueChanged<MealSlot> onOpen;
+  final ValueChanged<MealSlot> onAdd;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.onSurfaceVariant;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final columns = MediaQuery.textScalerOf(context).scale(1) > 1.5 ? 1 : 2;
+    Widget tile(MealSlot slot) => MealTile(
+      slot: slot,
+      entryCount: entries.where((item) => item.slot.id == slot.id).length,
+      totals: totals.forMeal(slot.id),
+      onOpen: () => onOpen(slot),
+      onAdd: () => onAdd(slot),
+    );
+
+    return Column(
       children: [
-        Icon(Icons.info_outline, size: 18, color: color),
-        const SizedBox(width: Spacing.xs),
-        Flexible(
-          child: Text(
-            AppLocalizations.of(context).todayMissingValues(count),
-            style: theme.textTheme.bodySmall?.copyWith(color: color),
+        for (var start = 0; start < slots.length; start += columns) ...[
+          if (start > 0) const SizedBox(height: Spacing.m),
+          // Same height for both tiles of a row, whatever their texts need.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = start; i < start + columns; i++) ...[
+                  if (i > start) const SizedBox(width: Spacing.m),
+                  Expanded(
+                    child: i < slots.length
+                        ? tile(slots[i])
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

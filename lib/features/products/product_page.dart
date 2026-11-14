@@ -11,6 +11,10 @@ import '../../core/errors.dart';
 import '../../core/format.dart';
 import '../../core/links.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/buttons.dart';
+import '../../core/widgets/hero_header.dart';
+import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
@@ -19,7 +23,6 @@ import '../../router.dart';
 import '../diary/day_label.dart';
 import '../diary/diary_repository.dart';
 import '../diary/widgets/amount_field.dart';
-import '../diary/widgets/meal_dropdown.dart';
 import 'food_source.dart';
 import 'nutrient_format.dart';
 import 'nutrients.dart';
@@ -116,7 +119,7 @@ class _StoredFood extends ConsumerWidget {
     return switch (food) {
       // Without calories the food cannot be logged: ask to complete it.
       AsyncData(value: final food?) when food.kcal == null => _MessageScaffold(
-        icon: Icons.edit_note,
+        icon: Icons.edit_note_rounded,
         title: l10n.failureIncomplete,
         actionLabel: l10n.productCompleteValues,
         onAction: () => context.pushReplacement(
@@ -131,11 +134,11 @@ class _StoredFood extends ConsumerWidget {
         mealId: mealId,
       ),
       AsyncData() => _MessageScaffold(
-        icon: Icons.no_food_outlined,
+        icon: Icons.no_food_rounded,
         title: l10n.productGone,
       ),
       AsyncError() when !food.isLoading => _MessageScaffold(
-        icon: Icons.error_outline,
+        icon: Icons.error_outline_rounded,
         title: l10n.errorGeneric,
         actionLabel: l10n.actionRetry,
         onAction: () => ref.invalidate(foodProvider(foodId)),
@@ -173,7 +176,7 @@ class _FailureView extends StatelessWidget {
 
     if (error is! AppFailure) {
       return _MessageScaffold(
-        icon: Icons.error_outline,
+        icon: Icons.error_outline_rounded,
         title: l10n.errorGeneric,
         actionLabel: l10n.actionRetry,
         onAction: onRetry,
@@ -182,24 +185,24 @@ class _FailureView extends StatelessWidget {
     final message = failureMessage(error, l10n);
     return switch (error) {
       ProductNotFound() => _MessageScaffold(
-        icon: Icons.search_off,
+        icon: Icons.search_off_rounded,
         title: message,
         actionLabel: l10n.productCreateOwn,
         onAction: openForm,
       ),
       IncompleteProduct() => _MessageScaffold(
-        icon: Icons.edit_note,
+        icon: Icons.edit_note_rounded,
         title: message,
         actionLabel: l10n.productCompleteValues,
         onAction: openForm,
       ),
       // Retrying cannot help with these two.
       NotFood() || InvalidBarcode() => _MessageScaffold(
-        icon: Icons.info_outline,
+        icon: Icons.info_outline_rounded,
         title: message,
       ),
       Offline() => _MessageScaffold(
-        icon: Icons.cloud_off,
+        icon: Icons.cloud_off_rounded,
         title: message,
         actionLabel: l10n.actionRetry,
         onAction: onRetry,
@@ -207,7 +210,7 @@ class _FailureView extends StatelessWidget {
       RequestTimeout() ||
       RateLimited() ||
       ServerUnavailable() => _MessageScaffold(
-        icon: Icons.hourglass_empty,
+        icon: Icons.hourglass_empty_rounded,
         title: message,
         actionLabel: l10n.actionRetry,
         onAction: onRetry,
@@ -344,10 +347,25 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     Uri.https('world.openfoodfacts.org', '/product/$barcode'),
   );
 
+  /// "30 g zum Mittagessen · 161 kcal" – what the sticky button will do.
+  String _ctaLabel(AppLocalizations l10n, MealSlot slot, double amount) {
+    final food = widget.food;
+    final kcal = food.nutrients.scaled(amount).kcal;
+    final custom = slot.customName?.trim();
+    return l10n.productAddToMeal(
+      formatAmount(amount, isLiquid: food.isLiquid, locale: l10n.localeName),
+      // Built-in meals get their German article ("zum", "zu den").
+      (custom == null || custom.isEmpty) ? slot.builtIn ?? 'other' : 'other',
+      mealSlotName(slot, l10n),
+      kcal == null ? '–' : formatNutrientValue(Nutrient.kcal, kcal, l10n),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final food = widget.food;
     final clock = ref.watch(clockProvider);
     final day = widget.day ?? todayKey(clock);
@@ -357,91 +375,93 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     final amount = parseEntryAmount(_amount.text);
     final barcode = food.barcode;
     final fromOff = food.source == FoodSource.openFoodFacts && barcode != null;
+    final canAdd = amount != null && slot != null && !_adding;
 
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: Icon(food.isFavourite ? Icons.star : Icons.star_border),
-            tooltip: food.isFavourite
-                ? l10n.productFavouriteRemove
-                : l10n.productFavouriteAdd,
-            onPressed: () =>
-                ref.read(productRepositoryProvider).toggleFavourite(food.id),
-          ),
-          if (food.source == FoodSource.user)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: l10n.actionEdit,
-              onPressed: () => context.push(Routes.editFood(food.id)),
-            ),
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: Spacing.xxl),
+        padding: const EdgeInsets.only(bottom: Spacing.xl),
         children: [
-          _Header(food: food),
+          _ProductHero(food: food),
           RatingSection(food: food),
           SectionHeader(l10n.productAmountTitle),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AmountField(
-                  controller: _amount,
-                  isLiquid: food.isLiquid,
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: Spacing.s),
-                _AmountChips(
-                  food: food,
-                  lastAmount: lastAmount,
-                  selected: amount,
-                  onSelected: (value) => setState(
-                    () => _amount.text = formatInputNumber(
-                      value,
-                      l10n.localeName,
+            child: AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AmountField(
+                    controller: _amount,
+                    isLiquid: food.isLiquid,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: Spacing.s),
+                  _AmountChoices(
+                    food: food,
+                    lastAmount: lastAmount,
+                    selected: amount,
+                    onSelected: (value) => setState(
+                      () => _amount.text = formatInputNumber(
+                        value,
+                        l10n.localeName,
+                      ),
                     ),
                   ),
-                ),
-                if (amount != null) ...[
-                  const SizedBox(height: Spacing.m),
-                  _PortionSummary(nutrients: food.nutrients.scaled(amount)),
+                  if (amount != null) ...[
+                    const SizedBox(height: Spacing.m),
+                    _PortionSummary(nutrients: food.nutrients.scaled(amount)),
+                  ],
                 ],
-                const SizedBox(height: Spacing.l),
-                if (slots.isNotEmpty)
-                  MealDropdown(
-                    slots: slots,
-                    selectedId: slot?.id,
-                    onChanged: (id) => setState(() => _pickedSlotId = id),
+              ),
+            ),
+          ),
+          SectionHeader(l10n.entryMealLabel),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
+            child: AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (slots.isNotEmpty)
+                    PillChoices<int>(
+                      // Visible meals, plus the chosen one if it is hidden.
+                      choices: [
+                        for (final s in slots)
+                          if (!s.isHidden || s.id == slot?.id)
+                            PillChoice(mealSlotName(s, l10n), s.id),
+                      ],
+                      selected: slot?.id,
+                      onSelected: (id) => setState(() => _pickedSlotId = id),
+                    ),
+                  const SizedBox(height: Spacing.s),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 16,
+                        color: colors.inkMuted,
+                      ),
+                      const SizedBox(width: Spacing.s),
+                      Expanded(
+                        child: Text(
+                          l10n.productDay(
+                            dayLabel(day, today: todayKey(clock), l10n: l10n),
+                          ),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: Spacing.s),
-                Text(
-                  l10n.productDay(
-                    dayLabel(day, today: todayKey(clock), l10n: l10n),
-                  ),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: Spacing.l),
-                FilledButton.icon(
-                  onPressed: (amount == null || slot == null || _adding)
-                      ? null
-                      : () => _add(slot: slot, amount: amount, day: day),
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.actionAdd),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           NutritionTable(food: food),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.l,
+              Spacing.page,
               Spacing.xl,
-              Spacing.l,
+              Spacing.page,
               0,
             ),
             child: Column(
@@ -458,100 +478,180 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
                   ),
                   TextButton.icon(
                     onPressed: () => _openOnOff(barcode),
-                    icon: const Icon(Icons.open_in_new),
+                    icon: const Icon(Icons.open_in_new_rounded),
                     label: Text(l10n.productOpenOff),
                   ),
                   const SizedBox(height: Spacing.s),
                 ],
                 Text(
                   fromOff ? l10n.disclaimerShort : l10n.disclaimerRating,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             ),
           ),
         ],
       ),
+      // Always reachable, however far the page is scrolled.
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.background,
+          boxShadow: colors.barShadow,
+        ),
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(
+            Spacing.l,
+            Spacing.m,
+            Spacing.l,
+            Spacing.l,
+          ),
+          child: CtaButton(
+            label: (amount != null && slot != null)
+                ? _ctaLabel(l10n, slot, amount)
+                : l10n.actionAdd,
+            icon: Icons.add_rounded,
+            onPressed: canAdd
+                ? () => _add(slot: slot, amount: amount, day: day)
+                : null,
+          ),
+        ),
+      ),
     );
   }
 }
 
-/// Photo, name, brand and package size.
-class _Header extends StatelessWidget {
-  const _Header({required this.food});
+/// The green header: back, favourite (and edit for own foods), photo, name,
+/// brand · package size and the Nutri-Score as plain text.
+class _ProductHero extends ConsumerWidget {
+  const _ProductHero({required this.food});
 
   final Food food;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final imageUrl = food.imageUrl;
     final brand = food.brand;
     final quantity = food.quantityLabel;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final nutriScore = food.nutriScore;
+    final subtitleStyle = theme.textTheme.bodySmall!.copyWith(
+      color: colors.onHero,
+    );
+
+    return HeroHeader(
+      top: Row(
         children: [
-          if (imageUrl != null) ...[
-            // Product photos are CC BY-SA: the caption names the licence.
-            Tooltip(
-              message: l10n.productImageCaption,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(Radii.m),
-                child: Image.network(
-                  imageUrl,
-                  width: 72,
-                  height: 72,
-                  fit: BoxFit.cover,
-                  excludeFromSemantics: true,
-                  // No internet or a broken link: a neutral placeholder.
-                  errorBuilder: (context, _, _) => Container(
-                    width: 72,
-                    height: 72,
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      color: theme.colorScheme.onSurfaceVariant,
+          const AppBackButton(onHero: true),
+          const Spacer(),
+          SquareIconButton(
+            icon: food.isFavourite
+                ? Icons.star_rounded
+                : Icons.star_outline_rounded,
+            tooltip: food.isFavourite
+                ? l10n.productFavouriteRemove
+                : l10n.productFavouriteAdd,
+            onHero: true,
+            onPressed: () =>
+                ref.read(productRepositoryProvider).toggleFavourite(food.id),
+          ),
+          if (food.source == FoodSource.user)
+            SquareIconButton(
+              icon: Icons.edit_rounded,
+              tooltip: l10n.actionEdit,
+              onHero: true,
+              onPressed: () => context.push(Routes.editFood(food.id)),
+            ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: Spacing.s),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    food.name.isEmpty ? l10n.productUnknownName : food.name,
+                    // Always white: the hero gradient is dark in both themes.
+                    style: theme.textTheme.headlineSmall!.copyWith(
+                      color: colors.onHero,
+                    ),
+                  ),
+                  if (brand != null || quantity != null) ...[
+                    const SizedBox(height: Spacing.xs),
+                    // Separate texts (not one string), so brand and size
+                    // can wrap on their own.
+                    Wrap(
+                      spacing: 6,
+                      children: [
+                        if (brand != null) Text(brand, style: subtitleStyle),
+                        if (brand != null && quantity != null)
+                          ExcludeSemantics(
+                            child: Text('·', style: subtitleStyle),
+                          ),
+                        if (quantity != null)
+                          Text(quantity, style: subtitleStyle),
+                      ],
+                    ),
+                  ],
+                  // Plain text only: no logo, no colour strip (owner
+                  // decision, Nutri-Score trademark rules).
+                  if (nutriScore != null && 'ABCDE'.contains(nutriScore)) ...[
+                    const SizedBox(height: Spacing.m),
+                    HeroPill(label: l10n.productNutriScore(nutriScore)),
+                  ],
+                ],
+              ),
+            ),
+            if (imageUrl != null) ...[
+              const SizedBox(width: Spacing.l),
+              // Product photos are CC BY-SA: the caption names the licence.
+              Tooltip(
+                message: l10n.productImageCaption,
+                child: Container(
+                  padding: const EdgeInsets.all(Spacing.xs),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(Radii.l + Spacing.xs),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(Radii.l),
+                    child: Image.network(
+                      imageUrl,
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                      excludeFromSemantics: true,
+                      // No internet or a broken link: a neutral placeholder.
+                      errorBuilder: (context, _, _) => Container(
+                        width: 72,
+                        height: 72,
+                        color: colors.surfaceAlt,
+                        child: Icon(
+                          Icons.image_not_supported_rounded,
+                          color: colors.inkMuted,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: Spacing.l),
+            ],
           ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  food.name.isEmpty ? l10n.productUnknownName : food.name,
-                  style: theme.textTheme.headlineSmall,
-                ),
-                if (brand != null)
-                  Text(
-                    brand,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                if (quantity != null)
-                  Text(quantity, style: theme.textTheme.bodyMedium),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
 /// Quick choices: 100 g, one portion (if known), the amount used last time.
-class _AmountChips extends StatelessWidget {
-  const _AmountChips({
+class _AmountChoices extends StatelessWidget {
+  const _AmountChoices({
     required this.food,
     required this.lastAmount,
     required this.selected,
@@ -570,29 +670,22 @@ class _AmountChips extends StatelessWidget {
         formatAmount(value, isLiquid: food.isLiquid, locale: l10n.localeName);
     final serving = food.servingSize;
     final last = lastAmount;
-    final choices = <(String, double)>[
-      (amountText(100), 100),
-      if (serving != null && serving > 0)
-        (l10n.productServingChip(amountText(serving)), serving),
-      if (last != null && last != 100 && last != serving)
-        (l10n.productLastAmountChip(amountText(last)), last),
-    ];
-    return Wrap(
-      spacing: Spacing.s,
-      runSpacing: Spacing.xs,
-      children: [
-        for (final (label, value) in choices)
-          ChoiceChip(
-            label: Text(label),
-            selected: selected == value,
-            onSelected: (_) => onSelected(value),
-          ),
+    return PillChoices<double>(
+      choices: [
+        PillChoice(amountText(100), 100),
+        if (serving != null && serving > 0)
+          PillChoice(l10n.productServingChip(amountText(serving)), serving),
+        if (last != null && last != 100 && last != serving)
+          PillChoice(l10n.productLastAmountChip(amountText(last)), last),
       ],
+      selected: selected,
+      onSelected: onSelected,
     );
   }
 }
 
-/// kcal and macros for the chosen amount, updated while typing.
+/// kcal and macros for the chosen amount, updated while typing. Each macro
+/// has its colour dot (same colours as in the statistics).
 class _PortionSummary extends StatelessWidget {
   const _PortionSummary({required this.nutrients});
 
@@ -602,6 +695,7 @@ class _PortionSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     String value(Nutrient nutrient) {
       final v = nutrients[nutrient];
       return v == null ? '–' : formatNutrientValue(nutrient, v, l10n);
@@ -610,23 +704,44 @@ class _PortionSummary extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value(Nutrient.kcal), style: theme.textTheme.titleLarge),
+        Text(
+          value(Nutrient.kcal),
+          style: theme.textTheme.titleLarge!.copyWith(
+            fontFeatures: tabularFigures,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
         Wrap(
           spacing: Spacing.l,
+          runSpacing: Spacing.xs,
           children: [
-            for (final nutrient in const [
-              Nutrient.protein,
-              Nutrient.carbs,
-              Nutrient.fat,
+            for (final (nutrient, color) in [
+              (Nutrient.protein, colors.protein),
+              (Nutrient.carbs, colors.carbs),
+              (Nutrient.fat, colors.fat),
             ])
-              Text(
-                l10n.nutrientWithValue(
-                  nutrientName(nutrient, l10n),
-                  value(nutrient),
-                ),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      l10n.nutrientWithValue(
+                        nutrientName(nutrient, l10n),
+                        value(nutrient),
+                      ),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ),
           ],
         ),

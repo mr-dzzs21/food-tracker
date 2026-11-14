@@ -8,30 +8,38 @@ import '../../../l10n/app_localizations.dart';
 import '../../products/nutrients.dart';
 import '../total_text.dart';
 
-/// The big ring on the "Heute" tab.
+/// The big white ring on the green hero of the "Heute" tab.
 ///
 /// - With a goal: how many kcal are left ("1.240 kcal übrig, von 2.490").
 /// - Without a goal: how many kcal were eaten.
-/// - Above the goal: the ring is full **in the same colour** and the text
+/// - Above the goal: the ring is full **in the same white** and the text
 ///   stays neutral ("320 kcal über deinem Ziel") – no red, no "failed".
 ///
 /// When some entries have no kcal value, the numbers are only a bound:
 /// eaten "mind. …", left "höchstens …".
 class CalorieRing extends StatelessWidget {
-  const CalorieRing({super.key, required this.totals, required this.goalKcal});
+  const CalorieRing({
+    super.key,
+    required this.totals,
+    required this.goalKcal,
+    this.size = 140,
+  });
 
   final NutrientTotals totals;
 
   /// Daily goal, `null` when none is set.
   final int? goalKcal;
 
-  static const double size = 200;
-  static const double strokeWidth = 16;
+  /// Width and height of the ring.
+  final double size;
+
+  static const double strokeWidth = 14;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final colors = context.appColors;
     final locale = l10n.localeName;
     final eaten = totals[Nutrient.kcal].value;
     final complete = totals.stateOf(Nutrient.kcal) == TotalState.complete;
@@ -84,12 +92,12 @@ class CalorieRing extends StatelessWidget {
         child: CustomPaint(
           painter: CalorieRingPainter(
             progress: progress,
-            color: theme.colorScheme.primary,
-            trackColor: theme.colorScheme.surfaceContainerHighest,
+            color: colors.onHero,
+            trackColor: colors.onHero.withValues(alpha: 0.2),
             strokeWidth: strokeWidth,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(strokeWidth + Spacing.l),
+            padding: const EdgeInsets.all(strokeWidth + Spacing.m),
             // Large text sizes must not overflow the ring: shrink instead.
             // Screen readers get the full sentence from [Semantics] above.
             child: FittedBox(
@@ -99,16 +107,22 @@ class CalorieRing extends StatelessWidget {
                 children: [
                   Text(
                     number,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: theme.textTheme.headlineMedium!.copyWith(
+                      color: colors.onHero,
                     ),
                   ),
-                  Text(label, style: theme.textTheme.bodyMedium),
+                  Text(
+                    label,
+                    style: theme.textTheme.labelMedium!.copyWith(
+                      color: colors.onHero,
+                    ),
+                  ),
                   if (detail != null)
                     Text(
                       detail,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style: theme.textTheme.labelMedium!.copyWith(
+                        color: colors.onHero,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                 ],

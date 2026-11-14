@@ -97,7 +97,7 @@ class _EntrySheetState extends ConsumerState<EntrySheet> {
           children: [
             Text(
               entry.name.isEmpty ? l10n.productUnknownName : entry.name,
-              style: theme.textTheme.titleLarge,
+              style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: Spacing.l),
             AmountField(
@@ -120,7 +120,7 @@ class _EntrySheetState extends ConsumerState<EntrySheet> {
                 TextButton.icon(
                   onPressed: () =>
                       Navigator.of(context).pop(EntrySheetResult.delete),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outline_rounded),
                   label: Text(l10n.actionDelete),
                 ),
                 FilledButton(

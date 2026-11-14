@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/buttons.dart';
 import '../../core/widgets/eating_disorder_help.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/database.dart';
@@ -268,11 +269,11 @@ class _GoalSummaryCard extends ConsumerWidget {
               ],
             ],
             const SizedBox(height: Spacing.m),
-            FilledButton.tonal(
+            TonalButton(
               onPressed: () => context.push(Routes.goal),
-              child: Text(
-                goal == null ? l10n.profileGoalSet : l10n.profileGoalChange,
-              ),
+              label: goal == null
+                  ? l10n.profileGoalSet
+                  : l10n.profileGoalChange,
             ),
           ],
         ),

@@ -65,11 +65,17 @@ Future<void> pumpFoodTrackerApp(
   http.Client? client,
   DateTime? now,
   Locale locale = const Locale('de'),
+  ThemeMode? themeMode,
   List<Override> extraOverrides = const [],
 }) async {
   final overrides = testOverrides(db: db, client: client, now: now);
-  // The app reads its language from the settings, so store it there.
-  await SharedPreferencesAsync().setString('locale', locale.languageCode);
+  // The app reads its language (and theme) from the settings, so store them
+  // there.
+  final preferences = SharedPreferencesAsync();
+  await preferences.setString('locale', locale.languageCode);
+  if (themeMode != null) {
+    await preferences.setString('theme_mode', themeMode.name);
+  }
   await tester.pumpWidget(
     ProviderScope(
       retry: (_, _) => null,
