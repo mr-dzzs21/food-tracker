@@ -1,0 +1,68 @@
+{
+  "code": "5449000000996",
+  "errors": [],
+  "product": {
+    "code": "5449000000996",
+    "product_name": "Coca-Cola Original",
+    "product_name_de": "Coca-Cola",
+    "product_name_en": "Coca-Cola",
+    "generic_name": "Bebida refrescante aromatizada",
+    "generic_name_de": "Koffeinhaltiges Erfrischungsgetränk",
+    "brands": "COCA-COLA SERVICES SA/NV",
+    "quantity": "330 ml",
+    "product_quantity": 330,
+    "product_quantity_unit": "ml",
+    "serving_size": "1 portion (330 ml)",
+    "serving_quantity": 330,
+    "serving_quantity_unit": "ml",
+    "nutrition_data_per": "100g",
+    "image_front_small_url": "https://images.openfoodfacts.org/images/products/544/900/000/0996/front_de.1128.200.jpg",
+    "image_front_thumb_url": "https://images.openfoodfacts.org/images/products/544/900/000/0996/front_de.1128.100.jpg",
+    "nutriments": {
+      "energy-kcal_100g": 44,
+      "energy-kj_100g": 185,
+      "fat_100g": 0,
+      "saturated-fat_100g": 0,
+      "carbohydrates_100g": 10.9,
+      "sugars_100g": 10.9,
+      "proteins_100g": 0,
+      "salt_100g": 0,
+      "sodium_100g": 0,
+      "energy-kcal_serving": 145,
+      "energy-kcal_unit": "kcal"
+    },
+    "nutrient_levels": {
+      "fat": "low",
+      "salt": "low",
+      "saturated-fat": "low",
+      "sugars": "high"
+    },
+    "nutriscore_grade": "e",
+    "nutriscore_version": "2023",
+    "nova_group": 4,
+    "categories_tags": [
+      "en:beverages-and-beverages-preparations",
+      "en:beverages",
+      "en:non-alcoholic-beverages",
+      "en:soft-drinks",
+      "en:carbonated-drinks",
+      "en:flavoured-soft-drinks",
+      "en:sodas",
+      "en:colas",
+      "pt:bebidas cafeína"
+    ],
+    "lang": "es",
+    "completeness": 0.8875,
+    "states_tags": [
+      "en:nutrition-facts-completed"
+    ],
+    "product_type": "food"
+  },
+  "result": {
+    "id": "product_found",
+    "lc_name": "Produkt gefunden",
+    "name": "Product found"
+  },
+  "status": "success",
+  "warnings": []
+}

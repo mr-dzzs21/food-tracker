@@ -102,5 +102,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get errorGeneric => 'Etwas ist schiefgelaufen.';
 
   @override
+  String get productUnknownName => 'Unbekanntes Produkt';
+
+  @override
   String get placeholderComingSoon => 'Dieser Bildschirm entsteht gerade.';
 }

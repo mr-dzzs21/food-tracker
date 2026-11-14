@@ -28,5 +28,6 @@
   "failureServer": "Bei Open Food Facts gibt es gerade ein Problem. Versuch es später noch mal.",
   "failureMaintenance": "Open Food Facts ist gerade nicht erreichbar (Wartung oder Überlastung). Versuch es später noch mal.",
   "errorGeneric": "Etwas ist schiefgelaufen.",
+  "productUnknownName": "Unbekanntes Produkt",
   "placeholderComingSoon": "Dieser Bildschirm entsteht gerade."
 }

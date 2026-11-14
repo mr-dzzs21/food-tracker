@@ -1,0 +1,37 @@
+{
+  "_note": "Hand-edited from sparse_product.json: energy keys removed to test a product without kcal.",
+  "code": "4260426710013",
+  "errors": [],
+  "product": {
+    "code": "4260426710013",
+    "product_name": "Naturjoghurt",
+    "product_name_en": "Naturjoghurt",
+    "serving_size": "240.0g",
+    "serving_quantity": 240,
+    "serving_quantity_unit": "g",
+    "nutrition_data_per": "100g",
+    "nutriments": {
+      "fat_100g": 3.5,
+      "saturated-fat_100g": 2.4,
+      "carbohydrates_100g": 4.6,
+      "sugars_100g": 4,
+      "proteins_100g": 3.4
+    },
+    "nutrient_levels": {},
+    "nutriscore_grade": "unknown",
+    "nutriscore_version": "2023",
+    "lang": "en",
+    "completeness": 0.2,
+    "states_tags": [
+      "en:nutrition-facts-completed"
+    ],
+    "product_type": "food"
+  },
+  "result": {
+    "id": "product_found",
+    "lc_name": "Produkt gefunden",
+    "name": "Product found"
+  },
+  "status": "success",
+  "warnings": []
+}

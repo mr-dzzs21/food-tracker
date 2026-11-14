@@ -266,6 +266,12 @@ abstract class AppLocalizations {
   /// **'Something went wrong.'**
   String get errorGeneric;
 
+  /// Shown instead of the name when Open Food Facts has no name for a product (the stored name is empty)
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown product'**
+  String get productUnknownName;
+
   /// Temporary text for screens that are not built yet
   ///
   /// In en, this message translates to:

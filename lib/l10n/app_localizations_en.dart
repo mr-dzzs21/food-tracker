@@ -102,5 +102,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorGeneric => 'Something went wrong.';
 
   @override
+  String get productUnknownName => 'Unknown product';
+
+  @override
   String get placeholderComingSoon => 'This screen is being built.';
 }

@@ -1,0 +1,86 @@
+{
+  "hits": [
+    {
+      "code": "20003166",
+      "brands": [
+        "Crownfield"
+      ],
+      "quantity": "500g",
+      "nutriments": {
+        "energy-kcal_100g": 372,
+        "energy-kj_100g": 1566,
+        "fat_100g": 7,
+        "saturated-fat_100g": 1.3,
+        "carbohydrates_100g": 58.7,
+        "sugars_100g": 0.7,
+        "fiber_100g": 10,
+        "proteins_100g": 13.5,
+        "salt_100g": 0.03,
+        "sodium_100g": 0.012
+      },
+      "nutriscore_grade": "a",
+      "completeness": 1,
+      "product_name": "Haferflocken",
+      "image_front_small_url": "https://images.openfoodfacts.org/images/products/20003166/front.25.200.jpg"
+    },
+    {
+      "code": "4058172307409",
+      "brands": [
+        "dmBio",
+        "dm Bio"
+      ],
+      "quantity": "1kg",
+      "nutriments": {
+        "energy-kcal_100g": 372,
+        "energy-kj_100g": 1562,
+        "fat_100g": 7,
+        "saturated-fat_100g": 1.3,
+        "carbohydrates_100g": 59,
+        "sugars_100g": 0.7,
+        "fiber_100g": 10,
+        "proteins_100g": 14,
+        "salt_100g": 0.02,
+        "sodium_100g": 0.008
+      },
+      "nutriscore_grade": "a",
+      "completeness": 0.7875,
+      "product_name": "Haferflocken Feinblatt",
+      "image_front_small_url": "https://images.openfoodfacts.org/images/products/405/817/230/7409/front_de.28.200.jpg"
+    },
+    {
+      "code": "20283360",
+      "brands": [
+        "Crownfield",
+        "Lidl",
+        "Fortin Mühlenwerke"
+      ],
+      "quantity": "500 g",
+      "nutriments": {
+        "energy-kcal_100g": 372,
+        "fat_100g": 7,
+        "saturated-fat_100g": 1.3,
+        "carbohydrates_100g": 68.7,
+        "sugars_100g": 0.7,
+        "fiber_100g": 10,
+        "proteins_100g": 13.5,
+        "salt_100g": 0.008,
+        "sodium_100g": 0.0032
+      },
+      "nutriscore_grade": "a",
+      "completeness": 1,
+      "product_name": "Kernige Haferflocken",
+      "image_front_small_url": "https://images.openfoodfacts.org/images/products/20283360/front_de.115.200.jpg"
+    }
+  ],
+  "aggregations": null,
+  "facets": {},
+  "charts": {},
+  "page": 1,
+  "page_size": 3,
+  "page_count": 139,
+  "took": 6,
+  "timed_out": false,
+  "count": 416,
+  "is_count_exact": true,
+  "warnings": null
+}

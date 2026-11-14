@@ -31,6 +31,10 @@
   "failureServer": "Open Food Facts has a problem right now. Try again later.",
   "failureMaintenance": "Open Food Facts is unavailable right now (maintenance or high load). Try again later.",
   "errorGeneric": "Something went wrong.",
+  "productUnknownName": "Unknown product",
+  "@productUnknownName": {
+    "description": "Shown instead of the name when Open Food Facts has no name for a product (the stored name is empty)"
+  },
   "placeholderComingSoon": "This screen is being built.",
   "@placeholderComingSoon": {
     "description": "Temporary text for screens that are not built yet"

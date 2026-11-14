@@ -1,0 +1,73 @@
+{
+  "code": "4003586100313",
+  "errors": [],
+  "product": {
+    "code": "4003586100313",
+    "product_name": "chipsfrisch ungarisch",
+    "product_name_de": "chipsfrisch ungarisch",
+    "product_name_en": "Chipsfrisch ungarisch",
+    "generic_name": "Kartoffelchips mit rauchigem Paprika Geschmack",
+    "generic_name_de": "Kartoffelchips mit rauchigem Paprika Geschmack",
+    "brands": "funny-frisch",
+    "quantity": "150g",
+    "product_quantity": 150,
+    "product_quantity_unit": "g",
+    "serving_size": "30 g",
+    "serving_quantity": 30,
+    "serving_quantity_unit": "g",
+    "nutrition_data_per": "100g",
+    "image_front_small_url": "https://images.openfoodfacts.org/images/products/400/358/610/0313/front_de.63.200.jpg",
+    "image_front_thumb_url": "https://images.openfoodfacts.org/images/products/400/358/610/0313/front_de.63.100.jpg",
+    "nutriments": {
+      "energy-kcal_100g": 533,
+      "energy-kj_100g": 2223,
+      "fat_100g": 33,
+      "saturated-fat_100g": 3,
+      "carbohydrates_100g": 49,
+      "sugars_100g": 2.5,
+      "fiber_100g": 4.5,
+      "proteins_100g": 6,
+      "salt_100g": 1.5,
+      "sodium_100g": 0.6,
+      "energy-kcal_serving": 160,
+      "energy-kcal_unit": "kcal"
+    },
+    "nutrient_levels": {
+      "fat": "high",
+      "salt": "moderate",
+      "saturated-fat": "moderate",
+      "sugars": "low"
+    },
+    "nutriscore_grade": "d",
+    "nutriscore_version": "2023",
+    "nova_group": 4,
+    "categories_tags": [
+      "en:plant-based-foods-and-beverages",
+      "en:plant-based-foods",
+      "en:snacks",
+      "en:cereals-and-potatoes",
+      "en:salty-snacks",
+      "en:appetizers",
+      "en:chips-and-fries",
+      "en:potatoes-and-their-products",
+      "en:crisps",
+      "en:salty-snacks-made-from-potato",
+      "en:potato-crisps",
+      "en:flavoured-potato-crisps",
+      "en:potato-crisps-in-sunflower-oil"
+    ],
+    "lang": "de",
+    "completeness": 0.9,
+    "states_tags": [
+      "en:nutrition-facts-completed"
+    ],
+    "product_type": "food"
+  },
+  "result": {
+    "id": "product_found",
+    "lc_name": "Produkt gefunden",
+    "name": "Product found"
+  },
+  "status": "success",
+  "warnings": []
+}
