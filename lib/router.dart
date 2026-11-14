@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -216,19 +214,18 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      // The page reaches behind the bar, so it shows next to the raised scan
-      // button. The Scaffold then reports the bar's height as bottom padding.
+      // The Scaffold reports the bar's height (including the strip the raised
+      // scan button sticks into) as bottom padding.
       extendBody: true,
       body: Builder(
         builder: (context) {
           final barHeight = MediaQuery.paddingOf(context).bottom;
-          // Only the strip next to the raised button overlaps the page; the
-          // bar itself never covers content. With the keyboard open the
-          // Scaffold reports no bar, so there is no extra space then.
+          // The page ends above the raised scan button, so the button never
+          // covers text or buttons. Next to the button the app background
+          // shows. With the keyboard open the Scaffold reports no bar, so
+          // there is no extra space then.
           return Padding(
-            padding: EdgeInsets.only(
-              bottom: math.max(0, barHeight - AppNavBar.raise),
-            ),
+            padding: EdgeInsets.only(bottom: barHeight),
             child: MediaQuery.removePadding(
               context: context,
               removeBottom: true,
