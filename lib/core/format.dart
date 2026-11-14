@@ -69,3 +69,14 @@ double? parseUserNumber(String text) {
   if (value == null || value.isNaN || value.isInfinite) return null;
   return value;
 }
+
+/// A number to put into a text field: no thousands separator (the user would
+/// read `1.000` back as 1.0), up to one decimal. `1000` → `1000`,
+/// `12.5` → `12,5` (de) / `12.5` (en).
+String formatInputNumber(double value, String locale) {
+  final format = NumberFormat.decimalPattern(locale)
+    ..turnOffGrouping()
+    ..minimumFractionDigits = 0
+    ..maximumFractionDigits = 1;
+  return format.format(roundHalfUp(value, 1));
+}

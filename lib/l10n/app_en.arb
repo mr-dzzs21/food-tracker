@@ -38,5 +38,340 @@
   "placeholderComingSoon": "This screen is being built.",
   "@placeholderComingSoon": {
     "description": "Temporary text for screens that are not built yet"
+  },
+  "mealUnnamed": "Meal",
+  "@mealUnnamed": {
+    "description": "Fallback name of a user-added meal without a name"
+  },
+  "mealAddTooltip": "Add to {meal}",
+  "@mealAddTooltip": {
+    "description": "Tooltip of the + button of a meal section",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTitleToday": "Today, {date}",
+  "@dayTitleToday": {
+    "description": "Title of the selected day when it is today; date like '14. Nov.'",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTitleYesterday": "Yesterday, {date}",
+  "@dayTitleYesterday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dayTitleTomorrow": "Tomorrow, {date}",
+  "@dayTitleTomorrow": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dayPrevious": "Previous day",
+  "@dayPrevious": {
+    "description": "Tooltip of the left arrow in the date switcher"
+  },
+  "dayNext": "Next day",
+  "@dayNext": {
+    "description": "Tooltip of the right arrow in the date switcher"
+  },
+  "dayPick": "Choose a day",
+  "@dayPick": {
+    "description": "Tooltip/semantics of the date title (opens a date picker)"
+  },
+  "dayJumpToday": "Today",
+  "@dayJumpToday": {
+    "description": "Button that jumps back to today in the date switcher"
+  },
+  "todayGoalCardTitle": "Set a goal",
+  "todayGoalCardText": "With a daily goal, the ring shows how much is left for today.",
+  "todayGoalCardButton": "Set goal",
+  "todayGoalCardDismiss": "Hide this hint",
+  "@todayGoalCardDismiss": {
+    "description": "Tooltip of the close button on the goal card"
+  },
+  "todayRingLeft": "kcal left",
+  "@todayRingLeft": {
+    "description": "Small label under the big number in the calorie ring"
+  },
+  "todayRingEaten": "kcal eaten",
+  "@todayRingEaten": {
+    "description": "Small label under the big number in the calorie ring (no goal set)"
+  },
+  "todayRingOver": "kcal above your goal",
+  "@todayRingOver": {
+    "description": "Small label under the big number when more was eaten than the goal. Neutral wording, never 'failed'."
+  },
+  "todayRingOfGoal": "of {goal}",
+  "@todayRingOfGoal": {
+    "description": "Under the remaining kcal, e.g. 'von 2.490'",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "todayRingSemanticsLeft": "{left} kcal left of {goal} kcal. Eaten: {eaten} kcal.",
+  "@todayRingSemanticsLeft": {
+    "description": "Screen reader sentence for the calorie ring",
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "todayRingSemanticsOver": "{over} kcal above your goal of {goal} kcal. Eaten: {eaten} kcal.",
+  "@todayRingSemanticsOver": {
+    "description": "Screen reader sentence for the calorie ring",
+    "placeholders": {
+      "over": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "todayRingSemanticsEaten": "{eaten} kcal eaten. No daily goal set.",
+  "@todayRingSemanticsEaten": {
+    "description": "Screen reader sentence for the calorie ring",
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "todayEatenLine": "Eaten: {eaten} kcal",
+  "@todayEatenLine": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "todayMissingValues": "{count, plural, =1{Values are missing for 1 entry} other{Values are missing for {count} entries}}",
+  "@todayMissingValues": {
+    "description": "Hint when some entries have no value for a nutrient, so totals are 'at least'",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayEmptyDay": "Nothing logged yet. Tap + next to a meal to add food.",
+  "todayMacroOfGoal": "{eaten} of {goal} g",
+  "@todayMacroOfGoal": {
+    "description": "Macro bar value with a goal, e.g. '45 von 120 g'",
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "nutrientWithValue": "{nutrient}: {value}",
+  "@nutrientWithValue": {
+    "description": "A nutrient with its value, e.g. 'Eiweiß: 45 g'",
+    "placeholders": {
+      "nutrient": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "totalAtLeast": "at least {value}",
+  "@totalAtLeast": {
+    "description": "A sum where some entries have no value",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "totalAtMost": "at most {value}",
+  "@totalAtMost": {
+    "description": "Remaining kcal when some entries have no value",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitGrams": "{value} g",
+  "@unitGrams": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitKcal": "{value} kcal",
+  "@unitKcal": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryEntryDeleted": "Entry deleted",
+  "entryAmountLabel": "Amount",
+  "entryMealLabel": "Meal",
+  "amountInvalid": "Please enter an amount between 0 and 10,000.",
+  "@amountInvalid": {
+    "description": "Error under the amount field"
+  },
+  "nutrientKcal": "Energy",
+  "nutrientFat": "Fat",
+  "nutrientSaturatedFat": "Saturates",
+  "nutrientCarbs": "Carbohydrate",
+  "nutrientSugars": "Sugars",
+  "nutrientFibre": "Fibre",
+  "nutrientProtein": "Protein",
+  "nutrientSalt": "Salt",
+  "ratingLevelLow": "low",
+  "ratingLevelMedium": "medium",
+  "ratingLevelHigh": "high",
+  "@ratingLevelHigh": {
+    "description": "Neutral word: 'viel/hoch', never 'bad'"
+  },
+  "ratingNoData": "no data",
+  "ratingTitle": "Rating",
+  "ratingTitleFood": "Rating per 100 g",
+  "ratingTitleDrink": "Rating per 100 ml",
+  "ratingRowSemantics": "{nutrient}: {level}, {value}",
+  "@ratingRowSemantics": {
+    "description": "Screen reader text of one rating row, e.g. 'Fett: hoch, 33 g'",
+    "placeholders": {
+      "nutrient": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingNotRated": "This type of product gets no traffic-light rating (e.g. water, coffee, tea, spices, baby food, alcohol). You can see the nutrition values below.",
+  "ratingNoCategory": "The product type is unknown, so there is no traffic-light rating.",
+  "ratingSuspicious": "These values look inconsistent and may be wrong.",
+  "plusFibreSource": "source of fibre",
+  "plusFibreHigh": "high in fibre",
+  "plusProteinSource": "source of protein",
+  "plusProteinHigh": "high in protein",
+  "plusPointRow": "{label} · {value}",
+  "@plusPointRow": {
+    "description": "A plus point, e.g. 'Ballaststoffquelle · 4,5 g'",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "productNutriScore": "Nutri-Score: {grade} (according to Open Food Facts)",
+  "@productNutriScore": {
+    "description": "Plain text only, no logo or colours",
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "productImageCaption": "Photo: Open Food Facts contributors, CC BY-SA",
+  "@productImageCaption": {
+    "description": "Licence caption of a product photo"
+  },
+  "productFavouriteAdd": "Add to favourites",
+  "productFavouriteRemove": "Remove from favourites",
+  "productAmountTitle": "How much?",
+  "productServingChip": "1 serving ({amount})",
+  "@productServingChip": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "productLastAmountChip": "Last time: {amount}",
+  "@productLastAmountChip": {
+    "description": "Chip with the amount used the last time this food was logged",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "productDay": "Day: {day}",
+  "@productDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "productAdded": "Added to {meal}",
+  "@productAdded": {
+    "description": "SnackBar after adding a food to the diary",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "productNutritionTitle": "Nutrition facts",
+  "productPer100g": "per 100 g",
+  "productPer100ml": "per 100 ml",
+  "productPerServing": "per serving ({amount})",
+  "@productPerServing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "productAttribution": "Data: Open Food Facts (ODbL)",
+  "productCorrectHint": "Wrong data? You can correct it on Open Food Facts.",
+  "productOpenOff": "View on Open Food Facts",
+  "productLinkFailed": "The link could not be opened.",
+  "productCreateOwn": "Add it yourself",
+  "@productCreateOwn": {
+    "description": "Button when Open Food Facts does not know a barcode"
+  },
+  "productCompleteValues": "Complete the values",
+  "@productCompleteValues": {
+    "description": "Button when a product has no calories"
+  },
+  "productGone": "This food no longer exists.",
+  "disclaimerShort": "Data from Open Food Facts. Values can be wrong. The rating is for guidance only and is not medical advice.",
+  "disclaimerRating": "The rating is for guidance only and is not medical advice.",
+  "@disclaimerRating": {
+    "description": "Short disclaimer for own foods (no Open Food Facts data)"
   }
 }

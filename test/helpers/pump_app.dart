@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // `Override` (the type of provider overrides) lives in misc.dart in Riverpod 3.
@@ -22,7 +23,13 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 final testNow = DateTime(2026, 11, 14, 12);
 
 /// A fresh in-memory database (with the four default meals).
-AppDatabase newTestDatabase() => AppDatabase(NativeDatabase.memory());
+///
+/// `closeStreamsSynchronously` stops drift's watch queries at once when the
+/// last listener leaves. By default drift waits one event-loop turn with a
+/// timer, and widget tests fail on timers that are still pending at the end.
+AppDatabase newTestDatabase() => AppDatabase(
+  DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
+);
 
 /// An HTTP client that fails every request, so no test talks to the internet
 /// by accident. Pass your own `MockClient` to simulate Open Food Facts.
