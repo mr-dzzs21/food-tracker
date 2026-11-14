@@ -259,8 +259,7 @@ void main() {
     await tester.tap(find.byTooltip('Zu Mittagessen hinzufügen'));
     await tester.pumpAndSettle();
 
-    // AddFoodPage is still a placeholder (next work package).
-    expect(find.text('AddFoodPage'), findsOneWidget);
+    expect(find.text('Mittagessen · Heute, 14. Nov.'), findsOneWidget);
   });
 
   testWidgets('English', (tester) async {

@@ -406,4 +406,207 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get disclaimerRating =>
       'The rating is for guidance only and is not medical advice.';
+
+  @override
+  String get searchFieldHint => 'Search for a product';
+
+  @override
+  String get searchSubmit => 'Search';
+
+  @override
+  String get scanRecentlyViewedTitle => 'Recently viewed';
+
+  @override
+  String get scanRecentlyViewedEmpty =>
+      'Products you scan or search for appear here.';
+
+  @override
+  String get scannerTitle => 'Scan barcode';
+
+  @override
+  String get scannerHint => 'Point the camera at a barcode.';
+
+  @override
+  String get scannerPreviewLabel => 'Camera for scanning barcodes';
+
+  @override
+  String get scannerTorchOn => 'Turn on the light';
+
+  @override
+  String get scannerTorchOff => 'Turn off the light';
+
+  @override
+  String get scannerPermissionTitle => 'No access to the camera';
+
+  @override
+  String get scannerPermissionText =>
+      'To scan, allow camera access in your device settings (Settings › Food Tracker › Camera). Until then you can use the search.';
+
+  @override
+  String get scannerUnsupported => 'There is no camera here. Use the search.';
+
+  @override
+  String get scannerError =>
+      'The camera could not start. Try again or use the search.';
+
+  @override
+  String searchResultsTitle(String query) {
+    return 'Search: $query';
+  }
+
+  @override
+  String get searchEmptyQuery => 'Type what you are looking for.';
+
+  @override
+  String get searchLocalTitle => 'On your device';
+
+  @override
+  String get searchOnlineTitle => 'Online results';
+
+  @override
+  String get searchNoOnlineResults => 'No results at Open Food Facts.';
+
+  @override
+  String get searchNoResultsHint =>
+      'Check the spelling or add the food yourself.';
+
+  @override
+  String get searchLoadMore => 'Load more';
+
+  @override
+  String searchNutriScore(String grade) {
+    return 'Nutri-Score: $grade';
+  }
+
+  @override
+  String foodKcalPer100g(String kcal) {
+    return '$kcal kcal per 100 g';
+  }
+
+  @override
+  String foodKcalPer100ml(String kcal) {
+    return '$kcal kcal per 100 ml';
+  }
+
+  @override
+  String get foodKcalUnknown => 'Calories unknown';
+
+  @override
+  String addFoodTitle(String meal, String day) {
+    return '$meal · $day';
+  }
+
+  @override
+  String get addFoodSearchHint => 'Search foods';
+
+  @override
+  String get addFoodScan => 'Scan';
+
+  @override
+  String get addFoodCreateOwn => 'Own food';
+
+  @override
+  String get addFoodSegmentRecent => 'Recent';
+
+  @override
+  String get addFoodSegmentFavourites => 'Favourites';
+
+  @override
+  String get addFoodSegmentOwn => 'My foods';
+
+  @override
+  String get addFoodRecentEmpty =>
+      'Nothing here yet. Foods you add to your diary appear here.';
+
+  @override
+  String get addFoodFavouritesEmpty =>
+      'No favourites yet. Tap the star on a product page.';
+
+  @override
+  String get addFoodOwnEmpty => 'No own foods yet. Create one with “Own food”.';
+
+  @override
+  String get addFoodNoLocalMatches =>
+      'Nothing found on your device. Tap “Search” on the keyboard to search online.';
+
+  @override
+  String get foodFormNewTitle => 'New food';
+
+  @override
+  String get foodFormEditTitle => 'Edit food';
+
+  @override
+  String foodFormRequired(String label) {
+    return '$label *';
+  }
+
+  @override
+  String get foodFormRequiredHint => '* required';
+
+  @override
+  String get foodFormName => 'Name';
+
+  @override
+  String get foodFormBrand => 'Brand (optional)';
+
+  @override
+  String get foodFormBarcode => 'Barcode';
+
+  @override
+  String get foodFormIsLiquid => 'Drink (values per 100 ml)';
+
+  @override
+  String get foodFormNutrientsPer100g => 'Nutrition per 100 g';
+
+  @override
+  String get foodFormNutrientsPer100ml => 'Nutrition per 100 ml';
+
+  @override
+  String get foodFormPortionTitle => 'Portion (optional)';
+
+  @override
+  String get foodFormPortionSize => 'Size of one portion';
+
+  @override
+  String get foodFormPortionLabel => 'Portion name';
+
+  @override
+  String get foodFormPortionLabelHint => 'e.g. 1 slice';
+
+  @override
+  String get foodFormNameMissing => 'Please enter a name.';
+
+  @override
+  String get foodFormKcalMissing => 'Please enter the calories.';
+
+  @override
+  String get foodFormNotANumber => 'Please enter a number.';
+
+  @override
+  String foodFormOutOfRange(String max) {
+    return 'Allowed: 0 to $max';
+  }
+
+  @override
+  String get foodFormSaturatesAboveFat => 'Can\'t be more than fat.';
+
+  @override
+  String get foodFormSugarsAboveCarbs => 'Can\'t be more than carbohydrate.';
+
+  @override
+  String get foodFormPortionSizeMissing =>
+      'Please also enter the size of one portion.';
+
+  @override
+  String foodFormDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get foodFormDeleteText => 'Entries in your diary are kept.';
+
+  @override
+  String foodFormDeleted(String name) {
+    return '“$name” deleted';
+  }
 }

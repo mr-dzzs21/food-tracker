@@ -164,7 +164,9 @@ void main() {
       router.state.uri.toString(),
       Routes.newFood(barcode: unknown, day: '2026-11-14', mealId: 2),
     );
-    expect(find.text('FoodFormPage'), findsOneWidget); // still a placeholder
+    // The own-food form, with the scanned barcode filled in.
+    expect(find.text('Neues Lebensmittel'), findsOneWidget);
+    expect(find.text(unknown), findsOneWidget);
   });
 
   testWidgets('incomplete: no calories → "Werte ergänzen"', (tester) async {
@@ -303,7 +305,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Bearbeiten'));
     await tester.pumpAndSettle();
-    expect(find.text('FoodFormPage'), findsOneWidget);
+    expect(find.text('Lebensmittel bearbeiten'), findsOneWidget);
   });
 
   testWidgets('a deleted food shows a message', (tester) async {

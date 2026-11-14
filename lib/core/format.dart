@@ -71,12 +71,15 @@ double? parseUserNumber(String text) {
 }
 
 /// A number to put into a text field: no thousands separator (the user would
-/// read `1.000` back as 1.0), up to one decimal. `1000` → `1000`,
-/// `12.5` → `12,5` (de) / `12.5` (en).
-String formatInputNumber(double value, String locale) {
+/// read `1.000` back as 1.0), up to [maxDecimals] decimals (default one).
+/// `1000` → `1000`, `12.5` → `12,5` (de) / `12.5` (en).
+///
+/// Forms that edit stored values use more decimals, so editing a food does
+/// not silently turn 0,03 g salt into 0 g.
+String formatInputNumber(double value, String locale, {int maxDecimals = 1}) {
   final format = NumberFormat.decimalPattern(locale)
     ..turnOffGrouping()
     ..minimumFractionDigits = 0
-    ..maximumFractionDigits = 1;
-  return format.format(roundHalfUp(value, 1));
+    ..maximumFractionDigits = maxDecimals;
+  return format.format(roundHalfUp(value, maxDecimals));
 }

@@ -47,22 +47,22 @@ abstract final class Routes {
   static String food(int id, {String? day, int? mealId}) =>
       _withTarget('/food/$id', day, mealId);
 
-  static String newFood({String? barcode, String? day, int? mealId}) => Uri(
-    path: '/food/new',
-    queryParameters: {
-      'barcode': ?barcode,
-      'day': ?day,
-      if (mealId != null) 'meal': '$mealId',
-    },
-  ).toString();
+  static String newFood({String? barcode, String? day, int? mealId}) =>
+      _withQuery('/food/new', {
+        'barcode': ?barcode,
+        'day': ?day,
+        if (mealId != null) 'meal': '$mealId',
+      });
 
   static String editFood(int id) => '/food/$id/edit';
 
   /// Adds `?day=…&meal=…` when the food should go to a specific meal.
-  static String _withTarget(String path, String? day, int? mealId) => Uri(
-    path: path,
-    queryParameters: {'day': ?day, if (mealId != null) 'meal': '$mealId'},
-  ).toString();
+  static String _withTarget(String path, String? day, int? mealId) =>
+      _withQuery(path, {'day': ?day, if (mealId != null) 'meal': '$mealId'});
+
+  /// [path] plus the encoded [query]; no lonely `?` when [query] is empty.
+  static String _withQuery(String path, Map<String, String> query) =>
+      Uri(path: path, queryParameters: query.isEmpty ? null : query).toString();
 }
 
 /// Reads `?day=` (only if it is a real yyyy-MM-dd date).

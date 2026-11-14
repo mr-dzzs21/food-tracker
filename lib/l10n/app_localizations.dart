@@ -751,6 +751,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The rating is for guidance only and is not medical advice.'**
   String get disclaimerRating;
+
+  /// Hint in the search field on the Scan tab
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a product'**
+  String get searchFieldHint;
+
+  /// Tooltip of the search button next to a search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchSubmit;
+
+  /// No description provided for @scanRecentlyViewedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently viewed'**
+  String get scanRecentlyViewedTitle;
+
+  /// No description provided for @scanRecentlyViewedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Products you scan or search for appear here.'**
+  String get scanRecentlyViewedEmpty;
+
+  /// Title of the full-screen scanner
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get scannerTitle;
+
+  /// Hint over the camera preview
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at a barcode.'**
+  String get scannerHint;
+
+  /// Screen reader label of the camera area
+  ///
+  /// In en, this message translates to:
+  /// **'Camera for scanning barcodes'**
+  String get scannerPreviewLabel;
+
+  /// Tooltip of the torch button
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on the light'**
+  String get scannerTorchOn;
+
+  /// Tooltip of the torch button
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off the light'**
+  String get scannerTorchOff;
+
+  /// No description provided for @scannerPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No access to the camera'**
+  String get scannerPermissionTitle;
+
+  /// Shown when the camera permission was denied
+  ///
+  /// In en, this message translates to:
+  /// **'To scan, allow camera access in your device settings (Settings › Food Tracker › Camera). Until then you can use the search.'**
+  String get scannerPermissionText;
+
+  /// Shown on devices without a camera (e.g. the simulator)
+  ///
+  /// In en, this message translates to:
+  /// **'There is no camera here. Use the search.'**
+  String get scannerUnsupported;
+
+  /// No description provided for @scannerError.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera could not start. Try again or use the search.'**
+  String get scannerError;
+
+  /// Title of the search results page
+  ///
+  /// In en, this message translates to:
+  /// **'Search: {query}'**
+  String searchResultsTitle(String query);
+
+  /// No description provided for @searchEmptyQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Type what you are looking for.'**
+  String get searchEmptyQuery;
+
+  /// Section with matching foods already stored on the phone
+  ///
+  /// In en, this message translates to:
+  /// **'On your device'**
+  String get searchLocalTitle;
+
+  /// Section with Open Food Facts search results
+  ///
+  /// In en, this message translates to:
+  /// **'Online results'**
+  String get searchOnlineTitle;
+
+  /// No description provided for @searchNoOnlineResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results at Open Food Facts.'**
+  String get searchNoOnlineResults;
+
+  /// No description provided for @searchNoResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the spelling or add the food yourself.'**
+  String get searchNoResultsHint;
+
+  /// No description provided for @searchLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get searchLoadMore;
+
+  /// Short Nutri-Score text in result lists (plain text, no logo)
+  ///
+  /// In en, this message translates to:
+  /// **'Nutri-Score: {grade}'**
+  String searchNutriScore(String grade);
+
+  /// No description provided for @foodKcalPer100g.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per 100 g'**
+  String foodKcalPer100g(String kcal);
+
+  /// No description provided for @foodKcalPer100ml.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per 100 ml'**
+  String foodKcalPer100ml(String kcal);
+
+  /// No description provided for @foodKcalUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories unknown'**
+  String get foodKcalUnknown;
+
+  /// Title of the add-food page, e.g. 'Breakfast · Today, Nov 14'
+  ///
+  /// In en, this message translates to:
+  /// **'{meal} · {day}'**
+  String addFoodTitle(String meal, String day);
+
+  /// No description provided for @addFoodSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search foods'**
+  String get addFoodSearchHint;
+
+  /// Button that opens the barcode scanner
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get addFoodScan;
+
+  /// Button that opens the form for an own food
+  ///
+  /// In en, this message translates to:
+  /// **'Own food'**
+  String get addFoodCreateOwn;
+
+  /// No description provided for @addFoodSegmentRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get addFoodSegmentRecent;
+
+  /// No description provided for @addFoodSegmentFavourites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourites'**
+  String get addFoodSegmentFavourites;
+
+  /// No description provided for @addFoodSegmentOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'My foods'**
+  String get addFoodSegmentOwn;
+
+  /// No description provided for @addFoodRecentEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet. Foods you add to your diary appear here.'**
+  String get addFoodRecentEmpty;
+
+  /// No description provided for @addFoodFavouritesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No favourites yet. Tap the star on a product page.'**
+  String get addFoodFavouritesEmpty;
+
+  /// No description provided for @addFoodOwnEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No own foods yet. Create one with “Own food”.'**
+  String get addFoodOwnEmpty;
+
+  /// No description provided for @addFoodNoLocalMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found on your device. Tap “Search” on the keyboard to search online.'**
+  String get addFoodNoLocalMatches;
+
+  /// No description provided for @foodFormNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New food'**
+  String get foodFormNewTitle;
+
+  /// No description provided for @foodFormEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit food'**
+  String get foodFormEditTitle;
+
+  /// Label of a required field
+  ///
+  /// In en, this message translates to:
+  /// **'{label} *'**
+  String foodFormRequired(String label);
+
+  /// No description provided for @foodFormRequiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'* required'**
+  String get foodFormRequiredHint;
+
+  /// No description provided for @foodFormName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get foodFormName;
+
+  /// No description provided for @foodFormBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand (optional)'**
+  String get foodFormBrand;
+
+  /// No description provided for @foodFormBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get foodFormBarcode;
+
+  /// No description provided for @foodFormIsLiquid.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink (values per 100 ml)'**
+  String get foodFormIsLiquid;
+
+  /// No description provided for @foodFormNutrientsPer100g.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per 100 g'**
+  String get foodFormNutrientsPer100g;
+
+  /// No description provided for @foodFormNutrientsPer100ml.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition per 100 ml'**
+  String get foodFormNutrientsPer100ml;
+
+  /// No description provided for @foodFormPortionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion (optional)'**
+  String get foodFormPortionTitle;
+
+  /// No description provided for @foodFormPortionSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size of one portion'**
+  String get foodFormPortionSize;
+
+  /// No description provided for @foodFormPortionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion name'**
+  String get foodFormPortionLabel;
+
+  /// No description provided for @foodFormPortionLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1 slice'**
+  String get foodFormPortionLabelHint;
+
+  /// No description provided for @foodFormNameMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name.'**
+  String get foodFormNameMissing;
+
+  /// No description provided for @foodFormKcalMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the calories.'**
+  String get foodFormKcalMissing;
+
+  /// No description provided for @foodFormNotANumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a number.'**
+  String get foodFormNotANumber;
+
+  /// Error under a nutrient field; max is 100 (grams) or 900 (kcal)
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed: 0 to {max}'**
+  String foodFormOutOfRange(String max);
+
+  /// No description provided for @foodFormSaturatesAboveFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t be more than fat.'**
+  String get foodFormSaturatesAboveFat;
+
+  /// No description provided for @foodFormSugarsAboveCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t be more than carbohydrate.'**
+  String get foodFormSugarsAboveCarbs;
+
+  /// No description provided for @foodFormPortionSizeMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please also enter the size of one portion.'**
+  String get foodFormPortionSizeMissing;
+
+  /// No description provided for @foodFormDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String foodFormDeleteTitle(String name);
+
+  /// No description provided for @foodFormDeleteText.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries in your diary are kept.'**
+  String get foodFormDeleteText;
+
+  /// SnackBar after deleting an own food
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” deleted'**
+  String foodFormDeleted(String name);
 }
 
 class _AppLocalizationsDelegate

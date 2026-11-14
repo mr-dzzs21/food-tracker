@@ -373,5 +373,175 @@
   "disclaimerRating": "The rating is for guidance only and is not medical advice.",
   "@disclaimerRating": {
     "description": "Short disclaimer for own foods (no Open Food Facts data)"
+  },
+  "searchFieldHint": "Search for a product",
+  "@searchFieldHint": {
+    "description": "Hint in the search field on the Scan tab"
+  },
+  "searchSubmit": "Search",
+  "@searchSubmit": {
+    "description": "Tooltip of the search button next to a search field"
+  },
+  "scanRecentlyViewedTitle": "Recently viewed",
+  "scanRecentlyViewedEmpty": "Products you scan or search for appear here.",
+  "scannerTitle": "Scan barcode",
+  "@scannerTitle": {
+    "description": "Title of the full-screen scanner"
+  },
+  "scannerHint": "Point the camera at a barcode.",
+  "@scannerHint": {
+    "description": "Hint over the camera preview"
+  },
+  "scannerPreviewLabel": "Camera for scanning barcodes",
+  "@scannerPreviewLabel": {
+    "description": "Screen reader label of the camera area"
+  },
+  "scannerTorchOn": "Turn on the light",
+  "@scannerTorchOn": {
+    "description": "Tooltip of the torch button"
+  },
+  "scannerTorchOff": "Turn off the light",
+  "@scannerTorchOff": {
+    "description": "Tooltip of the torch button"
+  },
+  "scannerPermissionTitle": "No access to the camera",
+  "scannerPermissionText": "To scan, allow camera access in your device settings (Settings › Food Tracker › Camera). Until then you can use the search.",
+  "@scannerPermissionText": {
+    "description": "Shown when the camera permission was denied"
+  },
+  "scannerUnsupported": "There is no camera here. Use the search.",
+  "@scannerUnsupported": {
+    "description": "Shown on devices without a camera (e.g. the simulator)"
+  },
+  "scannerError": "The camera could not start. Try again or use the search.",
+  "searchResultsTitle": "Search: {query}",
+  "@searchResultsTitle": {
+    "description": "Title of the search results page",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchEmptyQuery": "Type what you are looking for.",
+  "searchLocalTitle": "On your device",
+  "@searchLocalTitle": {
+    "description": "Section with matching foods already stored on the phone"
+  },
+  "searchOnlineTitle": "Online results",
+  "@searchOnlineTitle": {
+    "description": "Section with Open Food Facts search results"
+  },
+  "searchNoOnlineResults": "No results at Open Food Facts.",
+  "searchNoResultsHint": "Check the spelling or add the food yourself.",
+  "searchLoadMore": "Load more",
+  "searchNutriScore": "Nutri-Score: {grade}",
+  "@searchNutriScore": {
+    "description": "Short Nutri-Score text in result lists (plain text, no logo)",
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "foodKcalPer100g": "{kcal} kcal per 100 g",
+  "@foodKcalPer100g": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "foodKcalPer100ml": "{kcal} kcal per 100 ml",
+  "@foodKcalPer100ml": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "foodKcalUnknown": "Calories unknown",
+  "addFoodTitle": "{meal} · {day}",
+  "@addFoodTitle": {
+    "description": "Title of the add-food page, e.g. 'Breakfast · Today, Nov 14'",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "addFoodSearchHint": "Search foods",
+  "addFoodScan": "Scan",
+  "@addFoodScan": {
+    "description": "Button that opens the barcode scanner"
+  },
+  "addFoodCreateOwn": "Own food",
+  "@addFoodCreateOwn": {
+    "description": "Button that opens the form for an own food"
+  },
+  "addFoodSegmentRecent": "Recent",
+  "addFoodSegmentFavourites": "Favourites",
+  "addFoodSegmentOwn": "My foods",
+  "addFoodRecentEmpty": "Nothing here yet. Foods you add to your diary appear here.",
+  "addFoodFavouritesEmpty": "No favourites yet. Tap the star on a product page.",
+  "addFoodOwnEmpty": "No own foods yet. Create one with “Own food”.",
+  "addFoodNoLocalMatches": "Nothing found on your device. Tap “Search” on the keyboard to search online.",
+  "foodFormNewTitle": "New food",
+  "foodFormEditTitle": "Edit food",
+  "foodFormRequired": "{label} *",
+  "@foodFormRequired": {
+    "description": "Label of a required field",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "foodFormRequiredHint": "* required",
+  "foodFormName": "Name",
+  "foodFormBrand": "Brand (optional)",
+  "foodFormBarcode": "Barcode",
+  "foodFormIsLiquid": "Drink (values per 100 ml)",
+  "foodFormNutrientsPer100g": "Nutrition per 100 g",
+  "foodFormNutrientsPer100ml": "Nutrition per 100 ml",
+  "foodFormPortionTitle": "Portion (optional)",
+  "foodFormPortionSize": "Size of one portion",
+  "foodFormPortionLabel": "Portion name",
+  "foodFormPortionLabelHint": "e.g. 1 slice",
+  "foodFormNameMissing": "Please enter a name.",
+  "foodFormKcalMissing": "Please enter the calories.",
+  "foodFormNotANumber": "Please enter a number.",
+  "foodFormOutOfRange": "Allowed: 0 to {max}",
+  "@foodFormOutOfRange": {
+    "description": "Error under a nutrient field; max is 100 (grams) or 900 (kcal)",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "foodFormSaturatesAboveFat": "Can't be more than fat.",
+  "foodFormSugarsAboveCarbs": "Can't be more than carbohydrate.",
+  "foodFormPortionSizeMissing": "Please also enter the size of one portion.",
+  "foodFormDeleteTitle": "Delete “{name}”?",
+  "@foodFormDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "foodFormDeleteText": "Entries in your diary are kept.",
+  "foodFormDeleted": "“{name}” deleted",
+  "@foodFormDeleted": {
+    "description": "SnackBar after deleting an own food",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
