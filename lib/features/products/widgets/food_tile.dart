@@ -100,7 +100,7 @@ class FoodTile extends StatelessWidget {
               ? Icon(
                   Icons.star_rounded,
                   semanticLabel: l10n.addFoodSegmentFavourites,
-                  color: colors.brand,
+                  color: colors.star,
                 )
               : null),
       onTap: onTap,

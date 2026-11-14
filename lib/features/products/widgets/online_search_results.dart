@@ -11,7 +11,8 @@ import '../off_product_mapper.dart';
 import '../product_repository.dart';
 import 'food_tile.dart';
 
-/// Open Food Facts search results for [query], page by page.
+/// Open Food Facts search results for [query], page by page; hits with
+/// known kcal first ([knownKcalFirst]).
 ///
 /// Loads the first page when shown and one more page per tap on
 /// "Mehr laden" – never while the user types (OFF allows only a few searches
@@ -65,7 +66,9 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
     }
     if (!first.hasValue) return const _Loading();
 
-    final products = [for (final page in pages) ...?page.value?.products];
+    final products = knownKcalFirst([
+      for (final page in pages) ...?page.value?.products,
+    ]);
     if (products.isEmpty) {
       return StatusView(
         icon: Icons.search_off_rounded,
@@ -125,6 +128,16 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
     );
   }
 }
+
+/// The search results with known kcal first, then those without ("Kalorien
+/// unbekannt"), which cannot be logged before the user completes them. The
+/// server's order (relevance) stays the same inside both groups.
+List<OffProduct> knownKcalFirst(List<OffProduct> products) => [
+  for (final product in products)
+    if (product.nutrients.kcal != null) product,
+  for (final product in products)
+    if (product.nutrients.kcal == null) product,
+];
 
 class _Loading extends StatelessWidget {
   const _Loading();

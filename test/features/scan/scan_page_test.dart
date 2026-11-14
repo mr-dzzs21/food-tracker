@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
+import 'package:food_tracker/core/widgets/app_nav_bar.dart';
 import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/add_food_page.dart';
@@ -69,7 +70,12 @@ void main() {
       );
 
   Future<void> openScanTab(WidgetTester tester) async {
-    await tester.tap(find.text('Scannen'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppNavBar),
+        matching: find.byIcon(Icons.qr_code_scanner_rounded),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 

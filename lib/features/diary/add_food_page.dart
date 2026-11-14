@@ -6,9 +6,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/search_field.dart';
 import '../../core/widgets/section_header.dart';
@@ -107,7 +107,7 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
         unawaited(_open(Routes.food(food.id, day: day, mealId: mealId)));
 
     return Scaffold(
-      appBar: AppTopBar(
+      appBar: PageHeader(
         title: slot == null
             ? dayText
             : l10n.addFoodTitle(mealSlotName(slot, l10n), dayText),
@@ -196,6 +196,7 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
           Spacing.s,
         ),
         child: PillChoices<_Segment>(
+          segmented: true,
           choices: [
             PillChoice(l10n.addFoodSegmentRecent, _Segment.recent),
             PillChoice(l10n.addFoodSegmentFavourites, _Segment.favourites),

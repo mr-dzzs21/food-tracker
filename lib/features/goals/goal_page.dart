@@ -5,11 +5,11 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
 import '../../core/widgets/eating_disorder_help.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/selectable_card.dart';
@@ -36,7 +36,7 @@ class GoalPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final goal = ref.watch(goalProvider);
     return Scaffold(
-      appBar: AppTopBar(title: l10n.goalTitle),
+      appBar: PageHeader(title: l10n.goalTitle),
       body: switch (goal) {
         // The form reads the saved goal only once, when it is created, so
         // the user's typing is not overwritten by later updates.
@@ -325,6 +325,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
                     child: PillChoices<_Mode>(
+                      segmented: true,
                       choices: [
                         PillChoice(l10n.goalModeCalculate, _Mode.calculate),
                         PillChoice(l10n.goalModeManual, _Mode.manual),
@@ -397,6 +398,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
             children: [
               _Label(l10n.goalSexLabel),
               PillChoices<Sex>(
+                segmented: true,
                 choices: [
                   for (final sex in Sex.values)
                     PillChoice(_sexLabel(sex, l10n), sex),
@@ -464,6 +466,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
       CardSection(
         title: l10n.goalTypeLabel,
         child: PillChoices<GoalType>(
+          segmented: true,
           choices: [
             for (final type in GoalType.values)
               PillChoice(_goalTypeLabel(type, l10n), type),
@@ -783,7 +786,7 @@ class _ValueRow extends StatelessWidget {
             fontFeatures: tabularFigures,
           )
         : style.copyWith(
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             fontFeatures: tabularFigures,
           );
     final dot = this.dot;

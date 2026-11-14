@@ -4,11 +4,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/dialogs.dart';
 import '../../core/widgets/icon_square.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
@@ -27,7 +27,7 @@ class MealsSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final slots = ref.watch(mealSlotsProvider);
     return Scaffold(
-      appBar: AppTopBar(title: l10n.mealsTitle),
+      appBar: PageHeader(title: l10n.mealsTitle),
       bottomNavigationBar: BottomCtaBar(
         child: CtaButton(
           icon: Icons.add_rounded,

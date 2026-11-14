@@ -4,16 +4,24 @@ import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoPageTransitionsBuilder;
 import 'package:material_ui/material_ui.dart';
 
-// The visual language of the app (design C "Lebendig", see
-// .notes/design/design-c.md): own font, own colours, soft rounded shapes.
-// Screens never type colours or radii themselves – they use the tokens here
-// and the shared widgets in lib/core/widgets/.
+// The visual language of the app (design A "Garten", see
+// .notes/design/design-a.md): warm cream page, white cards with soft
+// shadows, very round shapes, the Manrope font. Screens never type colours or
+// radii themselves – they use the tokens here and the shared widgets in
+// lib/core/widgets/.
 
-/// The font of the whole app (bundled in assets/fonts/, licence in OFL.txt).
-const appFontFamily = 'Nunito';
+/// The font of the whole app (bundled in assets/fonts/, licence in
+/// Manrope-OFL.txt).
+const appFontFamily = 'Manrope';
 
 /// Numbers with equal widths, so "1.240" does not jump while it changes.
 const tabularFigures = [FontFeature.tabularFigures()];
+
+/// How long the calorie ring and the macro bars take to reach a new value.
+const progressAnimationDuration = Duration(milliseconds: 700);
+
+/// Short animations: the active tab pill, pressed cards, pills.
+const shortAnimationDuration = Duration(milliseconds: 200);
 
 /// Spacing steps. Use these instead of random numbers so the app looks even.
 abstract final class Spacing {
@@ -24,53 +32,43 @@ abstract final class Spacing {
   static const double xl = 24;
   static const double xxl = 32;
 
-  /// Side padding of hero headers (a bit more air than lists).
+  /// Side padding of page headers (a bit more air than the cards).
   static const double page = 20;
 }
 
-/// Corner radii. The named ones say where they belong; `s`…`xl` are general
+/// Corner radii. The named ones say where they belong; `s`…`l` are general
 /// steps for everything else.
 abstract final class Radii {
   static const double s = 8;
   static const double m = 12;
   static const double l = 16;
-  static const double xl = 24;
 
-  /// Small squares: icon boxes, the "+" button on a meal tile.
-  static const double square = 12;
+  /// Segment pills (equal widths in one row).
+  static const double segment = 14;
 
-  /// Rounded square buttons (back button, icon buttons on the hero).
-  static const double iconButton = 14;
-
-  /// Text fields and the pills on the hero.
+  /// Text fields and the big icon squares (meal icons).
   static const double input = 16;
 
-  /// The raised scan button in the navigation bar.
-  static const double scanButton = 18;
-
-  /// Buttons and the rating rows on the product page.
-  static const double button = 20;
+  /// Buttons and the rating tiles on the product page.
+  static const double button = 22;
 
   /// White cards.
   static const double card = 24;
 
-  /// Meal tiles on the Today tab.
-  static const double tile = 26;
-
-  /// Top corners of bottom sheets and the navigation bar, dialogs.
+  /// Top corners of bottom sheets, dialogs.
   static const double sheet = 28;
 
   /// The camera area on the Scan tab and the scanner page.
   static const double camera = 28;
 
-  /// Bottom corners of the green hero header.
-  static const double hero = 36;
+  /// The big summary card (Today, Profile).
+  static const double summary = 30;
 
-  /// Fully round ends (pills, chips).
+  /// Fully round ends (pills, chips, the navigation bar).
   static const double pill = 999;
 }
 
-/// Background and icon colour of one meal tile.
+/// Background and icon colour of one meal's icon square.
 @immutable
 class MealPalette {
   const MealPalette(this.background, this.icon);
@@ -88,33 +86,36 @@ class MealPalette {
 /// All colours of the app, for light and dark mode.
 ///
 /// Text colours were chosen so they have at least 4.5:1 contrast on the
-/// backgrounds they are used on (checked in test/theme_test.dart).
+/// backgrounds they are used on (checked in test/core/theme_test.dart).
 ///
 /// Rating colours are only an *extra* hint. The app always shows an icon and a
 /// word as well, so colour-blind people get the same information. Going over
-/// the daily goal is never shown in a rating or error colour.
+/// the daily goal (or the reference intake) is never shown in a rating or
+/// error colour.
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
     required this.background,
     required this.surface,
     required this.surfaceAlt,
+    required this.track,
     required this.ink,
     required this.inkMuted,
     required this.border,
-    required this.brandDark,
     required this.brand,
-    required this.heroStart,
-    required this.heroMid,
-    required this.heroEnd,
-    required this.heroDecor,
-    required this.heroGlass,
-    required this.onHero,
+    required this.ringStart,
+    required this.ringEnd,
     required this.cta,
     required this.onCta,
     required this.tonal,
     required this.onTonal,
+    required this.navBar,
     required this.navInactive,
+    required this.navActive,
+    required this.onNavActive,
+    required this.selected,
+    required this.onSelected,
+    required this.star,
     required this.snackAction,
     required this.shadow,
     required this.ratingLow,
@@ -132,14 +133,17 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.onCamera,
   });
 
-  /// Page background behind cards.
+  /// Warm cream page background behind cards.
   final Color background;
 
-  /// Cards, sheets, dialogs and the navigation bar.
+  /// Cards, sheets and dialogs.
   final Color surface;
 
-  /// Text fields on cards, progress tracks.
+  /// Text fields, unselected pills, rows inside sheets.
   final Color surfaceAlt;
+
+  /// The empty part of the calorie ring and of the macro and week bars.
+  final Color track;
 
   /// Main text and icons.
   final Color ink;
@@ -147,50 +151,48 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Secondary text.
   final Color inkMuted;
 
-  /// Thin lines: chip outlines, dividers (ink at 10 %).
+  /// Thin lines: dividers, table rows (ink at 10 %).
   final Color border;
 
-  final Color brandDark;
-
-  /// The app green: active tab, text buttons, focus border, plus points.
+  /// The forest green: text buttons, focus border, plus points, selections.
   final Color brand;
 
-  /// The three stops of the hero gradient (see [heroGradient]).
-  final Color heroStart;
-  final Color heroMid;
-  final Color heroEnd;
+  /// The two ends of the green gradient of the calorie ring (top left to
+  /// bottom right); also today's bar in the statistics.
+  final Color ringStart;
+  final Color ringEnd;
 
-  /// Decorative circles in the hero (never under text).
-  final Color heroDecor;
-
-  /// Translucent background of pills and buttons on the hero (macro pills,
-  /// "Heute", Nutri-Score, back/star/arrow buttons). Slightly darker than the
-  /// gradient: white text on a *lighter* (white) glass would stay below
-  /// 4.5:1 on the light green.
-  final Color heroGlass;
-
-  /// Text and icons on the hero gradient.
-  final Color onHero;
-
-  /// Main buttons ("Hinzufügen") and selected pills.
+  /// Main buttons ("Hinzufügen"), the "+" on meal cards.
   final Color cta;
   final Color onCta;
 
-  /// Secondary buttons.
+  /// Secondary buttons and the "Heute" pill.
   final Color tonal;
   final Color onTonal;
 
-  /// Labels and icons of the tabs that are not selected.
+  /// The floating navigation bar and its icons that are not selected.
+  final Color navBar;
   final Color navInactive;
+
+  /// The pill of the selected tab and its icon/label.
+  final Color navActive;
+  final Color onNavActive;
+
+  /// A selected pill or segment ("100 g", "Berechnen").
+  final Color selected;
+  final Color onSelected;
+
+  /// The favourite star.
+  final Color star;
 
   /// The "Rückgängig" button on a SnackBar (SnackBars use [cta] colours).
   final Color snackAction;
 
-  /// Shadow under cards and bars; transparent in dark mode, where the
-  /// surface colour alone sets cards apart.
+  /// Base colour of all shadows (alphas in the getters below); transparent
+  /// in dark mode, where the surface colour alone sets cards apart.
   final Color shadow;
 
-  /// Rating "niedrig": text/icon colour and its background.
+  /// Rating "niedrig": text/icon colour and its tile background.
   final Color ratingLow;
   final Color ratingLowBg;
 
@@ -207,7 +209,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color carbs;
   final Color fat;
 
-  /// Meal tile colours: peach, mint, lavender, butter, sky, rose. See
+  /// Meal icon colours: peach, mint, lavender, butter, sky, rose. See
   /// `mealPaletteIndex` in the diary feature for which meal gets which.
   final List<MealPalette> mealPalettes;
 
@@ -222,101 +224,106 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Text, icons and viewfinder corners on the camera picture.
   final Color onCamera;
 
-  /// The green hero gradient (150°, like the design mock-up).
-  LinearGradient get heroGradient => LinearGradient(
-    begin: const Alignment(-0.5, -0.87),
-    end: const Alignment(0.5, 0.87),
-    colors: [heroStart, heroMid, heroEnd],
-    stops: const [0, 0.55, 1],
-  );
-
-  /// The gradient of the raised scan button (white icon on it).
-  LinearGradient get scanGradient => LinearGradient(
-    begin: const Alignment(-0.5, -0.87),
-    end: const Alignment(0.5, 0.87),
-    colors: [heroMid, heroEnd],
+  BoxShadow _shadow(double alpha, double blur, double y) => BoxShadow(
+    color: shadow.withValues(alpha: shadow.a * alpha),
+    blurRadius: blur,
+    offset: Offset(0, y),
   );
 
   /// Soft shadow under white cards (none in dark mode).
-  List<BoxShadow> get cardShadow => [
-    BoxShadow(color: shadow, blurRadius: 18, offset: const Offset(0, 6)),
-  ];
+  List<BoxShadow> get cardShadow => [_shadow(0.05, 18, 6)];
 
-  /// Upward shadow of the navigation bar and sticky bottom buttons.
-  List<BoxShadow> get barShadow => [
+  /// A card while it is pressed: closer to the page, so a smaller shadow.
+  List<BoxShadow> get pressedShadow => [_shadow(0.04, 8, 2)];
+
+  /// The big summary card.
+  List<BoxShadow> get summaryShadow => [_shadow(0.07, 30, 10)];
+
+  /// Round white buttons and white info chips.
+  List<BoxShadow> get buttonShadow => [_shadow(0.08, 12, 4)];
+
+  /// The floating navigation bar.
+  List<BoxShadow> get navShadow => [_shadow(0.25, 30, 12)];
+
+  /// The green glow under the main button.
+  List<BoxShadow> get ctaShadow => [
     BoxShadow(
-      color: shadow.withValues(alpha: shadow.a * 1.4),
+      color: cta.withValues(alpha: shadow.a * 0.3),
       blurRadius: 24,
-      offset: const Offset(0, -8),
+      offset: const Offset(0, 12),
     ),
   ];
 
   // Colours with transparency are written as 0xAARRGGBB, e.g. ink at 10 %
-  // = 0x1A102A1C (0x1A = 26 = 10 % of 255).
+  // = 0x1A17251E (0x1A = 26 = 10 % of 255).
   static const light = AppColors(
-    background: Color(0xFFF2F6EF),
+    background: Color(0xFFF6F3EC),
     surface: Color(0xFFFFFFFF),
-    surfaceAlt: Color(0xFFEEF3EB),
-    ink: Color(0xFF102A1C),
-    inkMuted: Color(0xFF4F6658),
-    border: Color(0x1A102A1C),
-    brandDark: Color(0xFF0E4D2F),
-    brand: Color(0xFF1C7A4A),
-    heroStart: Color(0xFF0E4D2F),
-    heroMid: Color(0xFF1C7A4A),
-    heroEnd: Color(0xFF2B8240),
-    heroDecor: Color(0x389BE36D),
-    heroGlass: Color(0x1F000000),
-    onHero: Color(0xFFFFFFFF),
-    cta: Color(0xFF102A1C),
+    surfaceAlt: Color(0xFFF2F1EC),
+    track: Color(0xFFEEF0EA),
+    ink: Color(0xFF17251E),
+    inkMuted: Color(0xFF5E6D64),
+    border: Color(0x1A17251E),
+    brand: Color(0xFF1F5C45),
+    ringStart: Color(0xFF2E8B57),
+    ringEnd: Color(0xFF9BD770),
+    cta: Color(0xFF1F5C45),
     onCta: Color(0xFFFFFFFF),
-    tonal: Color(0xFFD9F2DF),
-    onTonal: Color(0xFF0E4D2F),
-    navInactive: Color(0xFF5F7A6B),
+    tonal: Color(0xFFDDF1E4),
+    onTonal: Color(0xFF1D5E3A),
+    navBar: Color(0xFF17251E),
+    navInactive: Color(0xFF9DB3A6),
+    navActive: Color(0xFFCFEBD9),
+    onNavActive: Color(0xFF17251E),
+    selected: Color(0xFF17251E),
+    onSelected: Color(0xFFFFFFFF),
+    star: Color(0xFFB7791F),
     snackAction: Color(0xFF9FE0B4),
-    shadow: Color(0x0F102A1C),
+    shadow: Color(0xFF17251E),
     ratingLow: Color(0xFF1D5E3A),
-    ratingLowBg: Color(0xFFD9F2DF),
+    ratingLowBg: Color(0xFFDDF1E4),
     ratingMedium: Color(0xFF7A5200),
-    ratingMediumBg: Color(0xFFFFF0C7),
-    ratingHigh: Color(0xFF9B2C12),
-    ratingHighBg: Color(0xFFFFE0D6),
-    protein: Color(0xFF3B7BE0),
-    carbs: Color(0xFFC98A12),
-    fat: Color(0xFF9B51D0),
+    ratingMediumBg: Color(0xFFFBEFD3),
+    ratingHigh: Color(0xFF8E2E17),
+    ratingHighBg: Color(0xFFFBE4DC),
+    protein: Color(0xFF5B8DEF),
+    carbs: Color(0xFFF2B544),
+    fat: Color(0xFFC78BE0),
     mealPalettes: [
-      MealPalette(Color(0xFFFFE6CF), Color(0xFFA4521A)),
-      MealPalette(Color(0xFFD9F2DF), Color(0xFF1C7A4A)),
-      MealPalette(Color(0xFFE6E0FA), Color(0xFF5B45B0)),
+      MealPalette(Color(0xFFFDEBD2), Color(0xFFA4521A)),
+      MealPalette(Color(0xFFDDF1E4), Color(0xFF1F5C45)),
+      MealPalette(Color(0xFFE6E2F7), Color(0xFF5B45B0)),
       MealPalette(Color(0xFFFFF2BF), Color(0xFF7A5E00)),
       MealPalette(Color(0xFFD8ECFF), Color(0xFF1F5FA8)),
       MealPalette(Color(0xFFFFE0EA), Color(0xFFA8325E)),
     ],
-    camera: Color(0xFF102A1C),
+    camera: Color(0xFF17251E),
     cameraScrim: Color(0x99000000),
     onCamera: Color(0xFFFFFFFF),
   );
 
   static const dark = AppColors(
-    background: Color(0xFF0B1711),
-    surface: Color(0xFF14251B),
-    surfaceAlt: Color(0xFF1B3024),
-    ink: Color(0xFFE7F2EA),
-    inkMuted: Color(0xFFA9BFB1),
-    border: Color(0x1AE7F2EA),
-    brandDark: Color(0xFF0A3320),
-    brand: Color(0xFF3FAE6A),
-    heroStart: Color(0xFF0A3320),
-    heroMid: Color(0xFF145C38),
-    heroEnd: Color(0xFF1F6E35),
-    heroDecor: Color(0x1F9BE36D),
-    heroGlass: Color(0x24000000),
-    onHero: Color(0xFFFFFFFF),
-    cta: Color(0xFFE7F2EA),
-    onCta: Color(0xFF0B1711),
-    tonal: Color(0xFF173626),
+    background: Color(0xFF131814),
+    surface: Color(0xFF1D241F),
+    surfaceAlt: Color(0xFF262E28),
+    track: Color(0xFF2C352F),
+    ink: Color(0xFFECEFE8),
+    inkMuted: Color(0xFFA3B1A8),
+    border: Color(0x1AECEFE8),
+    brand: Color(0xFF8FD3AE),
+    ringStart: Color(0xFF3FAE6A),
+    ringEnd: Color(0xFFA8E07F),
+    cta: Color(0xFF8FD3AE),
+    onCta: Color(0xFF131814),
+    tonal: Color(0xFF163A25),
     onTonal: Color(0xFF9FE0B4),
-    navInactive: Color(0xFF8FA79A),
+    navBar: Color(0xFF2A332D),
+    navInactive: Color(0xFF9DB3A6),
+    navActive: Color(0xFFCFEBD9),
+    onNavActive: Color(0xFF17251E),
+    selected: Color(0xFFECEFE8),
+    onSelected: Color(0xFF131814),
+    star: Color(0xFFF2C14E),
     snackAction: Color(0xFF0E4D2F),
     shadow: Color(0x00000000),
     ratingLow: Color(0xFF9FE0B4),
@@ -336,7 +343,7 @@ class AppColors extends ThemeExtension<AppColors> {
       MealPalette(Color(0xFF16283D), Color(0xFF9CC8FF)),
       MealPalette(Color(0xFF3D1B28), Color(0xFFFFB0CB)),
     ],
-    camera: Color(0xFF050D09),
+    camera: Color(0xFF0B0F0C),
     cameraScrim: Color(0x99000000),
     onCamera: Color(0xFFFFFFFF),
   );
@@ -354,22 +361,24 @@ class AppColors extends ThemeExtension<AppColors> {
       background: mix(background, other.background),
       surface: mix(surface, other.surface),
       surfaceAlt: mix(surfaceAlt, other.surfaceAlt),
+      track: mix(track, other.track),
       ink: mix(ink, other.ink),
       inkMuted: mix(inkMuted, other.inkMuted),
       border: mix(border, other.border),
-      brandDark: mix(brandDark, other.brandDark),
       brand: mix(brand, other.brand),
-      heroStart: mix(heroStart, other.heroStart),
-      heroMid: mix(heroMid, other.heroMid),
-      heroEnd: mix(heroEnd, other.heroEnd),
-      heroDecor: mix(heroDecor, other.heroDecor),
-      heroGlass: mix(heroGlass, other.heroGlass),
-      onHero: mix(onHero, other.onHero),
+      ringStart: mix(ringStart, other.ringStart),
+      ringEnd: mix(ringEnd, other.ringEnd),
       cta: mix(cta, other.cta),
       onCta: mix(onCta, other.onCta),
       tonal: mix(tonal, other.tonal),
       onTonal: mix(onTonal, other.onTonal),
+      navBar: mix(navBar, other.navBar),
       navInactive: mix(navInactive, other.navInactive),
+      navActive: mix(navActive, other.navActive),
+      onNavActive: mix(onNavActive, other.onNavActive),
+      selected: mix(selected, other.selected),
+      onSelected: mix(onSelected, other.onSelected),
+      star: mix(star, other.star),
       snackAction: mix(snackAction, other.snackAction),
       shadow: mix(shadow, other.shadow),
       ratingLow: mix(ratingLow, other.ratingLow),
@@ -396,51 +405,62 @@ class AppColors extends ThemeExtension<AppColors> {
   }
 }
 
-/// The text styles of the app (all Nunito, numbers in design-c.md):
+/// The text styles of the app (all Manrope, numbers in design-a.md):
 ///
-/// | Style          | Size/weight | Used for                          |
-/// |----------------|-------------|-----------------------------------|
-/// | headlineMedium | 32 / 900    | big numbers (calorie ring)        |
-/// | headlineSmall  | 26 / 900    | page and product titles           |
-/// | titleLarge     | 20 / 900    | hero titles, app bars             |
-/// | titleMedium    | 18 / 900    | section titles, sheet titles      |
-/// | titleSmall     | 15 / 900    | tile names, button labels         |
-/// | bodyLarge      | 15 / 700    | body text, list rows, text fields |
-/// | bodyMedium     | 15 / 700    | default text                      |
-/// | bodySmall      | 13 / 700    | secondary text (muted colour)     |
-/// | labelLarge     | 15 / 800    | buttons                           |
-/// | labelMedium    | 12 / 800    | small labels, pills, captions     |
-/// | labelSmall     | 11 / 800    | navigation bar labels             |
+/// | Style          | Size/weight | Used for                            |
+/// |----------------|-------------|-------------------------------------|
+/// | headlineMedium | 30 / 800    | big numbers (calorie ring, goal)    |
+/// | headlineSmall  | 26 / 800    | page and product titles             |
+/// | titleLarge     | 20 / 800    | sub-page titles                     |
+/// | titleMedium    | 18 / 800    | section titles, sheet titles        |
+/// | titleSmall     | 15 / 800    | card titles, meal names             |
+/// | bodyLarge      | 15 / 600    | body text, list rows, text fields   |
+/// | bodyMedium     | 14 / 600    | default text                        |
+/// | bodySmall      | 13 / 600    | secondary text (muted colour)       |
+/// | labelLarge     | 15 / 800    | buttons                             |
+/// | labelMedium    | 12 / 700    | small labels, overlines, chips      |
+/// | labelSmall     | 11 / 700    | tiny captions                       |
 TextTheme buildTextTheme(AppColors colors) {
-  TextStyle style(double size, FontWeight weight, {Color? color}) => TextStyle(
+  TextStyle style(
+    double size,
+    FontWeight weight, {
+    Color? color,
+    double letterSpacing = 0,
+  }) => TextStyle(
     fontFamily: appFontFamily,
     fontSize: size,
     fontWeight: weight,
     color: color ?? colors.ink,
-    letterSpacing: 0,
+    letterSpacing: letterSpacing,
   );
-  const black = FontWeight.w900;
   const extraBold = FontWeight.w800;
   const bold = FontWeight.w700;
+  const semiBold = FontWeight.w600;
   return TextTheme(
-    displayLarge: style(48, black),
-    displayMedium: style(40, black),
-    displaySmall: style(36, black),
-    headlineLarge: style(32, black),
+    displayLarge: style(48, extraBold),
+    displayMedium: style(40, extraBold),
+    displaySmall: style(36, extraBold),
+    headlineLarge: style(32, extraBold),
     headlineMedium: style(
-      32,
-      black,
-    ).copyWith(fontFeatures: tabularFigures, height: 1.1),
-    headlineSmall: style(26, black).copyWith(height: 1.15),
-    titleLarge: style(20, black),
-    titleMedium: style(18, black),
-    titleSmall: style(15, black),
-    bodyLarge: style(15, bold),
-    bodyMedium: style(15, bold),
-    bodySmall: style(13, bold, color: colors.inkMuted),
+      30,
+      extraBold,
+      letterSpacing: -0.9,
+    ).copyWith(fontFeatures: tabularFigures, height: 1.05),
+    // −0.02em like the mock-up.
+    headlineSmall: style(
+      26,
+      extraBold,
+      letterSpacing: -0.52,
+    ).copyWith(height: 1.15),
+    titleLarge: style(20, extraBold),
+    titleMedium: style(18, extraBold),
+    titleSmall: style(15, extraBold),
+    bodyLarge: style(15, semiBold),
+    bodyMedium: style(14, semiBold),
+    bodySmall: style(13, semiBold, color: colors.inkMuted),
     labelLarge: style(15, extraBold),
-    labelMedium: style(12, extraBold),
-    labelSmall: style(11, extraBold),
+    labelMedium: style(12, bold),
+    labelSmall: style(11, bold),
   );
 }
 
@@ -487,21 +507,10 @@ ThemeData buildTheme(Brightness brightness) {
     horizontal: Spacing.page,
     vertical: Spacing.m,
   );
-  final buttonText = text.labelLarge!.copyWith(fontWeight: FontWeight.w900);
+  final buttonText = text.labelLarge;
   final sheetShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(Radii.sheet),
   );
-  // Selected pills/segments use the CTA colours, the others look like a
-  // white pill with a thin outline.
-  Color? pillBackground(Set<WidgetState> states) =>
-      states.contains(WidgetState.selected) ? colors.cta : colors.surface;
-  Color? pillForeground(Set<WidgetState> states) =>
-      states.contains(WidgetState.selected) ? colors.onCta : colors.ink;
-  BorderSide pillSide(Set<WidgetState> states) =>
-      states.contains(WidgetState.selected)
-      ? BorderSide(color: colors.cta)
-      : BorderSide(color: colors.border);
-
   return ThemeData(
     brightness: brightness,
     colorScheme: scheme,
@@ -526,10 +535,9 @@ ThemeData buildTheme(Brightness brightness) {
         TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
       },
     ),
-    // Rounded "‹" back arrow in every app bar.
+    // Rounded back arrow in every app bar (licence page, pickers).
     actionIconTheme: ActionIconThemeData(
-      backButtonIconBuilder: (_) =>
-          const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+      backButtonIconBuilder: (_) => const Icon(Icons.arrow_back_rounded),
       closeButtonIconBuilder: (_) => const Icon(Icons.close_rounded),
     ),
     appBarTheme: AppBarTheme(
@@ -594,41 +602,6 @@ ThemeData buildTheme(Brightness brightness) {
     ),
     iconButtonTheme: IconButtonThemeData(
       style: IconButton.styleFrom(foregroundColor: colors.ink),
-    ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: colors.cta,
-      foregroundColor: colors.onCta,
-      elevation: 2,
-      highlightElevation: 4,
-      shape: buttonShape,
-      extendedTextStyle: buttonText,
-    ),
-    segmentedButtonTheme: SegmentedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith(pillBackground),
-        foregroundColor: WidgetStateProperty.resolveWith(pillForeground),
-        iconColor: WidgetStateProperty.resolveWith(pillForeground),
-        side: WidgetStateProperty.resolveWith(pillSide),
-        shape: const WidgetStatePropertyAll(StadiumBorder()),
-        textStyle: WidgetStatePropertyAll(text.bodySmall),
-        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-      ),
-    ),
-    chipTheme: ChipThemeData(
-      color: WidgetStateProperty.resolveWith(pillBackground),
-      side: WidgetStateBorderSide.resolveWith(pillSide),
-      shape: const StadiumBorder(),
-      showCheckmark: false,
-      labelStyle: text.bodySmall!.copyWith(
-        color: WidgetStateColor.resolveWith(
-          (states) => pillForeground(states) ?? colors.ink,
-        ),
-        fontWeight: FontWeight.w800,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.s,
-        vertical: Spacing.xs,
-      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

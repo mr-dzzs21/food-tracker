@@ -5,11 +5,11 @@ import '../../core/app_info.dart';
 import '../../core/links.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
 import '../../core/widgets/eating_disorder_help.dart';
 import '../../core/widgets/icon_square.dart';
+import '../../core/widgets/page_header.dart';
 import '../../l10n/app_localizations.dart';
 
 /// About the app: version, licences, data source, disclaimers, help.
@@ -25,7 +25,7 @@ class AboutPage extends ConsumerWidget {
     final colors = context.appColors;
 
     return Scaffold(
-      appBar: AppTopBar(title: l10n.aboutTitle),
+      appBar: PageHeader(title: l10n.aboutTitle),
       body: ListView(
         padding: const EdgeInsets.only(top: Spacing.s, bottom: Spacing.xxl),
         children: [

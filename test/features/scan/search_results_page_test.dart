@@ -185,6 +185,35 @@ void main() {
     expect(searches().map((r) => r.url.queryParameters['page']), ['1', '2']);
   });
 
+  testWidgets('hits with known kcal come first, in the server order; hits '
+      'without kcal stay at the end', (tester) async {
+    Map<String, Object?> hit(String code, String name, {num? kcal}) => {
+      'code': code,
+      'product_name': name,
+      'nutriments': {'energy-kcal_100g': ?kcal},
+    };
+    respond = (_) async => jsonResponse(
+      jsonEncode({
+        'hits': [
+          hit('4000000000001', 'Ohne Kalorien A'),
+          hit('4000000000002', 'Mit Kalorien B', kcal: 100),
+          hit('4000000000003', 'Ohne Kalorien C'),
+          hit('4000000000004', 'Mit Kalorien D', kcal: 200),
+        ],
+        'count': 4,
+        'page': 1,
+        'page_count': 1,
+      }),
+    );
+    await openSearch(tester, 'Kalorien');
+
+    double top(String name) => tester.getTopLeft(find.text(name)).dy;
+    expect(top('Mit Kalorien B'), lessThan(top('Mit Kalorien D')));
+    expect(top('Mit Kalorien D'), lessThan(top('Ohne Kalorien A')));
+    expect(top('Ohne Kalorien A'), lessThan(top('Ohne Kalorien C')));
+    expect(find.text('Kalorien unbekannt'), findsNWidgets(2));
+  });
+
   testWidgets('English texts', (tester) async {
     await openSearch(tester, 'Haferflocken', locale: const Locale('en'));
 

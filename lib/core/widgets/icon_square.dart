@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_theme.dart';
 
 /// A small rounded square with an icon on a tinted background – used at the
-/// start of list rows, rating rows and on meal tiles.
+/// start of list rows and on meal cards.
 class IconSquare extends StatelessWidget {
   const IconSquare({
     super.key,
@@ -12,7 +12,7 @@ class IconSquare extends StatelessWidget {
     required this.foreground,
     this.size = 34,
     this.iconSize = 20,
-    this.radius = Radii.square,
+    this.radius = Radii.m,
   });
 
   final IconData icon;

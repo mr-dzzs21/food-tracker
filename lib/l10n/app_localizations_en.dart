@@ -137,6 +137,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dayJumpToday => 'Today';
 
   @override
+  String get dayTodayBadge => 'Today';
+
+  @override
   String get todayGoalCardTitle => 'Set your daily goal';
 
   @override
@@ -170,14 +173,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String todayRingSemanticsEaten(String eaten) {
-    return '$eaten kcal eaten. No daily goal set.';
+  String todayRingSemanticsEaten(String eaten, String reference) {
+    return '$eaten kcal eaten of a reference intake of $reference kcal. No daily goal set.';
   }
 
   @override
-  String todayEatenLine(String eaten) {
-    return 'Eaten: $eaten kcal';
+  String todayRingOfReference(String reference) {
+    return 'of $reference kcal (reference)';
   }
+
+  @override
+  String todayEatenGoalLine(String eaten, String goal) {
+    return 'Eaten $eaten · goal $goal kcal';
+  }
+
+  @override
+  String get todayReferenceNote =>
+      'Without a goal, the ring and bars show the EU reference intakes for adults.';
 
   @override
   String todayMissingValues(int count) {
@@ -197,6 +209,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String todayMacroOfGoal(String eaten, String goal) {
     return '$eaten of $goal g';
+  }
+
+  @override
+  String todayMacroOfReference(String eaten, String reference) {
+    return '$eaten of $reference g (reference)';
   }
 
   @override
@@ -302,12 +319,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingTitle => 'Rating';
-
-  @override
-  String get ratingTitleFood => 'Rating per 100 g';
-
-  @override
-  String get ratingTitleDrink => 'Rating per 100 ml';
 
   @override
   String ratingRowSemantics(String nutrient, String level, String value) {

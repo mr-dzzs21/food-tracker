@@ -55,7 +55,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     await pumpApp(tester);
 
-    await tester.tap(find.text('Statistik'));
+    await tester.tap(tab('Statistik'));
     await tester.pumpAndSettle();
     expect(find.text('Diese Woche'), findsOneWidget);
     expect(
@@ -63,7 +63,8 @@ void main() {
       isSemantics(isSelected: true),
     );
     expect(tester.getSemantics(tab('Heute')), isSemantics(isSelected: false));
-    // The brand colour marks the open tab.
+    // The open tab is a mint pill with icon and label; the others show
+    // only their icon (the tooltip names them).
     final context = tester.element(find.byType(AppNavBar));
     final label = tester.widget<Text>(
       find.descendant(
@@ -71,57 +72,94 @@ void main() {
         matching: find.text('Statistik'),
       ),
     );
-    expect(label.style?.color, context.appColors.brand);
+    expect(label.style?.color, context.appColors.onNavActive);
+    expect(
+      find.descendant(of: find.byType(AppNavBar), matching: find.text('Heute')),
+      findsNothing,
+    );
+    // (The tooltip is not in the semantics tree – the tab's own node names
+    // it – so find.byTooltip does not see it.)
+    expect(
+      find.byWidgetPredicate((w) => w is Tooltip && w.message == 'Heute'),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text('Profil'));
+    await tester.tap(tab('Profil'));
     await tester.pumpAndSettle();
     expect(find.text('Dein Tagesziel'), findsOneWidget);
     semantics.dispose();
   });
 
-  testWidgets('the raised scan button opens the Scan tab, also when tapped '
-      'above the bar', (tester) async {
-    await pumpApp(tester);
-    final bar = tester.getRect(
-      find
-          .descendant(
-            of: find.byType(AppNavBar),
-            matching: find.byType(DecoratedBox),
-          )
-          .first,
-    );
-    final icon = tester.getRect(find.byIcon(Icons.qr_code_scanner_rounded));
-    // The square sticks out above the white bar …
-    expect(icon.top, lessThan(bar.top));
+  /// The width of the tab called [label] (the open one is wider).
+  double pillWidth(WidgetTester tester, String label) =>
+      tester.getSize(tab(label)).width;
 
-    // … and that part reacts to taps, too.
-    await tester.tapAt(Offset(icon.center.dx, bar.top - 8));
-    await tester.pumpAndSettle();
-    expect(find.byKey(FakeScanner.boxKey), findsOneWidget);
-  });
-
-  testWidgets('the page stays tappable next to the raised button', (
+  testWidgets('the open tab grows smoothly, the old one shrinks', (
     tester,
   ) async {
     await pumpApp(tester);
+    final todayWide = pillWidth(tester, 'Heute');
+    final statsNarrow = pillWidth(tester, 'Statistik');
+    expect(todayWide, greaterThan(statsNarrow));
+
+    await tester.tap(tab('Statistik'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    // Half-way: the new tab is wider than before, not yet full width.
+    final halfway = pillWidth(tester, 'Statistik');
+    expect(halfway, greaterThan(statsNarrow));
+    expect(halfway, lessThan(todayWide));
+
+    await tester.pumpAndSettle();
+    expect(pillWidth(tester, 'Statistik'), todayWide);
+    expect(pillWidth(tester, 'Heute'), statsNarrow);
+  });
+
+  testWidgets('reduced motion: the pill moves at once', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpApp(tester);
+    final wide = pillWidth(tester, 'Heute');
+
+    await tester.tap(tab('Profil'));
+    await tester.pump();
+    await tester.pump();
+    expect(pillWidth(tester, 'Profil'), wide);
+  });
+
+  testWidgets('a new screen width applies at once (no overflow)', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    tester.view.physicalSize = const Size(360, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    // 360 − 2 × 18 px margin − 2 × 8 px padding = 308 px for the tabs.
+    expect(
+      pillWidth(tester, 'Heute'),
+      closeTo(308 * AppNavBar.selectedShare, 0.01),
+    );
+  });
+
+  testWidgets('the floating bar covers no page content', (tester) async {
+    await pumpApp(tester);
     final bar = tester.getRect(
       find
           .descendant(
             of: find.byType(AppNavBar),
-            matching: find.byType(DecoratedBox),
+            matching: find.byType(Container),
           )
           .first,
     );
-    // Above the "Profil" tab, inside the strip the scan button sticks
-    // into: nothing of the bar may catch the tap.
-    final profile = tester.getCenter(find.text('Profil'));
-    final hit = tester.hitTestOnBinding(Offset(profile.dx, bar.top - 8));
-    final barElement = tester.element(find.byType(AppNavBar));
-    final barRenderObject = barElement.renderObject;
-    expect(
-      hit.path.any((entry) => identical(entry.target, barRenderObject)),
-      isFalse,
-    );
+    // 18 px from the sides of the 800 px wide test screen.
+    expect(bar.left, AppNavBar.margin);
+    expect(bar.height, AppNavBar.height);
+    // The page (its scroll view) ends above the bar.
+    final page = tester.getRect(find.byType(Scrollable).first);
+    expect(page.bottom, lessThanOrEqualTo(bar.top));
   });
 
   testWidgets('dark mode and large text render without overflow', (
@@ -134,6 +172,10 @@ void main() {
     final context = tester.element(find.byType(AppNavBar));
     expect(Theme.of(context).brightness, Brightness.dark);
     expect(tester.takeException(), isNull);
-    expect(find.text('Statistik'), findsOneWidget);
+    // Only the open tab shows its label.
+    expect(
+      find.descendant(of: find.byType(AppNavBar), matching: find.text('Heute')),
+      findsOneWidget,
+    );
   });
 }

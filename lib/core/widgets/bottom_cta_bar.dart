@@ -3,7 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_theme.dart';
 
 /// The sticky area at the bottom of a page for its main button (usually a
-/// `CtaButton`): page background, soft upward shadow, safe-area aware.
+/// `CtaButton`, which brings its own soft glow): page background,
+/// safe-area aware.
 ///
 /// Use it as `Scaffold.bottomNavigationBar`, so the button is always
 /// reachable however far the page is scrolled.
@@ -14,12 +15,8 @@ class BottomCtaBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.background,
-        boxShadow: colors.barShadow,
-      ),
+    return ColoredBox(
+      color: context.appColors.background,
       child: SafeArea(
         top: false,
         minimum: const EdgeInsets.fromLTRB(

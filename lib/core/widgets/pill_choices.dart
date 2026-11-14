@@ -11,8 +11,13 @@ class PillChoice<T> {
   final T value;
 }
 
-/// A row of round "pill" buttons of which one is selected (dark CTA
-/// colours). Replaces Material chips and segmented buttons.
+/// A group of pill buttons of which one is selected (dark "selected"
+/// colours, the others soft grey). Replaces Material chips and segmented
+/// buttons.
+///
+/// [segmented] = one row of equally wide segments (radius 14), e.g.
+/// "100 g · 1 Portion · Zuletzt" (they wrap when the text is very large);
+/// otherwise round chips that wrap.
 ///
 /// Each pill is a button with the "selected" state for screen readers and
 /// a touch area of at least 48 px height.
@@ -22,6 +27,7 @@ class PillChoices<T> extends StatelessWidget {
     required this.choices,
     required this.selected,
     required this.onSelected,
+    this.segmented = false,
   });
 
   final List<PillChoice<T>> choices;
@@ -29,19 +35,32 @@ class PillChoices<T> extends StatelessWidget {
   /// The selected value; `null` when none of the choices fits.
   final T? selected;
   final ValueChanged<T> onSelected;
+  final bool segmented;
 
   @override
   Widget build(BuildContext context) {
+    Pill pill(PillChoice<T> choice) => Pill(
+      label: choice.label,
+      selected: choice.value == selected,
+      radius: segmented ? Radii.segment : Radii.pill,
+      onTap: () => onSelected(choice.value),
+    );
+    // With very large text equal widths would break words apart: then
+    // the segments wrap like chips.
+    if (segmented && MediaQuery.textScalerOf(context).scale(1) <= 1.5) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final (index, choice) in choices.indexed) ...[
+            if (index > 0) const SizedBox(width: 6),
+            Expanded(child: pill(choice)),
+          ],
+        ],
+      );
+    }
     return Wrap(
       spacing: Spacing.s,
-      children: [
-        for (final choice in choices)
-          Pill(
-            label: choice.label,
-            selected: choice.value == selected,
-            onTap: () => onSelected(choice.value),
-          ),
-      ],
+      children: [for (final choice in choices) pill(choice)],
     );
   }
 }
@@ -53,18 +72,21 @@ class Pill extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.radius = Radii.pill,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final style = Theme.of(context).textTheme.bodySmall!.copyWith(
+    final style = Theme.of(context).textTheme.labelMedium!.copyWith(
+      fontSize: 13,
       fontWeight: FontWeight.w800,
-      color: selected ? colors.onCta : colors.ink,
+      color: selected ? colors.onSelected : colors.ink,
     );
     return Semantics(
       button: true,
@@ -78,17 +100,17 @@ class Pill extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : shortAnimationDuration,
             constraints: const BoxConstraints(minHeight: 40, minWidth: 48),
             padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.l,
+              horizontal: Spacing.m,
               vertical: Spacing.s,
             ),
-            decoration: ShapeDecoration(
-              color: selected ? colors.cta : colors.surface,
-              shape: StadiumBorder(
-                side: BorderSide(color: selected ? colors.cta : colors.border),
-              ),
+            decoration: BoxDecoration(
+              color: selected ? colors.selected : colors.surfaceAlt,
+              borderRadius: BorderRadius.circular(radius),
             ),
             child: Center(
               widthFactor: 1,

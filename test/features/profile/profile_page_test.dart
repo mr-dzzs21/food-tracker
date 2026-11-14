@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/core/theme/app_theme.dart';
+import 'package:food_tracker/core/widgets/app_nav_bar.dart';
 import 'package:food_tracker/core/widgets/card_list.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
@@ -29,7 +30,10 @@ void main() {
     addTearDown(tester.view.reset);
     await pumpFoodTrackerApp(tester, db: db, locale: locale);
     await tester.tap(
-      find.text(locale.languageCode == 'de' ? 'Profil' : 'Profile'),
+      find.descendant(
+        of: find.byType(AppNavBar),
+        matching: find.byIcon(Icons.person_rounded),
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -91,7 +95,13 @@ void main() {
 
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Today'), findsOneWidget); // bottom bar
+    expect(
+      find.descendant(
+        of: find.byType(AppNavBar),
+        matching: find.text('Profile'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Sprache'), findsNothing);
     expect(await SharedPreferencesAsync().getString('locale'), 'en');
 
@@ -211,7 +221,12 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await pumpFoodTrackerApp(tester, db: db, themeMode: ThemeMode.dark);
-    await tester.tap(find.text('Profil'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppNavBar),
+        matching: find.byIcon(Icons.person_rounded),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('2.300 kcal pro Tag'), findsOneWidget);

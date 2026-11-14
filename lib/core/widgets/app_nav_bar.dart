@@ -11,71 +11,92 @@ class AppNavDestination {
   final String label;
 }
 
-/// The app's own bottom navigation bar (replaces Material's NavigationBar).
+/// The app's own bottom navigation bar (replaces Material's NavigationBar):
+/// a dark pill that floats 18 px above the bottom edge (and the safe area).
 ///
-/// A white bar with round top corners and a soft upward shadow. The tab at
-/// [raisedIndex] (Scannen) is a big green square that sticks out [raise] px
-/// above the bar. The selected tab is shown in the brand colour.
+/// The selected tab becomes a mint pill with icon and label; the other tabs
+/// show only their icon (with a tooltip). When the selection changes, the
+/// pills grow and shrink smoothly (no animation with reduced motion).
 ///
-/// Use it with `Scaffold(extendBody: true)`, so the page is visible behind
-/// the transparent strip next to the raised button (see `HomeShell`).
+/// Use it as `Scaffold.bottomNavigationBar`: the page then ends above it.
 class AppNavBar extends StatelessWidget {
   const AppNavBar({
     super.key,
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
-    this.raisedIndex,
   });
 
   final List<AppNavDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
-  final int? raisedIndex;
 
-  /// How far the raised button sticks out above the bar.
-  static const double raise = 24;
+  /// Height of the dark bar.
+  static const double height = 62;
+
+  /// Space between the bar and the screen edges.
+  static const double margin = 18;
+
+  /// The share of the bar's width the selected tab gets.
+  static const double selectedShare = 0.4;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final safeBottom = MediaQuery.paddingOf(context).bottom;
-    // Tab labels grow with the text size, but only up to 1.4×: the bar must
-    // not cover half of the screen (iOS does not scale them at all).
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : shortAnimationDuration;
+    // The label grows with the text size, but only up to 1.4×: the bar
+    // keeps its height (iOS does not scale tab labels at all).
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.4,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            top: raise,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(Radii.sheet),
-                ),
-                boxShadow: colors.barShadow,
-              ),
+      child: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: margin),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: margin),
+          child: Container(
+            height: height,
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.s),
+            decoration: BoxDecoration(
+              color: colors.navBar,
+              borderRadius: BorderRadius.circular(height / 2),
+              boxShadow: colors.navShadow,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final count = destinations.length;
+                final otherShare = (1 - selectedShare) / (count - 1);
+                return Row(
+                  children: [
+                    for (var i = 0; i < count; i++)
+                      // The share of the width animates (not the width
+                      // itself), so the tabs follow a new screen width at
+                      // once. Both shares change with the same curve, so
+                      // the tabs always fill the bar exactly.
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(
+                          end: i == selectedIndex ? selectedShare : otherShare,
+                        ),
+                        duration: duration,
+                        curve: Curves.easeOutCubic,
+                        builder: (context, share, child) => SizedBox(
+                          width: constraints.maxWidth * share,
+                          child: child,
+                        ),
+                        child: _NavItem(
+                          destination: destinations[i],
+                          selected: i == selectedIndex,
+                          duration: duration,
+                          onTap: () => onSelected(i),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(bottom: safeBottom),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var i = 0; i < destinations.length; i++)
-                  Expanded(
-                    child: _NavItem(
-                      destination: destinations[i],
-                      selected: i == selectedIndex,
-                      raised: i == raisedIndex,
-                      onTap: () => onSelected(i),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -85,69 +106,51 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.destination,
     required this.selected,
-    required this.raised,
+    required this.duration,
     required this.onTap,
   });
 
   final AppNavDestination destination;
   final bool selected;
-  final bool raised;
+  final Duration duration;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final color = selected ? colors.brand : colors.navInactive;
-    final label = Text(
-      destination.label,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.labelSmall!.copyWith(color: color),
-    );
-
-    final Widget content;
-    if (raised) {
-      content = Column(
+    final foreground = selected ? colors.onNavActive : colors.navInactive;
+    final pill = AnimatedContainer(
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: selected
+            ? colors.navActive
+            : colors.navActive.withValues(alpha: 0),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: colors.scanGradient,
-              borderRadius: BorderRadius.circular(Radii.scanButton),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.heroMid.withValues(alpha: 0.35),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+          Icon(destination.icon, color: foreground, size: 22),
+          if (selected) ...[
+            const SizedBox(width: Spacing.s),
+            Flexible(
+              child: Text(
+                destination.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge!
+                    .copyWith(fontSize: 13, color: foreground),
+              ),
             ),
-            child: Icon(destination.icon, color: colors.onHero, size: 28),
-          ),
-          const SizedBox(height: 6),
-          label,
-          const SizedBox(height: Spacing.s),
-        ],
-      );
-    } else {
-      content = Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(destination.icon, color: color, size: 26),
-            const SizedBox(height: 2),
-            label,
-            const SizedBox(height: Spacing.s),
           ],
-        ),
-      );
-    }
+        ],
+      ),
+    );
 
-    final item = Semantics(
+    return Semantics(
       container: true,
       button: true,
       selected: selected,
@@ -158,16 +161,15 @@ class _NavItem extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         excludeFromSemantics: true,
         onTap: onTap,
-        child: content,
+        child: Center(
+          // The other tabs show only their icon: the tooltip names them.
+          child: Tooltip(
+            message: destination.label,
+            excludeFromSemantics: true,
+            child: pill,
+          ),
+        ),
       ),
     );
-    // Normal tabs start below the strip the raised button sticks into, so
-    // taps in that strip reach the page behind it.
-    return raised
-        ? item
-        : Padding(
-            padding: const EdgeInsets.only(top: AppNavBar.raise),
-            child: item,
-          );
   }
 }

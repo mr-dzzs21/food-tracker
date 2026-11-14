@@ -246,7 +246,7 @@ class _CameraOverlay extends StatelessWidget {
               if (torchState != TorchState.unavailable)
                 Align(
                   alignment: AlignmentDirectional.topEnd,
-                  child: SquareIconButton(
+                  child: RoundIconButton(
                     tooltip: torchOn
                         ? l10n.scannerTorchOff
                         : l10n.scannerTorchOn,

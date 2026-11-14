@@ -4,11 +4,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
 import '../../core/widgets/dialogs.dart';
 import '../../core/widgets/eating_disorder_help.dart';
-import '../../core/widgets/hero_header.dart';
 import '../../core/widgets/icon_square.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/database.dart';
 import '../../data/settings_repository.dart';
@@ -32,7 +34,7 @@ class ProfilePage extends ConsumerWidget {
 
     final colors = context.appColors;
     final palettes = colors.mealPalettes;
-    // A tinted icon square per row, in the colours of the meal tiles.
+    // A tinted icon square per row, in the colours of the meal cards.
     Widget icon(IconData icon, MealPalette palette) => IconSquare(
       icon: icon,
       background: palette.background,
@@ -43,7 +45,8 @@ class ProfilePage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xl),
         children: [
-          const _GoalHero(),
+          PageHeader(title: l10n.tabProfile, large: true),
+          const _GoalCard(),
           SectionHeader(l10n.profileSettingsTitle),
           _Group(
             children: [
@@ -210,80 +213,60 @@ class _Group extends StatelessWidget {
   );
 }
 
-/// The green header: "Dein Tagesziel" with the big kcal number and the
-/// macros, or "Noch kein Ziel"; a white pill opens the goal page.
-class _GoalHero extends ConsumerWidget {
-  const _GoalHero();
+/// The summary card: "Dein Tagesziel" with the big kcal number and the
+/// macros, or "Noch kein Ziel"; a tonal button opens the goal page.
+class _GoalCard extends ConsumerWidget {
+  const _GoalCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colors = context.appColors;
     final locale = l10n.localeName;
     final goal = ref.watch(goalProvider).value;
     final macros = goal == null ? '' : _macroText(goal, l10n);
-    // Theme styles carry the ink colour: on the hero always white.
-    TextStyle white(TextStyle? style) => style!.copyWith(color: colors.onHero);
 
-    return HeroHeader(
-      top: SizedBox(
-        height: 48,
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Semantics(
-            header: true,
-            child: Text(
-              l10n.tabProfile,
-              style: white(theme.textTheme.titleLarge),
-            ),
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: Spacing.s),
-          Semantics(
-            header: true,
-            child: Text(
-              l10n.profileGoalTitle,
-              style: white(theme.textTheme.labelMedium).copyWith(fontSize: 13),
-            ),
-          ),
-          const SizedBox(height: Spacing.xs),
-          if (goal == null) ...[
-            Text(
-              l10n.profileGoalNone,
-              style: white(theme.textTheme.headlineSmall),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Spacing.l, Spacing.s, Spacing.l, 0),
+      child: SummaryCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Semantics(
+              header: true,
+              child: Text(
+                l10n.profileGoalTitle,
+                style: PageHeader.overlineStyle(context),
+              ),
             ),
             const SizedBox(height: Spacing.xs),
-            Text(
-              l10n.profileGoalNoneText,
-              style: white(theme.textTheme.bodySmall),
-            ),
-          ] else ...[
-            Text(
-              l10n.profileGoalKcal(formatKcal(goal.kcal.toDouble(), locale)),
-              style: white(theme.textTheme.headlineMedium),
-            ),
-            if (macros.isNotEmpty) ...[
+            if (goal == null) ...[
+              Text(l10n.profileGoalNone, style: theme.textTheme.headlineSmall),
               const SizedBox(height: Spacing.xs),
-              Text(macros, style: white(theme.textTheme.bodySmall)),
+              Text(l10n.profileGoalNoneText, style: theme.textTheme.bodySmall),
+            ] else ...[
+              Text(
+                l10n.profileGoalKcal(formatKcal(goal.kcal.toDouble(), locale)),
+                style: theme.textTheme.headlineMedium,
+              ),
+              if (macros.isNotEmpty) ...[
+                const SizedBox(height: Spacing.xs),
+                Text(macros, style: theme.textTheme.bodySmall),
+              ],
             ],
-          ],
-          const SizedBox(height: Spacing.m),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: HeroPill(
-              filled: true,
-              onPressed: () => context.push(Routes.goal),
-              label: goal == null
-                  ? l10n.profileGoalSet
-                  : l10n.profileGoalChange,
+            const SizedBox(height: Spacing.m),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TonalButton(
+                icon: goal == null ? Icons.flag_rounded : Icons.tune_rounded,
+                onPressed: () => context.push(Routes.goal),
+                label: goal == null
+                    ? l10n.profileGoalSet
+                    : l10n.profileGoalChange,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

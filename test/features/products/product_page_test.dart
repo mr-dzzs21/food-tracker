@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
@@ -107,7 +108,8 @@ void main() {
 
     expect(find.text('chipsfrisch ungarisch'), findsOneWidget);
     expect(find.text('funny-frisch'), findsOneWidget);
-    expect(find.text('Bewertung pro 100 g'), findsOneWidget);
+    expect(find.text('Bewertung'), findsOneWidget);
+    expect(find.text('pro 100 g'), findsNWidgets(2)); // info chip + table
     // Value and word of each level: fat high, saturates and salt medium,
     // sugars low.
     Finder inRating(String text) => find.descendant(
@@ -124,12 +126,23 @@ void main() {
     expect(find.byIcon(Icons.remove_rounded), findsNWidgets(2));
     expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
     expect(find.bySemanticsLabel('Fett: hoch, 33 g'), findsOneWidget);
+    // A 2 × 2 grid: fat next to saturates, sugars below fat.
+    final fat = tester.getRect(find.bySemanticsLabel('Fett: hoch, 33 g'));
+    final sugars = tester.getRect(
+      find.bySemanticsLabel('Zucker: niedrig, 2,5 g'),
+    );
+    final saturates = tester.getRect(
+      find.bySemanticsLabel(RegExp('^gesättigte Fettsäuren: ')),
+    );
+    expect(saturates.top, fat.top);
+    expect(saturates.left, greaterThan(fat.right));
+    expect(sugars.left, fat.left);
+    expect(sugars.top, greaterThan(fat.bottom));
     expect(find.bySemanticsLabel('Zucker: niedrig, 2,5 g'), findsOneWidget);
     expect(find.text('Ballaststoffquelle · 4,5 g'), findsOneWidget);
     expect(find.text('Nutri-Score: D (laut Open Food Facts)'), findsOneWidget);
 
     // Nutrition table per 100 g and per portion, attribution and link.
-    expect(find.text('pro 100 g'), findsOneWidget);
     expect(find.text('pro Portion (30 g)'), findsOneWidget);
     expect(find.text('533 kcal'), findsOneWidget);
     expect(find.text('Daten: Open Food Facts (ODbL)'), findsOneWidget);
@@ -167,7 +180,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('per 100 g'), findsOneWidget);
+    expect(find.text('per 100 g'), findsNWidgets(2)); // info chip + table
     expect(find.text('Lunch'), findsOneWidget); // meal pill
     expect(
       find.textContaining(RegExp(r'^Add .+ g to Lunch · .+ kcal$')),
@@ -256,8 +269,26 @@ void main() {
     expect(isSelectedPill(tester, 'Snacks'), isTrue);
     expect(find.text('45,5 g zu den Snacks · 243 kcal'), findsOneWidget);
 
+    final haptics = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'HapticFeedback.vibrate') {
+          haptics.add(call.arguments);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
     await tester.tap(find.byType(CtaButton));
     await tester.pumpAndSettle();
+    // A light tap in the hand confirms it.
+    expect(haptics, ['HapticFeedbackType.lightImpact']);
 
     final entry = (await db.select(db.diaryEntries).get()).single;
     expect(entry.amount, 45.5);

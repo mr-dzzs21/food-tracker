@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/page_header.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router.dart';
 import '../diary/add_food_page.dart';
@@ -25,7 +25,7 @@ class ScannerPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scanner = ref.watch(scannerViewProvider);
     return Scaffold(
-      appBar: AppTopBar(title: AppLocalizations.of(context).scannerTitle),
+      appBar: PageHeader(title: AppLocalizations.of(context).scannerTitle),
       body: SafeArea(
         top: false,
         minimum: const EdgeInsets.fromLTRB(

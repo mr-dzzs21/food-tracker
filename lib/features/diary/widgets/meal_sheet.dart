@@ -192,6 +192,7 @@ class _Header extends StatelessWidget {
           foreground: palette.icon,
           size: 44,
           iconSize: 24,
+          radius: Radii.input,
         ),
         const SizedBox(width: Spacing.m),
         Expanded(
@@ -248,22 +249,22 @@ class _EntryRow extends StatelessWidget {
       locale: l10n.localeName,
     );
     final brand = entry.brand;
-    final radius = BorderRadius.circular(Radii.l);
+    final radius = BorderRadius.circular(Radii.input);
     return Dismissible(
       key: ValueKey(entry.id),
       direction: DismissDirection.endToStart,
       onDismissed: (_) => onDelete(),
       background: Container(
         decoration: BoxDecoration(
-          color: colors.surfaceAlt,
+          color: colors.ratingHighBg,
           borderRadius: radius,
         ),
         alignment: AlignmentDirectional.centerEnd,
         padding: const EdgeInsets.symmetric(horizontal: Spacing.xl),
-        child: Icon(Icons.delete_outline_rounded, color: colors.inkMuted),
+        child: Icon(Icons.delete_outline_rounded, color: colors.ratingHigh),
       ),
       child: Material(
-        color: colors.background,
+        color: colors.surfaceAlt,
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -304,7 +305,7 @@ class _EntryRow extends StatelessWidget {
                     // Screen readers would read "–" as "dash".
                     semanticsLabel: kcal == null ? l10n.ratingNoData : null,
                     style: theme.textTheme.bodyLarge!.copyWith(
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                       fontFeatures: tabularFigures,
                     ),
                   ),

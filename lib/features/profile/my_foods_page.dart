@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
 import '../../core/widgets/dialogs.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
@@ -29,7 +29,7 @@ class MyFoodsPage extends ConsumerWidget {
     final hasFoods = foods.value?.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppTopBar(title: l10n.myFoodsTitle),
+      appBar: PageHeader(title: l10n.myFoodsTitle),
       // The empty state has its own button; one is enough.
       bottomNavigationBar: hasFoods
           ? BottomCtaBar(

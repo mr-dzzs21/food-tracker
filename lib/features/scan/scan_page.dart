@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/card_list.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/search_field.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -45,7 +45,7 @@ class _ScanPageState extends ConsumerState<ScanPage> {
     final recent = ref.watch(recentlyViewedFoodsProvider);
 
     return Scaffold(
-      appBar: AppTopBar(title: l10n.tabScan, large: true),
+      appBar: PageHeader(title: l10n.tabScan, large: true),
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [

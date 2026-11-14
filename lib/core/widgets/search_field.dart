@@ -5,8 +5,8 @@ import '../theme/app_theme.dart';
 import 'buttons.dart';
 
 /// A text field for searching, with a search button at the end. White on
-/// the page background (with the card shadow), the button is a small dark
-/// square.
+/// the page background (with the card shadow), the button is a small green
+/// circle.
 ///
 /// [onSubmitted] runs on the keyboard's search key and on the button, and
 /// only with non-empty text (trimmed). Online searches belong there, not in
@@ -51,7 +51,7 @@ class SearchField extends StatelessWidget {
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: Padding(
             padding: const EdgeInsetsDirectional.only(end: Spacing.xs),
-            child: SquareIconButton(
+            child: RoundIconButton(
               icon: Icons.arrow_forward_rounded,
               tooltip: l10n.searchSubmit,
               size: 36,

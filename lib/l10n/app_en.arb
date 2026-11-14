@@ -88,6 +88,10 @@
   "@dayJumpToday": {
     "description": "Button that jumps back to today in the date switcher"
   },
+  "dayTodayBadge": "Today",
+  "@dayTodayBadge": {
+    "description": "Small pill next to the date on Today when today is shown"
+  },
   "todayGoalCardTitle": "Set your daily goal",
   "todayGoalCardButton": "Set goal",
   "todayGoalCardDismiss": "Hide this hint",
@@ -145,22 +149,42 @@
       }
     }
   },
-  "todayRingSemanticsEaten": "{eaten} kcal eaten. No daily goal set.",
+  "todayRingSemanticsEaten": "{eaten} kcal eaten of a reference intake of {reference} kcal. No daily goal set.",
   "@todayRingSemanticsEaten": {
-    "description": "Screen reader sentence for the calorie ring",
+    "description": "Screen reader sentence for the calorie ring without a goal; reference = EU reference intake 2,000 kcal",
     "placeholders": {
       "eaten": {
+        "type": "String"
+      },
+      "reference": {
         "type": "String"
       }
     }
   },
-  "todayEatenLine": "Eaten: {eaten} kcal",
-  "@todayEatenLine": {
+  "todayRingOfReference": "of {reference} kcal (reference)",
+  "@todayRingOfReference": {
+    "description": "Small text in the calorie ring without a goal: the EU reference intake for adults",
     "placeholders": {
-      "eaten": {
+      "reference": {
         "type": "String"
       }
     }
+  },
+  "todayEatenGoalLine": "Eaten {eaten} · goal {goal} kcal",
+  "@todayEatenGoalLine": {
+    "description": "Line under the summary card on Today",
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "todayReferenceNote": "Without a goal, the ring and bars show the EU reference intakes for adults.",
+  "@todayReferenceNote": {
+    "description": "Line under the summary card on Today when no goal is set"
   },
   "todayMissingValues": "{count, plural, =1{Values are missing for 1 entry} other{Values are missing for {count} entries}}",
   "@todayMissingValues": {
@@ -184,9 +208,21 @@
       }
     }
   },
+  "todayMacroOfReference": "{eaten} of {reference} g (reference)",
+  "@todayMacroOfReference": {
+    "description": "Screen reader text of a macro bar without a goal (EU reference intake)",
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
   "todayMacroCompact": "{eaten}/{goal} g",
   "@todayMacroCompact": {
-    "description": "Short macro value in the pills on the Today hero, e.g. '37/75 g'",
+    "description": "Short macro value above the bars in the Today summary card, e.g. '37/75 g'",
     "placeholders": {
       "eaten": {
         "type": "String"
@@ -198,7 +234,7 @@
   },
   "todayMealEntries": "{count, plural, =0{Nothing yet} =1{1 entry} other{{count} entries}}",
   "@todayMealEntries": {
-    "description": "Subtitle of a meal tile on Today",
+    "description": "Number of entries of a meal (meal sheet header; meal card when empty)",
     "placeholders": {
       "count": {
         "type": "int"
@@ -207,7 +243,7 @@
   },
   "todayMealTileSemantics": "{meal}: {entries}, {kcal} kcal",
   "@todayMealTileSemantics": {
-    "description": "Screen-reader label of a meal tile, e.g. 'Breakfast: 3 entries, 520 kcal'",
+    "description": "Screen-reader label of a meal card, e.g. 'Breakfast: 3 entries, 520 kcal'",
     "placeholders": {
       "meal": {
         "type": "String"
@@ -222,7 +258,7 @@
   },
   "todayMealTileHint": "Show entries",
   "@todayMealTileHint": {
-    "description": "Screen-reader hint: tapping a meal tile opens its entries"
+    "description": "Screen-reader hint: tapping a meal card opens its entries"
   },
   "mealSheetEmpty": "Nothing logged here yet.",
   "@mealSheetEmpty": {
@@ -297,8 +333,6 @@
   },
   "ratingNoData": "no data",
   "ratingTitle": "Rating",
-  "ratingTitleFood": "Rating per 100 g",
-  "ratingTitleDrink": "Rating per 100 ml",
   "ratingRowSemantics": "{nutrient}: {level}, {value}",
   "@ratingRowSemantics": {
     "description": "Screen reader text of one rating row, e.g. 'Fett: hoch, 33 g'",

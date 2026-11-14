@@ -320,6 +320,12 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get dayJumpToday;
 
+  /// Small pill next to the date on Today when today is shown
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dayTodayBadge;
+
   /// No description provided for @todayGoalCardTitle.
   ///
   /// In en, this message translates to:
@@ -374,17 +380,29 @@ abstract class AppLocalizations {
   /// **'{over} kcal above your goal of {goal} kcal. Eaten: {eaten} kcal.'**
   String todayRingSemanticsOver(String over, String goal, String eaten);
 
-  /// Screen reader sentence for the calorie ring
+  /// Screen reader sentence for the calorie ring without a goal; reference = EU reference intake 2,000 kcal
   ///
   /// In en, this message translates to:
-  /// **'{eaten} kcal eaten. No daily goal set.'**
-  String todayRingSemanticsEaten(String eaten);
+  /// **'{eaten} kcal eaten of a reference intake of {reference} kcal. No daily goal set.'**
+  String todayRingSemanticsEaten(String eaten, String reference);
 
-  /// No description provided for @todayEatenLine.
+  /// Small text in the calorie ring without a goal: the EU reference intake for adults
   ///
   /// In en, this message translates to:
-  /// **'Eaten: {eaten} kcal'**
-  String todayEatenLine(String eaten);
+  /// **'of {reference} kcal (reference)'**
+  String todayRingOfReference(String reference);
+
+  /// Line under the summary card on Today
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten {eaten} · goal {goal} kcal'**
+  String todayEatenGoalLine(String eaten, String goal);
+
+  /// Line under the summary card on Today when no goal is set
+  ///
+  /// In en, this message translates to:
+  /// **'Without a goal, the ring and bars show the EU reference intakes for adults.'**
+  String get todayReferenceNote;
 
   /// Hint when some entries have no value for a nutrient, so totals are 'at least'
   ///
@@ -404,25 +422,31 @@ abstract class AppLocalizations {
   /// **'{eaten} of {goal} g'**
   String todayMacroOfGoal(String eaten, String goal);
 
-  /// Short macro value in the pills on the Today hero, e.g. '37/75 g'
+  /// Screen reader text of a macro bar without a goal (EU reference intake)
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} of {reference} g (reference)'**
+  String todayMacroOfReference(String eaten, String reference);
+
+  /// Short macro value above the bars in the Today summary card, e.g. '37/75 g'
   ///
   /// In en, this message translates to:
   /// **'{eaten}/{goal} g'**
   String todayMacroCompact(String eaten, String goal);
 
-  /// Subtitle of a meal tile on Today
+  /// Number of entries of a meal (meal sheet header; meal card when empty)
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =0{Nothing yet} =1{1 entry} other{{count} entries}}'**
   String todayMealEntries(int count);
 
-  /// Screen-reader label of a meal tile, e.g. 'Breakfast: 3 entries, 520 kcal'
+  /// Screen-reader label of a meal card, e.g. 'Breakfast: 3 entries, 520 kcal'
   ///
   /// In en, this message translates to:
   /// **'{meal}: {entries}, {kcal} kcal'**
   String todayMealTileSemantics(String meal, String entries, String kcal);
 
-  /// Screen-reader hint: tapping a meal tile opens its entries
+  /// Screen-reader hint: tapping a meal card opens its entries
   ///
   /// In en, this message translates to:
   /// **'Show entries'**
@@ -565,18 +589,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rating'**
   String get ratingTitle;
-
-  /// No description provided for @ratingTitleFood.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating per 100 g'**
-  String get ratingTitleFood;
-
-  /// No description provided for @ratingTitleDrink.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating per 100 ml'**
-  String get ratingTitleDrink;
 
   /// Screen reader text of one rating row, e.g. 'Fett: hoch, 33 g'
   ///

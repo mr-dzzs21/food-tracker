@@ -6,7 +6,7 @@ import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/buttons.dart';
-import '../../core/widgets/hero_header.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../l10n/app_localizations.dart';
 import '../diary/total_text.dart';
@@ -29,13 +29,13 @@ class StatsPage extends ConsumerWidget {
     final monday = ref.watch(selectedWeekProvider);
     final stats = ref.watch(weekStatsProvider(monday));
     final goal = ref.watch(goalProvider);
-    final hero = _WeekHero(monday: monday);
+    final header = _WeekHeader(monday: monday);
 
-    // Hero and message in a scroll view, so nothing overflows at large
+    // Header and message in a scroll view, so nothing overflows at large
     // text sizes.
     Widget withMessage(Widget message) => CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: hero),
+        SliverToBoxAdapter(child: header),
         SliverFillRemaining(hasScrollBody: false, child: message),
       ],
     );
@@ -51,7 +51,11 @@ class StatsPage extends ConsumerWidget {
                     message: l10n.statsEmptyText,
                   ),
                 )
-              : _StatsContent(hero: hero, stats: stats, goalKcal: goal?.kcal),
+              : _StatsContent(
+                  header: header,
+                  stats: stats,
+                  goalKcal: goal?.kcal,
+                ),
         (AsyncError(), _) || (_, AsyncError()) => withMessage(
           StatusView(
             icon: Icons.error_outline_rounded,
@@ -68,77 +72,51 @@ class StatsPage extends ConsumerWidget {
   }
 }
 
-/// The green header with ‹ week title ›, like the date switcher on "Heute".
-/// The current week also shows its number and dates below "Diese Woche".
-class _WeekHero extends ConsumerWidget {
-  const _WeekHero({required this.monday});
+/// The header with the week title and ‹ ›, like the date switcher on
+/// "Heute". The current week shows "Diese Woche" with its number and dates
+/// above it ("KW 46 · 9.–15. Nov.").
+class _WeekHeader extends ConsumerWidget {
+  const _WeekHeader({required this.monday});
 
   final String monday;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colors = context.appColors;
     final current = currentMonday(ref.watch(clockProvider));
     final notifier = ref.read(selectedWeekProvider.notifier);
     final isCurrent = monday == current;
-    return HeroHeader(
-      child: Row(
-        children: [
-          SquareIconButton(
-            icon: Icons.chevron_left_rounded,
-            tooltip: l10n.statsPreviousWeek,
-            onHero: true,
-            onPressed: notifier.previous,
-          ),
-          const SizedBox(width: Spacing.s),
-          Expanded(
-            child: Column(
-              children: [
-                Semantics(
-                  header: true,
-                  child: Text(
-                    weekTitle(monday, current: current, l10n: l10n),
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleLarge!.copyWith(
-                      color: colors.onHero,
-                    ),
-                  ),
-                ),
-                if (isCurrent)
-                  Text(
-                    weekNumberTitle(monday, current: current, l10n: l10n),
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall!.copyWith(
-                      color: colors.onHero,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: Spacing.s),
-          SquareIconButton(
-            icon: Icons.chevron_right_rounded,
-            tooltip: l10n.statsNextWeek,
-            onHero: true,
-            // The current week is the last one: the future has no entries.
-            onPressed: isCurrent ? null : notifier.next,
-          ),
-        ],
-      ),
+    return PageHeader(
+      large: true,
+      overline: isCurrent
+          ? weekNumberTitle(monday, current: current, l10n: l10n)
+          : null,
+      title: weekTitle(monday, current: current, l10n: l10n),
+      actions: [
+        RoundIconButton(
+          icon: Icons.chevron_left_rounded,
+          tooltip: l10n.statsPreviousWeek,
+          onPressed: notifier.previous,
+        ),
+        RoundIconButton(
+          icon: Icons.chevron_right_rounded,
+          tooltip: l10n.statsNextWeek,
+          // The current week is the last one: the future has no entries.
+          onPressed: isCurrent ? null : notifier.next,
+        ),
+      ],
     );
   }
 }
 
 class _StatsContent extends ConsumerWidget {
   const _StatsContent({
-    required this.hero,
+    required this.header,
     required this.stats,
     required this.goalKcal,
   });
 
-  final Widget hero;
+  final Widget header;
   final WeekStats stats;
   final int? goalKcal;
 
@@ -153,11 +131,11 @@ class _StatsContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: Spacing.xl),
       children: [
-        hero,
+        header,
         Padding(
           padding: const EdgeInsets.fromLTRB(
             Spacing.l,
-            Spacing.l,
+            Spacing.m,
             Spacing.l,
             0,
           ),
@@ -356,7 +334,7 @@ class _MacroAverageRow extends StatelessWidget {
             Text(
               value,
               style: theme.textTheme.bodyLarge!.copyWith(
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
                 fontFeatures: tabularFigures,
               ),
             ),

@@ -12,10 +12,9 @@ import '../../core/format.dart';
 import '../../core/links.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
-import '../../core/widgets/hero_header.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/pill_choices.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
@@ -226,7 +225,7 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: const AppTopBar(),
+    appBar: const PageHeader(),
     body: const Center(child: CircularProgressIndicator()),
   );
 }
@@ -247,7 +246,7 @@ class _MessageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: const AppTopBar(),
+    appBar: const PageHeader(),
     body: StatusView(
       icon: icon,
       title: title,
@@ -274,7 +273,7 @@ class _FoodDetails extends ConsumerStatefulWidget {
 class _FoodDetailsState extends ConsumerState<_FoodDetails> {
   final _amount = TextEditingController();
 
-  /// The meal the user picked in the dropdown (null = not changed yet).
+  /// The meal the user picked in the pills (null = not changed yet).
   int? _pickedSlotId;
   bool _adding = false;
 
@@ -337,7 +336,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     } finally {
       if (mounted) setState(() => _adding = false);
     }
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(HapticFeedback.lightImpact());
     messenger.showSnackBar(
       SnackBar(content: Text(l10n.productAdded(mealSlotName(slot, l10n)))),
     );
@@ -383,7 +382,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xl),
         children: [
-          _ProductHero(food: food),
+          _ProductHeader(food: food),
           RatingSection(food: food),
           SectionHeader(l10n.productAmountTitle),
           Padding(
@@ -510,10 +509,11 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
   }
 }
 
-/// The green header: back, favourite (and edit for own foods), photo, name,
-/// brand · package size and the Nutri-Score as plain text.
-class _ProductHero extends ConsumerWidget {
-  const _ProductHero({required this.food});
+/// The top of the product page on the cream background: round back,
+/// favourite (and edit for own foods) buttons, name, brand · package size,
+/// the photo and white info chips ("pro 100 g", Nutri-Score as plain text).
+class _ProductHeader extends ConsumerWidget {
+  const _ProductHeader({required this.food});
 
   final Food food;
 
@@ -526,114 +526,186 @@ class _ProductHero extends ConsumerWidget {
     final brand = food.brand;
     final quantity = food.quantityLabel;
     final nutriScore = food.nutriScore;
-    final subtitleStyle = theme.textTheme.bodySmall!.copyWith(
-      color: colors.onHero,
-    );
+    final subtitleStyle = theme.textTheme.bodySmall;
 
-    return HeroHeader(
-      top: Row(
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const AppBackButton(onHero: true),
-          const Spacer(),
-          SquareIconButton(
-            icon: food.isFavourite
-                ? Icons.star_rounded
-                : Icons.star_outline_rounded,
-            tooltip: food.isFavourite
-                ? l10n.productFavouriteRemove
-                : l10n.productFavouriteAdd,
-            onHero: true,
-            onPressed: () =>
-                ref.read(productRepositoryProvider).toggleFavourite(food.id),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.s,
+              Spacing.xs,
+              Spacing.s,
+              0,
+            ),
+            child: Row(
+              children: [
+                const AppBackButton(),
+                const Spacer(),
+                RoundIconButton(
+                  icon: food.isFavourite
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
+                  tooltip: food.isFavourite
+                      ? l10n.productFavouriteRemove
+                      : l10n.productFavouriteAdd,
+                  foreground: food.isFavourite ? colors.star : null,
+                  onPressed: () => ref
+                      .read(productRepositoryProvider)
+                      .toggleFavourite(food.id),
+                ),
+                if (food.source == FoodSource.user)
+                  RoundIconButton(
+                    icon: Icons.edit_rounded,
+                    tooltip: l10n.actionEdit,
+                    onPressed: () => context.push(Routes.editFood(food.id)),
+                  ),
+              ],
+            ),
           ),
-          if (food.source == FoodSource.user)
-            SquareIconButton(
-              icon: Icons.edit_rounded,
-              tooltip: l10n.actionEdit,
-              onHero: true,
-              onPressed: () => context.push(Routes.editFood(food.id)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.page,
+              Spacing.s,
+              Spacing.page,
+              0,
             ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(top: Spacing.s),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    food.name.isEmpty ? l10n.productUnknownName : food.name,
-                    // Always white: the hero gradient is dark in both themes.
-                    style: theme.textTheme.headlineSmall!.copyWith(
-                      color: colors.onHero,
-                    ),
-                  ),
-                  if (brand != null || quantity != null) ...[
-                    const SizedBox(height: Spacing.xs),
-                    // Separate texts (not one string), so brand and size
-                    // can wrap on their own.
-                    Wrap(
-                      spacing: 6,
-                      children: [
-                        if (brand != null) Text(brand, style: subtitleStyle),
-                        if (brand != null && quantity != null)
-                          ExcludeSemantics(
-                            child: Text('·', style: subtitleStyle),
-                          ),
-                        if (quantity != null)
-                          Text(quantity, style: subtitleStyle),
-                      ],
-                    ),
-                  ],
-                  // Plain text only: no logo, no colour strip (owner
-                  // decision, Nutri-Score trademark rules).
-                  if (nutriScore != null && 'ABCDE'.contains(nutriScore)) ...[
-                    const SizedBox(height: Spacing.m),
-                    HeroPill(label: l10n.productNutriScore(nutriScore)),
-                  ],
-                ],
-              ),
-            ),
-            if (imageUrl != null) ...[
-              const SizedBox(width: Spacing.l),
-              // Product photos are CC BY-SA: the caption names the licence.
-              Tooltip(
-                message: l10n.productImageCaption,
-                child: Container(
-                  padding: const EdgeInsets.all(Spacing.xs),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(Radii.l + Spacing.xs),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(Radii.l),
-                    child: Image.network(
-                      imageUrl,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      excludeFromSemantics: true,
-                      // No internet or a broken link: a neutral placeholder.
-                      errorBuilder: (context, _, _) => Container(
-                        width: 72,
-                        height: 72,
-                        color: colors.surfaceAlt,
-                        child: Icon(
-                          Icons.image_not_supported_rounded,
-                          color: colors.inkMuted,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          food.name.isEmpty
+                              ? l10n.productUnknownName
+                              : food.name,
+                          style: theme.textTheme.headlineSmall,
                         ),
                       ),
-                    ),
+                      if (brand != null || quantity != null) ...[
+                        const SizedBox(height: Spacing.xs),
+                        // Separate texts (not one string), so brand and
+                        // size can wrap on their own.
+                        Wrap(
+                          spacing: 6,
+                          children: [
+                            if (brand != null)
+                              Text(brand, style: subtitleStyle),
+                            if (brand != null && quantity != null)
+                              ExcludeSemantics(
+                                child: Text('·', style: subtitleStyle),
+                              ),
+                            if (quantity != null)
+                              Text(quantity, style: subtitleStyle),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
                 ),
+                if (imageUrl != null) ...[
+                  const SizedBox(width: Spacing.l),
+                  _ProductPhoto(url: imageUrl),
+                ],
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.page,
+              Spacing.m,
+              Spacing.page,
+              0,
+            ),
+            child: Wrap(
+              spacing: Spacing.s,
+              runSpacing: Spacing.s,
+              children: [
+                _InfoChip(
+                  food.isLiquid ? l10n.productPer100ml : l10n.productPer100g,
+                ),
+                // Plain text only: no logo, no colour strip (owner
+                // decision, Nutri-Score trademark rules).
+                if (nutriScore != null && 'ABCDE'.contains(nutriScore))
+                  _InfoChip(l10n.productNutriScore(nutriScore)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The product photo in a small white frame. Product photos are CC BY-SA:
+/// the tooltip names the licence.
+class _ProductPhoto extends StatelessWidget {
+  const _ProductPhoto({required this.url});
+
+  final String url;
+
+  static const double _size = 72;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Tooltip(
+      message: AppLocalizations.of(context).productImageCaption,
+      child: Container(
+        padding: const EdgeInsets.all(Spacing.xs),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(Radii.input + Spacing.xs),
+          boxShadow: colors.buttonShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Radii.input),
+          child: Image.network(
+            url,
+            width: _size,
+            height: _size,
+            fit: BoxFit.cover,
+            excludeFromSemantics: true,
+            // No internet or a broken link: a neutral placeholder.
+            errorBuilder: (context, _, _) => Container(
+              width: _size,
+              height: _size,
+              color: colors.surfaceAlt,
+              child: Icon(
+                Icons.image_not_supported_rounded,
+                color: colors.inkMuted,
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// A small white pill with a soft shadow ("pro 100 g").
+class _InfoChip extends StatelessWidget {
+  const _InfoChip(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.m, vertical: 7),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(Radii.pill),
+        boxShadow: colors.buttonShadow,
+      ),
+      child: Text(label, style: Theme.of(context).textTheme.labelMedium),
     );
   }
 }
@@ -660,6 +732,7 @@ class _AmountChoices extends StatelessWidget {
     final serving = food.servingSize;
     final last = lastAmount;
     return PillChoices<double>(
+      segmented: true,
       choices: [
         PillChoice(amountText(100), 100),
         if (serving != null && serving > 0)

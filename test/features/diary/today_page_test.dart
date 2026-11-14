@@ -5,10 +5,12 @@ import 'package:food_tracker/core/theme/app_theme.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/diary/widgets/calorie_ring.dart';
+import 'package:food_tracker/features/diary/widgets/macro_bars.dart';
+import 'package:food_tracker/features/diary/widgets/meal_card.dart';
 import 'package:food_tracker/features/diary/widgets/meal_sheet.dart';
-import 'package:food_tracker/features/diary/widgets/meal_tile.dart';
 import 'package:food_tracker/features/goals/goals_repository.dart';
 import 'package:food_tracker/features/products/food_source.dart';
+import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -82,7 +84,12 @@ void main() {
     expect(find.byType(MealSheet), findsOneWidget);
   }
 
-  /// The colour the calorie ring is painted with.
+  /// [text] inside the open meal sheet (the meal card behind it names the
+  /// entries, too).
+  Finder inSheet(String text) =>
+      find.descendant(of: find.byType(MealSheet), matching: find.text(text));
+
+  /// How the calorie ring is painted (progress, colours).
   CalorieRingPainter ringPainter(WidgetTester tester) =>
       tester
               .widget<CustomPaint>(
@@ -94,25 +101,58 @@ void main() {
               .painter!
           as CalorieRingPainter;
 
-  testWidgets('no goal: goal prompt, eaten kcal, prompt can be closed', (
-    tester,
-  ) async {
-    await log(amount: 200); // 500 kcal
+  /// How the macro bar number [index] (0 = protein) is painted.
+  MacroBarPainter macroPainter(WidgetTester tester, int index) =>
+      tester
+              .widgetList<CustomPaint>(
+                find.descendant(
+                  of: find.byType(MacroBars),
+                  matching: find.byType(CustomPaint),
+                ),
+              )
+              .elementAt(index)
+              .painter!
+          as MacroBarPainter;
+
+  testWidgets('no goal: goal prompt, eaten kcal of the EU reference intake, '
+      'prompt can be closed', (tester) async {
+    await log(amount: 200); // 500 kcal, 20 g protein
     await pumpTall(tester);
 
-    expect(find.text('Heute, 14. Nov.'), findsOneWidget);
+    expect(find.text('SAMSTAG'), findsOneWidget);
+    expect(find.text('14. November'), findsOneWidget);
+    expect(find.text('Heute'), findsWidgets); // pill next to the date + tab
     expect(find.text('Leg dein Tagesziel fest'), findsOneWidget);
     expect(find.text('Ziel festlegen'), findsOneWidget);
     expect(find.text('500'), findsOneWidget);
     expect(find.text('kcal gegessen'), findsOneWidget);
+    expect(find.text('von 2.000 kcal (Richtwert)'), findsOneWidget);
     expect(
-      find.bySemanticsLabel('500 kcal gegessen. Kein Tagesziel festgelegt.'),
+      find.bySemanticsLabel(
+        '500 kcal gegessen von 2.000 kcal Richtwert. '
+        'Kein Tagesziel festgelegt.',
+      ),
       findsOneWidget,
     );
-    // One tile per meal; the breakfast tile sums up its entries.
-    expect(find.byType(MealTile), findsNWidgets(4));
+    // The ring fills relative to 2,000 kcal, the bars relative to the
+    // reference intakes (protein 50 g).
+    expect(ringPainter(tester).progress, closeTo(0.25, 0.001));
+    expect(find.text('20/50 g'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Eiweiß: 20 von 50 g (Richtwert)'),
+      findsOneWidget,
+    );
+    expect(macroPainter(tester, 0).fraction, closeTo(0.4, 0.001));
+    expect(
+      find.text(
+        'Ohne Ziel zeigen Ring und Balken die EU-Richtwerte für Erwachsene.',
+      ),
+      findsOneWidget,
+    );
+    // One card per meal; the breakfast card names its entries.
+    expect(find.byType(MealCard), findsNWidgets(4));
     expect(find.text('Frühstück'), findsOneWidget);
-    expect(find.text('1 Eintrag'), findsOneWidget);
+    expect(find.text('Haferflocken'), findsOneWidget);
     expect(find.text('Noch nichts'), findsNWidgets(3));
     expect(find.text('500 kcal'), findsOneWidget);
     expect(
@@ -142,8 +182,9 @@ void main() {
     expect(find.text('1.240'), findsOneWidget);
     expect(find.text('kcal übrig'), findsOneWidget);
     expect(find.text('von 2.490'), findsOneWidget);
-    expect(find.text('Gegessen: 1.250 kcal'), findsOneWidget);
+    expect(find.text('Gegessen 1.250 · Ziel 2.490 kcal'), findsOneWidget);
     expect(find.text('50/120 g'), findsOneWidget);
+    expect(ringPainter(tester).progress, closeTo(1250 / 2490, 0.001));
     expect(
       find.bySemanticsLabel(
         '1.240 kcal übrig von 2.490 kcal. Gegessen: 1.250 kcal.',
@@ -153,7 +194,7 @@ void main() {
     expect(find.bySemanticsLabel('Eiweiß: 50 von 120 g'), findsOneWidget);
   });
 
-  testWidgets('over the goal: full white ring, neutral text', (tester) async {
+  testWidgets('over the goal: full green ring, neutral text', (tester) async {
     await goals.saveGoal(kcal: 2000);
     await log(kcal: 290, amount: 800); // 2320 kcal
     await pumpTall(tester);
@@ -165,17 +206,131 @@ void main() {
     final theme = Theme.of(context);
     final painter = ringPainter(tester);
     expect(painter.progress, greaterThanOrEqualTo(1));
-    // The same white as below the goal – never a warning colour.
-    expect(painter.color, context.appColors.onHero);
+    // The same green as below the goal – never a warning colour.
+    expect(painter.startColor, context.appColors.ringStart);
+    expect(painter.endColor, context.appColors.ringEnd);
     final warningColours = {
       theme.colorScheme.error,
       context.appColors.ratingHigh,
       context.appColors.ratingHighBg,
     };
-    expect(warningColours, isNot(contains(painter.color)));
+    expect(warningColours, isNot(contains(painter.startColor)));
+    expect(warningColours, isNot(contains(painter.endColor)));
     for (final text in tester.widgetList<Text>(find.byType(Text))) {
       expect(warningColours, isNot(contains(text.style?.color)));
     }
+  });
+
+  group('animations', () {
+    /// Logs 500 more kcal while Today is open and waits until the day's
+    /// entries have reached the page (the ring's label changes at once).
+    Future<void> logMore(WidgetTester tester) async {
+      await log(amount: 200, meal: 'lunch'); // + 500 kcal, + 20 g protein
+      for (var i = 0; i < 10; i++) {
+        await tester.pump();
+        if (find
+            .bySemanticsLabel(RegExp('^1.000 kcal'))
+            .evaluate()
+            .isNotEmpty) {
+          return;
+        }
+      }
+      fail('the new entry did not reach the page');
+    }
+
+    testWidgets('ring, number and bars move from the old to the new value', (
+      tester,
+    ) async {
+      await goals.saveGoal(kcal: 2000, protein: 100);
+      await log(amount: 200); // 500 kcal
+      await pumpTall(tester);
+      expect(ringPainter(tester).progress, closeTo(0.25, 0.001));
+      expect(find.text('1.500'), findsOneWidget);
+
+      await logMore(tester);
+      await tester.pump(const Duration(milliseconds: 200));
+      // On the way: between the old and the new value.
+      final progress = ringPainter(tester).progress;
+      expect(progress, greaterThan(0.25));
+      expect(progress, lessThan(0.5));
+      expect(find.text('1.500'), findsNothing);
+      expect(find.text('1.000'), findsNothing); // still counting
+      final bar = macroPainter(tester, 0).fraction;
+      expect(bar, greaterThan(0.2));
+      expect(bar, lessThan(0.4));
+
+      await tester.pumpAndSettle();
+      expect(ringPainter(tester).progress, closeTo(0.5, 0.001));
+      expect(find.text('1.000'), findsOneWidget);
+      expect(macroPainter(tester, 0).fraction, closeTo(0.4, 0.001));
+    });
+
+    testWidgets('the ring fills from 0 when it appears', (tester) async {
+      final shown = ValueNotifier(false);
+      addTearDown(shown.dispose);
+      await pumpWidgetInApp(
+        tester,
+        db: db,
+        Scaffold(
+          body: ValueListenableBuilder(
+            valueListenable: shown,
+            builder: (context, isShown, _) => isShown
+                ? CalorieRing(
+                    totals: NutrientTotals.sum([const Nutrients(kcal: 500)]),
+                    goalKcal: 2000,
+                  )
+                : const SizedBox(),
+          ),
+        ),
+      );
+      shown.value = true;
+      await tester.pump();
+      expect(ringPainter(tester).progress, 0);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(ringPainter(tester).progress, inExclusiveRange(0, 0.25));
+      await tester.pumpAndSettle();
+      expect(ringPainter(tester).progress, closeTo(0.25, 0.001));
+      expect(find.text('1.500'), findsOneWidget);
+    });
+
+    testWidgets('reduced motion: new values show at once', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await goals.saveGoal(kcal: 2000, protein: 100);
+      await log(amount: 200);
+      await pumpTall(tester);
+
+      await logMore(tester);
+      await tester.pump();
+      expect(ringPainter(tester).progress, closeTo(0.5, 0.001));
+      expect(find.text('1.000'), findsOneWidget);
+      expect(macroPainter(tester, 0).fraction, closeTo(0.4, 0.001));
+    });
+
+    testWidgets('a pressed meal card shrinks a little', (tester) async {
+      await pumpTall(tester);
+      AnimatedScale scaleOf() => tester.widget<AnimatedScale>(
+        find
+            .descendant(
+              of: find.byType(MealCard),
+              matching: find.byType(AnimatedScale),
+            )
+            .first,
+      );
+      expect(scaleOf().scale, 1);
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Frühstück')),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(scaleOf().scale, 0.98);
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+      expect(scaleOf().scale, 1);
+    });
   });
 
   testWidgets('missing values: totals say "mind." and explain why', (
@@ -187,11 +342,11 @@ void main() {
 
     expect(find.text('mind. 500'), findsOneWidget); // ring
     expect(find.text('Für 1 Eintrag fehlen Angaben'), findsOneWidget);
-    expect(find.text('mind. 20 g'), findsOneWidget); // protein pill
-    expect(find.text('mind. 500 kcal'), findsOneWidget); // breakfast tile
+    expect(find.text('mind. 20/50 g'), findsOneWidget); // protein bar
+    expect(find.text('mind. 500 kcal'), findsOneWidget); // breakfast card
 
     await openMeal(tester, 'Frühstück');
-    expect(find.text('mind. 500 kcal'), findsNWidgets(2)); // tile + sheet
+    expect(find.text('mind. 500 kcal'), findsNWidgets(2)); // card + sheet
     expect(find.text('–'), findsOneWidget); // the soup's kcal
     // Screen readers hear "keine Angabe" instead of "–".
     expect(find.bySemanticsLabel(RegExp('keine Angabe')), findsOneWidget);
@@ -204,24 +359,25 @@ void main() {
     await pumpTall(tester);
 
     expect(find.text('höchstens 1.500'), findsOneWidget);
-    expect(find.text('Gegessen: mind. 500 kcal'), findsOneWidget);
+    expect(find.text('Gegessen mind. 500 · Ziel 2.000 kcal'), findsOneWidget);
   });
 
-  testWidgets('a meal tile opens its entries; empty meals say so', (
+  testWidgets('a meal card opens its entries; empty meals say so', (
     tester,
   ) async {
     await log(amount: 200);
     await log(name: 'Milch', kcal: 50, amount: 250);
     await pumpTall(tester);
 
-    expect(find.text('2 Einträge'), findsOneWidget);
+    expect(find.text('Haferflocken, Milch'), findsOneWidget);
     await openMeal(tester, 'Frühstück');
-    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(find.text('2 Einträge'), findsOneWidget); // sheet header
+    expect(inSheet('Haferflocken'), findsOneWidget);
     expect(find.text('200 g'), findsOneWidget);
     expect(find.text('250 g'), findsOneWidget);
     expect(find.text('500 kcal'), findsOneWidget); // oats
     expect(find.text('125 kcal'), findsOneWidget); // milk
-    expect(find.text('625 kcal'), findsNWidgets(2)); // tile + sheet header
+    expect(find.text('625 kcal'), findsNWidgets(2)); // card + sheet header
 
     // Close the sheet, open an empty meal.
     await tester.tapAt(const Offset(400, 20));
@@ -256,10 +412,10 @@ void main() {
     await pumpTall(tester);
     await openMeal(tester, 'Frühstück');
 
-    await tester.drag(find.text('Haferflocken'), const Offset(-600, 0));
+    await tester.drag(inSheet('Haferflocken'), const Offset(-600, 0));
     await tester.pumpAndSettle();
 
-    expect(find.text('Haferflocken'), findsNothing);
+    expect(inSheet('Haferflocken'), findsNothing);
     // Shown in the sheet (and behind it, on the tab).
     expect(find.text('Eintrag gelöscht'), findsWidgets);
     expect(await db.select(db.diaryEntries).get(), isEmpty);
@@ -268,7 +424,7 @@ void main() {
     await tester.tap(find.text('Rückgängig').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(inSheet('Haferflocken'), findsOneWidget);
     expect(await db.select(db.diaryEntries).get(), hasLength(1));
   });
 
@@ -279,7 +435,7 @@ void main() {
     await pumpTall(tester);
     await openMeal(tester, 'Frühstück');
 
-    await tester.tap(find.text('Haferflocken'));
+    await tester.tap(inSheet('Haferflocken'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '150,5');
     await tester.pumpAndSettle();
@@ -299,16 +455,16 @@ void main() {
     await pumpTall(tester);
     await openMeal(tester, 'Frühstück');
 
-    await tester.tap(find.text('Haferflocken'));
+    await tester.tap(inSheet('Haferflocken'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Löschen'));
     await tester.pumpAndSettle();
 
     expect(await db.select(db.diaryEntries).get(), isEmpty);
-    expect(find.text('Haferflocken'), findsNothing);
+    expect(inSheet('Haferflocken'), findsNothing);
     await tester.tap(find.text('Rückgängig').last);
     await tester.pumpAndSettle();
-    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(inSheet('Haferflocken'), findsOneWidget);
   });
 
   testWidgets('date switcher: previous day, back to today', (tester) async {
@@ -322,21 +478,22 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('1 Eintrag'), findsNothing);
+    expect(find.text('Gestern gegessen'), findsNothing);
     await tester.tap(find.byTooltip('Vorheriger Tag'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gestern, 13. Nov.'), findsOneWidget);
-    expect(find.text('1 Eintrag'), findsOneWidget);
+    expect(find.text('FREITAG'), findsOneWidget);
+    expect(find.text('13. November'), findsOneWidget);
+    expect(find.text('Gestern gegessen'), findsOneWidget); // card subtitle
     await openMeal(tester, 'Frühstück');
-    expect(find.text('Gestern gegessen'), findsOneWidget);
+    expect(inSheet('Gestern gegessen'), findsOneWidget);
     await tester.tapAt(const Offset(400, 20));
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(TextButton, 'Heute'));
     await tester.pumpAndSettle();
-    expect(find.text('Heute, 14. Nov.'), findsOneWidget);
-    expect(find.text('1 Eintrag'), findsNothing);
+    expect(find.text('14. November'), findsOneWidget);
+    expect(find.text('Gestern gegessen'), findsNothing);
   });
 
   testWidgets('hidden meals only show up when they have entries', (
@@ -346,13 +503,13 @@ void main() {
         .write(const MealSlotsCompanion(isHidden: Value(true)));
     await pumpTall(tester);
     expect(find.text('Snacks'), findsNothing);
-    expect(find.byType(MealTile), findsNWidgets(3));
+    expect(find.byType(MealCard), findsNWidgets(3));
 
     await log(name: 'Apfel', meal: 'snacks');
     await tester.pumpAndSettle();
     expect(find.text('Snacks'), findsOneWidget);
     await openMeal(tester, 'Snacks');
-    expect(find.text('Apfel'), findsOneWidget);
+    expect(inSheet('Apfel'), findsOneWidget);
   });
 
   testWidgets('"+" opens the add page of that meal', (tester) async {
@@ -369,12 +526,13 @@ void main() {
     await log(amount: 500);
     await pumpTall(tester, locale: const Locale('en'));
 
-    expect(find.text('Today, Nov 14'), findsOneWidget);
+    expect(find.text('SATURDAY'), findsOneWidget);
+    expect(find.text('November 14'), findsOneWidget);
     expect(find.text('1,240'), findsOneWidget);
     expect(find.text('kcal left'), findsOneWidget);
     expect(find.text('of 2,490'), findsOneWidget);
     expect(find.text('Breakfast'), findsOneWidget);
-    expect(find.text('1 entry'), findsOneWidget);
+    expect(find.text('Eaten 1,250 · goal 2,490 kcal'), findsOneWidget);
     expect(find.text('Nothing yet'), findsNWidgets(3));
     expect(find.text('50/120 g'), findsOneWidget);
     expect(find.byTooltip('Add to Lunch'), findsOneWidget);
@@ -388,13 +546,13 @@ void main() {
     addTearDown(tester.view.reset);
     await pumpFoodTrackerApp(tester, db: db, themeMode: ThemeMode.dark);
 
-    final context = tester.element(find.byType(MealTile).first);
+    final context = tester.element(find.byType(MealCard).first);
     expect(Theme.of(context).brightness, Brightness.dark);
     expect(context.appColors.background, AppColors.dark.background);
-    expect(ringPainter(tester).color, AppColors.dark.onHero);
+    expect(ringPainter(tester).startColor, AppColors.dark.ringStart);
     expect(find.text('1.250'), findsOneWidget);
     await openMeal(tester, 'Frühstück');
-    expect(find.text('Haferflocken'), findsOneWidget);
+    expect(inSheet('Haferflocken'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

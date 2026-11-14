@@ -16,8 +16,9 @@ import '../week_stats.dart';
 /// bar and, when a goal is set, a dashed goal line.
 ///
 /// All bars have the same calm green – also above the goal (no red, no
-/// warning). Today's bar is solid, the others lighter; the bars have round
-/// tops and sit on a thin track.
+/// warning). Today's bar has the green gradient of the calorie ring, the
+/// others are a lighter green; the bars have round tops and sit on a thin
+/// track.
 class WeekBars extends StatelessWidget {
   const WeekBars({
     super.key,
@@ -39,7 +40,7 @@ class WeekBars extends StatelessWidget {
   static const double chartHeight = 160;
 
   /// Opacity of the bars of the other days (today's bar is solid).
-  static const double barAlpha = 0.55;
+  static const double barAlpha = 0.35;
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +68,8 @@ class WeekBars extends StatelessWidget {
                 goal: goal?.toDouble(),
                 todayIndex: todayIndex < 0 ? null : todayIndex,
                 barColor: colors.brand.withValues(alpha: barAlpha),
-                todayColor: colors.brand,
-                trackColor: colors.surfaceAlt,
+                todayColors: [colors.ringStart, colors.ringEnd],
+                trackColor: colors.track,
                 goalColor: colors.inkMuted,
               ),
             ),
@@ -85,7 +86,7 @@ class WeekBars extends StatelessWidget {
                       DateFormat.E(l10n.localeName).format(parseDayKey(day)),
                       style: theme.textTheme.labelMedium!.copyWith(
                         fontWeight: index == todayIndex
-                            ? FontWeight.w900
+                            ? FontWeight.w800
                             : null,
                         color: index == todayIndex
                             ? colors.brand
@@ -138,7 +139,7 @@ class WeekBarsPainter extends CustomPainter {
     required this.goal,
     required this.todayIndex,
     required this.barColor,
-    required this.todayColor,
+    required this.todayColors,
     required this.trackColor,
     required this.goalColor,
   });
@@ -153,7 +154,10 @@ class WeekBarsPainter extends CustomPainter {
   final int? todayIndex;
 
   final Color barColor;
-  final Color todayColor;
+
+  /// Today's bar: a gradient from the first colour (bottom) to the second
+  /// (top).
+  final List<Color> todayColors;
 
   /// The thin line at the bottom of each day, so empty days stay visible.
   final Color trackColor;
@@ -197,7 +201,10 @@ class WeekBarsPainter extends CustomPainter {
           bottomLeft: const Radius.circular(_trackHeight / 2),
           bottomRight: const Radius.circular(_trackHeight / 2),
         ),
-        Paint()..color = index == todayIndex ? todayColor : barColor,
+        _barPaint(
+          index == todayIndex,
+          Rect.fromLTWH(left, size.height - height, barWidth, height),
+        ),
       );
     }
 
@@ -205,6 +212,16 @@ class WeekBarsPainter extends CustomPainter {
     if (goalKcal != null && goalKcal > 0 && top > 0) {
       _drawDashedLine(canvas, size.width, size.height * (1 - goalKcal / top));
     }
+  }
+
+  Paint _barPaint(bool isToday, Rect bar) {
+    if (!isToday) return Paint()..color = barColor;
+    return Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: todayColors,
+      ).createShader(bar);
   }
 
   void _drawDashedLine(Canvas canvas, double width, double y) {
@@ -228,7 +245,7 @@ class WeekBarsPainter extends CustomPainter {
       oldDelegate.goal != goal ||
       oldDelegate.todayIndex != todayIndex ||
       oldDelegate.barColor != barColor ||
-      oldDelegate.todayColor != todayColor ||
+      !listEquals(oldDelegate.todayColors, todayColors) ||
       oldDelegate.trackColor != trackColor ||
       oldDelegate.goalColor != goalColor;
 }

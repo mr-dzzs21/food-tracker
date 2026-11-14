@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/card_list.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../l10n/app_localizations.dart';
@@ -29,7 +29,7 @@ class SearchResultsPage extends ConsumerWidget {
     final query = this.query.trim();
     if (query.isEmpty) {
       return Scaffold(
-        appBar: const AppTopBar(),
+        appBar: const PageHeader(),
         body: StatusView(
           icon: Icons.search_rounded,
           title: l10n.searchEmptyQuery,
@@ -39,7 +39,7 @@ class SearchResultsPage extends ConsumerWidget {
 
     final local = ref.watch(localFoodSearchProvider(query)).value ?? const [];
     return Scaffold(
-      appBar: AppTopBar(title: l10n.searchResultsTitle(query)),
+      appBar: PageHeader(title: l10n.searchResultsTitle(query)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
         children: [

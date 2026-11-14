@@ -28,9 +28,10 @@ class SelectableCard extends StatelessWidget {
     final subtitle = this.subtitle;
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Radii.button),
+      // Always 2 px, so the card does not jump when it gets selected.
       side: BorderSide(
-        color: selected ? colors.brand : colors.border,
-        width: selected ? 2 : 1,
+        color: selected ? colors.brand : colors.brand.withValues(alpha: 0),
+        width: 2,
       ),
     );
     return Semantics(
@@ -65,7 +66,7 @@ class SelectableCard extends StatelessWidget {
                           Text(
                             title,
                             style: theme.textTheme.bodyLarge!.copyWith(
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                           if (subtitle != null) ...[

@@ -35,69 +35,59 @@ void main() {
         );
       }
 
-      test('text on backgrounds, cards, inputs and meal tiles', () {
+      test('text on the page, cards and inputs', () {
         final backgrounds = {
           'background': colors.background,
           'surface': colors.surface,
           'surfaceAlt': colors.surfaceAlt,
-          for (final (i, palette) in colors.mealPalettes.indexed)
-            'meal tile $i': palette.background,
         };
         for (final MapEntry(key: where, value: background)
             in backgrounds.entries) {
           expectReadable(colors.ink, background, what: 'ink on $where');
           expectReadable(colors.inkMuted, background, what: 'muted on $where');
+          expectReadable(colors.brand, background, what: 'brand on $where');
         }
+        // The "Ziel festlegen" note and the tonal buttons.
+        expectReadable(colors.inkMuted, colors.tonal, what: 'muted on tonal');
       });
 
-      test('rating words on their pills, also on cards', () {
+      test('rating tiles: word, value and icon in the level colours', () {
         for (final (fg, bg) in [
           (colors.ratingLow, colors.ratingLowBg),
           (colors.ratingMedium, colors.ratingMediumBg),
           (colors.ratingHigh, colors.ratingHighBg),
         ]) {
           expectReadable(fg, bg, what: 'rating');
-          expectReadable(fg, colors.surface, what: 'rating on surface');
           expectReadable(colors.ink, bg, what: 'ink on rating background');
         }
+        // "keine Angabe" tile.
+        expectReadable(colors.inkMuted, colors.surfaceAlt, what: 'no data');
       });
 
-      test('white text on the hero gradient and its glass pills', () {
-        for (final stop in [colors.heroStart, colors.heroMid, colors.heroEnd]) {
-          expectReadable(colors.onHero, stop, what: 'on hero');
+      test('meal icons on their squares (graphics need 3:1)', () {
+        for (final (i, palette) in colors.mealPalettes.indexed) {
           expectReadable(
-            colors.onHero,
-            over(colors.heroGlass, stop),
-            what: 'on hero glass',
-          );
-          // Buttons and pills also where a decorative circle lies under
-          // them (the top corner, next to the back/star buttons).
-          expectReadable(
-            colors.onHero,
-            over(colors.heroGlass, over(colors.heroDecor, stop)),
-            what: 'on hero glass over a circle',
-          );
-          // Large titles (≥ 18.66 px bold need 3:1) may touch a circle.
-          expectReadable(
-            colors.onHero,
-            over(colors.heroDecor, stop),
+            palette.icon,
+            palette.background,
             minimum: 3,
-            what: 'large title over a circle',
+            what: 'meal icon $i',
           );
         }
+        expectReadable(colors.star, colors.surface, minimum: 3, what: 'star');
       });
 
-      test('buttons, navigation bar and links', () {
+      test('buttons, pills, navigation bar and links', () {
         expectReadable(colors.onCta, colors.cta, what: 'CTA');
         expectReadable(colors.onTonal, colors.tonal, what: 'tonal');
-        expectReadable(colors.navInactive, colors.surface, what: 'tab');
-        expectReadable(colors.brand, colors.surface, what: 'brand on card');
-        expectReadable(colors.brand, colors.background, what: 'brand on page');
+        expectReadable(colors.onSelected, colors.selected, what: 'pill');
+        expectReadable(colors.ink, colors.surfaceAlt, what: 'unselected pill');
+        expectReadable(
+          colors.onNavActive,
+          colors.navActive,
+          what: 'active tab',
+        );
+        expectReadable(colors.navInactive, colors.navBar, what: 'tab icon');
         expectReadable(colors.snackAction, colors.cta, what: 'undo button');
-        // The white scan icon on the raised gradient button (graphic: 3:1).
-        for (final stop in colors.scanGradient.colors) {
-          expectReadable(colors.onHero, stop, minimum: 3, what: 'scan icon');
-        }
       });
 
       test('text on the camera area, whatever the picture shows', () {
@@ -122,7 +112,7 @@ void main() {
 
   group('theme', () {
     for (final brightness in Brightness.values) {
-      test('uses the tokens and Nunito ($brightness)', () {
+      test('uses the tokens and Manrope ($brightness)', () {
         final theme = buildTheme(brightness);
         final colors = theme.extension<AppColors>()!;
         expect(
@@ -133,8 +123,9 @@ void main() {
         expect(theme.colorScheme.primary, colors.brand);
         expect(theme.colorScheme.surface, colors.surface);
         expect(theme.textTheme.bodyMedium!.fontFamily, appFontFamily);
-        expect(theme.textTheme.headlineMedium!.fontSize, 32);
-        expect(theme.textTheme.headlineMedium!.fontWeight, FontWeight.w900);
+        expect(appFontFamily, 'Manrope');
+        expect(theme.textTheme.headlineMedium!.fontSize, 30);
+        expect(theme.textTheme.headlineMedium!.fontWeight, FontWeight.w800);
         expect(theme.textTheme.headlineSmall!.fontSize, 26);
         expect(theme.textTheme.labelSmall!.fontSize, 11);
         // Main buttons use the CTA colours.
@@ -160,14 +151,14 @@ void main() {
     });
   });
 
-  test('the Nunito licence is on the licence page', () async {
+  test('the Manrope licence is on the licence page', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     registerAppLicenses();
     final entries = await LicenseRegistry.licenses.toList();
-    final nunito = entries.where((e) => e.packages.contains('Nunito'));
-    expect(nunito, isNotEmpty);
+    final manrope = entries.where((e) => e.packages.contains('Manrope'));
+    expect(manrope, isNotEmpty);
     expect(
-      nunito.first.paragraphs.map((p) => p.text).join(' '),
+      manrope.first.paragraphs.map((p) => p.text).join(' '),
       contains('SIL OPEN FONT LICENSE'),
     );
   });

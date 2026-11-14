@@ -121,10 +121,19 @@ void main() {
     await pumpFoodTrackerApp(tester, db: db);
 
     expect(find.byType(AppNavBar), findsOneWidget);
+    // The open tab shows its label, the others their icon (all four are
+    // named for screen readers).
     expect(find.text('Heute'), findsWidgets);
-    expect(find.text('Scannen'), findsOneWidget);
-    expect(find.text('Statistik'), findsOneWidget);
-    expect(find.text('Profil'), findsOneWidget);
+    for (final label in ['Heute', 'Scannen', 'Statistik', 'Profil']) {
+      expect(
+        find.descendant(
+          of: find.byType(AppNavBar),
+          matching: find.bySemanticsLabel(label),
+        ),
+        findsOneWidget,
+        reason: label,
+      );
+    }
 
     // Material's own texts are German too (material_ui delegates work).
     final context = tester.element(find.byType(AppNavBar));
@@ -136,8 +145,8 @@ void main() {
     addTearDown(db.close);
     await pumpFoodTrackerApp(tester, db: db, locale: const Locale('en'));
 
-    expect(find.text('Statistics'), findsOneWidget);
-    await tester.tap(find.text('Profile'));
+    expect(find.bySemanticsLabel('Statistics'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Profile'));
     await tester.pumpAndSettle();
     expect(find.byType(AppNavBar), findsOneWidget);
     expect(find.text('Your daily goal'), findsOneWidget);

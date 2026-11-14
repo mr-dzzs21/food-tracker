@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/core/theme/app_theme.dart';
+import 'package:food_tracker/core/widgets/app_nav_bar.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/goals/goals_repository.dart';
@@ -104,11 +105,18 @@ void main() {
     expect(bars.todayIndex, 5); // Saturday, 14 Nov
     // Above or below the goal: the same green, never red.
     const colors = AppColors.light;
-    expect(bars.todayColor, colors.brand);
-    expect(bars.barColor, colors.brand.withValues(alpha: 0.55));
+    // Today has the green gradient of the calorie ring.
+    expect(bars.todayColors, [colors.ringStart, colors.ringEnd]);
+    expect(bars.barColor, colors.brand.withValues(alpha: 0.35));
+    expect(bars.trackColor, colors.track);
     expect(bars.goalColor, colors.inkMuted);
-    // The current week also shows its number and dates.
-    expect(find.text('KW 46 · 9.–15. Nov.'), findsOneWidget);
+    // The current week also shows its number and dates (small capitals
+    // above the title).
+    expect(find.text('KW 46 · 9.–15. NOV.'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp(r'KW 46 · 9\.–15\. Nov\.')),
+      findsOneWidget,
+    );
 
     expect(
       find.bySemanticsLabel(
@@ -216,7 +224,12 @@ void main() {
 
   testWidgets('the "Statistik" tab shows the statistics page', (tester) async {
     await pumpFoodTrackerApp(tester, db: db);
-    await tester.tap(find.text('Statistik'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppNavBar),
+        matching: find.byIcon(Icons.bar_chart_rounded),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(StatsPage), findsOneWidget);

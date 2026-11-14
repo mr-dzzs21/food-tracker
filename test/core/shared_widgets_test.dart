@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/core/theme/app_theme.dart';
-import 'package:food_tracker/core/widgets/app_top_bar.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/core/widgets/card_list.dart';
 import 'package:food_tracker/core/widgets/dialogs.dart';
+import 'package:food_tracker/core/widgets/page_header.dart';
+import 'package:food_tracker/core/widgets/pill_choices.dart';
 import 'package:food_tracker/core/widgets/selectable_card.dart';
 import 'package:food_tracker/core/widgets/switch_row.dart';
 import 'package:food_tracker/data/database.dart';
@@ -220,19 +222,19 @@ void main() {
     });
   });
 
-  testWidgets('AppTopBar: no back button on a first page, one on top', (
+  testWidgets('PageHeader: no back button on a first page, one on top', (
     tester,
   ) async {
     await pumpWidgetInApp(
       tester,
       Builder(
         builder: (context) => Scaffold(
-          appBar: const AppTopBar(title: 'Scannen', large: true),
+          appBar: const PageHeader(title: 'Scannen', large: true),
           body: TextButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) =>
-                    const Scaffold(appBar: AppTopBar(title: 'Unterseite')),
+                    const Scaffold(appBar: PageHeader(title: 'Unterseite')),
               ),
             ),
             child: const Text('Weiter'),
@@ -252,6 +254,81 @@ void main() {
     await tester.tap(find.byTooltip('Zurück'));
     await tester.pumpAndSettle();
     expect(find.text('Unterseite'), findsNothing);
+  });
+
+  testWidgets('PageHeader: overline in capitals, read normally; round '
+      'actions with tooltips and 48 px targets', (tester) async {
+    await pumpWidgetInApp(
+      tester,
+      Scaffold(
+        body: PageHeader(
+          overline: 'Samstag',
+          title: '14. November',
+          large: true,
+          actions: [
+            RoundIconButton(
+              icon: Icons.chevron_left_rounded,
+              tooltip: 'Vorheriger Tag',
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      db: db,
+    );
+
+    expect(find.text('SAMSTAG'), findsOneWidget);
+    expect(find.bySemanticsLabel('Samstag'), findsOneWidget);
+    final button = find.ancestor(
+      of: find.byTooltip('Vorheriger Tag'),
+      matching: find.byType(IconButton),
+    );
+    expect(tester.getSize(button).width, greaterThanOrEqualTo(48));
+    expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+  });
+
+  group('segmented PillChoices', () {
+    Widget segments() => Scaffold(
+      body: PillChoices<int>(
+        segmented: true,
+        choices: const [
+          PillChoice('100 g', 1),
+          PillChoice('1 Portion (30 g)', 2),
+          PillChoice('Zuletzt: 80 g', 3),
+        ],
+        selected: 2,
+        onSelected: (_) {},
+      ),
+    );
+
+    testWidgets('one row of equally wide segments', (tester) async {
+      await pumpWidgetInApp(tester, segments(), db: db);
+      final widths = {
+        for (final label in ['100 g', '1 Portion (30 g)', 'Zuletzt: 80 g'])
+          tester
+              .getSize(
+                find.ancestor(
+                  of: find.text(label),
+                  matching: find.byType(Pill),
+                ),
+              )
+              .width,
+      };
+      expect(widths, hasLength(1));
+      final selected = tester.widget<Text>(find.text('1 Portion (30 g)'));
+      expect(selected.style!.color, AppColors.light.onSelected);
+    });
+
+    testWidgets('very large text: the segments wrap instead', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      tester.view.physicalSize = const Size(360, 720);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pumpWidgetInApp(tester, segments(), db: db);
+      expect(find.byType(Wrap), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('camera area', () {

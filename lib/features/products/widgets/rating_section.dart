@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/icon_square.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
@@ -10,11 +9,11 @@ import '../health_rating.dart';
 import '../nutrient_format.dart';
 import '../nutrients.dart';
 
-/// The "Bewertung" part of the product page (brief R1–R7):
-/// four cards (fat, saturates, sugars, salt) with icon + nutrient + value +
-/// word, plus points, and notes when the product is not rated or its values
-/// look wrong. There is no overall score on purpose. (The Nutri-Score is
-/// shown as plain text in the page header.)
+/// The "Bewertung" part of the product page (brief R1–R7): a 2 × 2 grid of
+/// tinted tiles (fat, saturates, sugars, salt) with nutrient, icon + value
+/// and word, then plus points, and notes when the product is not rated or
+/// its values look wrong. There is no overall score on purpose. (The
+/// Nutri-Score is shown as plain text in the page header.)
 class RatingSection extends StatelessWidget {
   const RatingSection({super.key, required this.food});
 
@@ -25,13 +24,27 @@ class RatingSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.appColors;
     final rating = rateFood(food);
-    final title = switch (rating) {
-      Rated(basis: RatingBasis.food) => l10n.ratingTitleFood,
-      Rated(basis: RatingBasis.drink) => l10n.ratingTitleDrink,
-      NotRated() => l10n.ratingTitle,
-    };
-    final rows = switch (rating) {
-      Rated() => _ratedRows(rating, l10n, colors),
+    final children = switch (rating) {
+      Rated() => [
+        _LevelGrid(
+          tiles: [
+            for (final nutrient in RatedNutrient.values)
+              _LevelTile(
+                nutrient: nutrient,
+                level: rating.levels[nutrient],
+                value: food.nutrients[nutrient.nutrient],
+              ),
+          ],
+        ),
+        for (final point in rating.plusPoints) _PlusPointRow(point: point),
+        if (rating.suspicious)
+          _Note(
+            icon: Icons.report_problem_rounded,
+            text: l10n.ratingSuspicious,
+            background: colors.ratingMediumBg,
+            iconColor: colors.ratingMedium,
+          ),
+      ],
       NotRated(reason: NotRatedReason.unknownType) => [
         _Note(icon: Icons.info_outline_rounded, text: l10n.ratingNoCategory),
       ],
@@ -43,15 +56,15 @@ class RatingSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader(title),
+        SectionHeader(l10n.ratingTitle),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final (index, row) in rows.indexed) ...[
-                if (index > 0) const SizedBox(height: Spacing.s),
-                row,
+              for (final (index, child) in children.indexed) ...[
+                if (index > 0) const SizedBox(height: 10),
+                child,
               ],
             ],
           ),
@@ -59,35 +72,63 @@ class RatingSection extends StatelessWidget {
       ],
     );
   }
+}
 
-  List<Widget> _ratedRows(
-    Rated rating,
-    AppLocalizations l10n,
-    AppColors colors,
-  ) {
-    return [
-      for (final nutrient in RatedNutrient.values)
-        _LevelRow(
-          nutrient: nutrient,
-          level: rating.levels[nutrient],
-          value: food.nutrients[nutrient.nutrient],
-        ),
-      for (final point in rating.plusPoints) _PlusPointRow(point: point),
-      if (rating.suspicious)
-        _Note(
-          icon: Icons.report_problem_rounded,
-          text: l10n.ratingSuspicious,
-          background: colors.ratingMediumBg,
-          iconColor: colors.ratingMedium,
-        ),
-    ];
+/// Two tiles per row, rows as tall as their tallest tile. One tile per row
+/// when the space is narrow or the text is very large.
+class _LevelGrid extends StatelessWidget {
+  const _LevelGrid({required this.tiles});
+
+  final List<Widget> tiles;
+
+  static const double _gap = 10;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns =
+            constraints.maxWidth < 280 ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.5
+            ? 1
+            : 2;
+        final rows = [
+          for (var i = 0; i < tiles.length; i += columns)
+            tiles.sublist(i, (i + columns).clamp(0, tiles.length)),
+        ];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (index, row) in rows.indexed) ...[
+              if (index > 0) const SizedBox(height: _gap),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, tile) in row.indexed) ...[
+                      if (i > 0) const SizedBox(width: _gap),
+                      Expanded(child: tile),
+                    ],
+                    // A last row with one tile keeps the tile half wide.
+                    for (var i = row.length; i < columns; i++) ...[
+                      const SizedBox(width: _gap),
+                      const Spacer(),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
   }
 }
 
-/// One traffic-light card: icon square + nutrient + value + word pill.
+/// One traffic-light tile in the level's colours: "Fett", "↑ 33 g", "hoch".
 /// Never colour only: the icon and the word say the same.
-class _LevelRow extends StatelessWidget {
-  const _LevelRow({
+class _LevelTile extends StatelessWidget {
+  const _LevelTile({
     required this.nutrient,
     required this.level,
     required this.value,
@@ -136,10 +177,7 @@ class _LevelRow extends StatelessWidget {
         ? ''
         : formatNutrientValue(nutrient.nutrient, value, l10n);
     final name = nutrientName(nutrient.nutrient, l10n);
-    final textStyle = theme.textTheme.bodyMedium!.copyWith(
-      fontSize: 14,
-      fontWeight: FontWeight.w800,
-    );
+    final smallStyle = theme.textTheme.labelMedium!.copyWith(color: foreground);
 
     return Semantics(
       label: l10n.ratingRowSemantics(name, word, valueText),
@@ -148,72 +186,37 @@ class _LevelRow extends StatelessWidget {
       excludeSemantics: true,
       child: AppCard(
         radius: Radii.button,
-        padding: const EdgeInsets.symmetric(
-          horizontal: Spacing.m,
-          vertical: 10,
-        ),
-        child: Row(
+        color: background,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconSquare(
-              icon: icon,
-              background: background,
-              foreground: foreground,
+            // "gesättigte Fettsäuren" starts the tile: capital first letter.
+            Text(
+              name.isEmpty ? name : name[0].toUpperCase() + name.substring(1),
+              style: smallStyle,
             ),
-            const SizedBox(width: 10),
-            Expanded(child: Text(name, style: textStyle)),
-            const SizedBox(width: Spacing.s),
-            // Value and word move below each other when the text is large.
-            Flexible(
-              child: Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: Spacing.s,
-                runSpacing: Spacing.xs,
-                children: [
-                  if (valueText.isNotEmpty)
-                    Text(
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(icon, color: foreground, size: 20),
+                if (valueText.isNotEmpty) ...[
+                  const SizedBox(width: Spacing.xs),
+                  Flexible(
+                    child: Text(
                       valueText,
-                      style: textStyle.copyWith(fontFeatures: tabularFigures),
+                      style: theme.textTheme.titleLarge!.copyWith(
+                        color: foreground,
+                        fontFeatures: tabularFigures,
+                      ),
                     ),
-                  _WordPill(
-                    word: word,
-                    background: background,
-                    foreground: foreground,
                   ),
                 ],
-              ),
+              ],
             ),
+            Text(word, style: smallStyle),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// "hoch" / "mittel" / "niedrig" in a small pill of the level's colours.
-class _WordPill extends StatelessWidget {
-  const _WordPill({
-    required this.word,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String word;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: ShapeDecoration(
-        color: background,
-        shape: const StadiumBorder(),
-      ),
-      child: Text(
-        word,
-        style: Theme.of(context).textTheme.labelMedium!
-            .copyWith(color: foreground),
       ),
     );
   }

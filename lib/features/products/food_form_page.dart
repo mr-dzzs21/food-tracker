@@ -8,11 +8,11 @@ import '../../core/errors.dart';
 import '../../core/format.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/bottom_cta_bar.dart';
 import '../../core/widgets/buttons.dart';
 import '../../core/widgets/card_list.dart';
 import '../../core/widgets/dialogs.dart';
+import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_view.dart';
 import '../../core/widgets/switch_row.dart';
 import '../../data/database.dart';
@@ -288,14 +288,14 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
 
     if (_loading) {
       return Scaffold(
-        appBar: AppTopBar(title: title),
+        appBar: PageHeader(title: title),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     final existing = _existing;
     if (_isEdit && existing == null) {
       return Scaffold(
-        appBar: AppTopBar(title: title),
+        appBar: PageHeader(title: title),
         body: StatusView(icon: Icons.no_food_rounded, title: l10n.productGone),
       );
     }
@@ -306,12 +306,12 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
     const gap = SizedBox(height: Spacing.m);
 
     return Scaffold(
-      appBar: AppTopBar(
+      appBar: PageHeader(
         title: title,
         actions: [
           // Only own foods can be deleted (cached products are kept).
           if (existing != null && _isEdit && existing.source == FoodSource.user)
-            SquareIconButton(
+            RoundIconButton(
               icon: Icons.delete_outline_rounded,
               tooltip: l10n.actionDelete,
               onPressed: () => _delete(existing),

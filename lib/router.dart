@@ -204,7 +204,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// The frame around the four tabs: the page of the current tab plus the
-/// app's own navigation bar at the bottom.
+/// app's own floating navigation bar at the bottom. The page ends above the
+/// bar, so the bar never covers text or buttons.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.shell});
 
@@ -214,34 +215,14 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      // The Scaffold reports the bar's height (including the strip the raised
-      // scan button sticks into) as bottom padding.
-      extendBody: true,
-      body: Builder(
-        builder: (context) {
-          final barHeight = MediaQuery.paddingOf(context).bottom;
-          // The page ends above the raised scan button, so the button never
-          // covers text or buttons. Next to the button the app background
-          // shows. With the keyboard open the Scaffold reports no bar, so
-          // there is no extra space then.
-          return Padding(
-            padding: EdgeInsets.only(bottom: barHeight),
-            child: MediaQuery.removePadding(
-              context: context,
-              removeBottom: true,
-              child: shell,
-            ),
-          );
-        },
-      ),
+      body: shell,
       bottomNavigationBar: AppNavBar(
         selectedIndex: shell.currentIndex,
-        raisedIndex: 1,
         // Tapping the open tab again goes back to its first page.
         onSelected: (index) =>
             shell.goBranch(index, initialLocation: index == shell.currentIndex),
         destinations: [
-          AppNavDestination(icon: Icons.today_rounded, label: l10n.tabToday),
+          AppNavDestination(icon: Icons.home_rounded, label: l10n.tabToday),
           AppNavDestination(
             icon: Icons.qr_code_scanner_rounded,
             label: l10n.tabScan,
