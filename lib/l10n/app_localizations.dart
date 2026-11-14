@@ -176,12 +176,6 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get actionClose;
 
-  /// No description provided for @actionOk.
-  ///
-  /// In en, this message translates to:
-  /// **'OK'**
-  String get actionOk;
-
   /// No description provided for @mealBreakfast.
   ///
   /// In en, this message translates to:
@@ -271,12 +265,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown product'**
   String get productUnknownName;
-
-  /// Temporary text for screens that are not built yet
-  ///
-  /// In en, this message translates to:
-  /// **'This screen is being built.'**
-  String get placeholderComingSoon;
 
   /// Fallback name of a user-added meal without a name
   ///
@@ -1807,6 +1795,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open-source licences'**
   String get aboutLicenses;
+
+  /// Title of the statistics page for the current week
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get statsThisWeek;
+
+  /// Title of a past week; week = ISO week number, range like 'Nov 2–8'
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} · {range}'**
+  String statsWeekTitle(String week, String range);
+
+  /// Title of a week of another year, e.g. 'KW 46/2025 · 10.–16. Nov.'
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}/{year} · {range}'**
+  String statsWeekTitleWithYear(String week, String year, String range);
+
+  /// Days of a week inside one month; first/last = day numbers, month = short month name ('Nov' / 'Nov.')
+  ///
+  /// In en, this message translates to:
+  /// **'{month} {first}–{last}'**
+  String statsRangeSameMonth(String first, String last, String month);
+
+  /// Days of a week across two months; first/last like 'Oct 26' / '26. Okt.'
+  ///
+  /// In en, this message translates to:
+  /// **'{first} – {last}'**
+  String statsRangeTwoMonths(String first, String last);
+
+  /// Tooltip of the left arrow on the statistics page
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get statsPreviousWeek;
+
+  /// Tooltip of the right arrow on the statistics page
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get statsNextWeek;
+
+  /// No description provided for @statsChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per day'**
+  String get statsChartTitle;
+
+  /// Legend under the week chart
+  ///
+  /// In en, this message translates to:
+  /// **'Line: your daily goal ({goal} kcal)'**
+  String statsGoalLine(String goal);
+
+  /// Screen reader text of the week chart; days = comma-separated list of statsDay* texts
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per day: {days}.'**
+  String statsChartSemantics(String days);
+
+  /// Added to the screen reader text of the week chart when a goal is set
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal: {goal} kcal.'**
+  String statsChartSemanticsGoal(String goal);
+
+  /// One day in the screen reader text of the week chart, e.g. 'Montag 1.850 kcal'
+  ///
+  /// In en, this message translates to:
+  /// **'{day} {kcal} kcal'**
+  String statsDayKcal(String day, String kcal);
+
+  /// No description provided for @statsDayNoEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} no entries'**
+  String statsDayNoEntries(String day);
+
+  /// A day whose entries all have no kcal value
+  ///
+  /// In en, this message translates to:
+  /// **'{day} kcal unknown'**
+  String statsDayKcalUnknown(String day);
+
+  /// Tile title; Ø means average
+  ///
+  /// In en, this message translates to:
+  /// **'Ø kcal per day'**
+  String get statsAverageKcalTitle;
+
+  /// Screen reader text of the average tile (Ø is not read well)
+  ///
+  /// In en, this message translates to:
+  /// **'Average: {value} kcal per day'**
+  String statsAverageKcalSemantics(String value);
+
+  /// No description provided for @statsDaysLoggedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Days with entries'**
+  String get statsDaysLoggedTitle;
+
+  /// Number of days in the week with at least one entry
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of 7'**
+  String statsDaysLoggedValue(String count);
+
+  /// Title of the card with average protein, carbs and fat
+  ///
+  /// In en, this message translates to:
+  /// **'Ø per day'**
+  String get statsAverageMacrosTitle;
+
+  /// No description provided for @statsAverageMacroSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Average {nutrient}: {value} per day'**
+  String statsAverageMacroSemantics(String nutrient, String value);
+
+  /// No description provided for @statsAverageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Averages only count the days with entries.'**
+  String get statsAverageNote;
+
+  /// No description provided for @statsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries this week'**
+  String get statsEmptyTitle;
+
+  /// No description provided for @statsEmptyText.
+  ///
+  /// In en, this message translates to:
+  /// **'As soon as you log something, you\'ll see your week here.'**
+  String get statsEmptyText;
 }
 
 class _AppLocalizationsDelegate

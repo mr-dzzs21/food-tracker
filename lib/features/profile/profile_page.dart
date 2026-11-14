@@ -14,6 +14,7 @@ import '../diary/diary_repository.dart';
 import '../goals/goals_repository.dart';
 import '../products/nutrient_format.dart';
 import '../products/nutrients.dart';
+import '../stats/stats_providers.dart';
 
 /// Tab "Profil": daily goal and all settings.
 class ProfilePage extends ConsumerWidget {
@@ -149,7 +150,9 @@ class ProfilePage extends ConsumerWidget {
     // Theme, language and the hidden "Ziel festlegen" card are reset too.
     await clearAllSettings(ref);
     if (!context.mounted) return;
-    ref.invalidate(selectedDayProvider);
+    ref
+      ..invalidate(selectedDayProvider)
+      ..invalidate(selectedWeekProvider);
     messenger.showSnackBar(SnackBar(content: Text(done)));
   }
 }

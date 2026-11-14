@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
-/// "Now" in every test: Friday, 14 November 2026, 12:00 local time.
+/// "Now" in every test: Saturday, 14 November 2026, 12:00 local time.
 final testNow = DateTime(2026, 11, 14, 12);
 
 /// A fresh in-memory database (with the four default meals).

@@ -11,6 +11,10 @@ abstract final class Spacing {
   static const double l = 16;
   static const double xl = 24;
   static const double xxl = 32;
+
+  /// Empty space at the end of a list with a floating button, so the button
+  /// never hides the last row.
+  static const double belowFab = 96;
 }
 
 /// Corner radii for cards, buttons and sheets.

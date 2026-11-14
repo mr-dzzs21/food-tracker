@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
@@ -42,7 +43,7 @@ class MyFoodsPage extends ConsumerWidget {
         ),
         AsyncData(value: final foods) => ListView(
           // Room for the floating button.
-          padding: const EdgeInsets.only(bottom: 96),
+          padding: const EdgeInsets.only(bottom: Spacing.belowFab),
           children: [for (final food in foods) _OwnFoodRow(food: food)],
         ),
         AsyncError() => StatusView(

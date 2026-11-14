@@ -16,7 +16,6 @@
   "actionAdd": "Add",
   "actionEdit": "Edit",
   "actionClose": "Close",
-  "actionOk": "OK",
   "mealBreakfast": "Breakfast",
   "mealLunch": "Lunch",
   "mealDinner": "Dinner",
@@ -34,10 +33,6 @@
   "productUnknownName": "Unknown product",
   "@productUnknownName": {
     "description": "Shown instead of the name when Open Food Facts has no name for a product (the stored name is empty)"
-  },
-  "placeholderComingSoon": "This screen is being built.",
-  "@placeholderComingSoon": {
-    "description": "Temporary text for screens that are not built yet"
   },
   "mealUnnamed": "Meal",
   "@mealUnnamed": {
@@ -825,5 +820,169 @@
   "aboutNotesTitle": "Good to know",
   "aboutPrivacyTitle": "Privacy",
   "aboutPrivacyText": "All data stays on your device. The app has no account, no ads and no tracking. Only product searches are sent to Open Food Facts.",
-  "aboutLicenses": "Open-source licences"
+  "aboutLicenses": "Open-source licences",
+  "statsThisWeek": "This week",
+  "@statsThisWeek": {
+    "description": "Title of the statistics page for the current week"
+  },
+  "statsWeekTitle": "Week {week} · {range}",
+  "@statsWeekTitle": {
+    "description": "Title of a past week; week = ISO week number, range like 'Nov 2–8'",
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "statsWeekTitleWithYear": "Week {week}/{year} · {range}",
+  "@statsWeekTitleWithYear": {
+    "description": "Title of a week of another year, e.g. 'KW 46/2025 · 10.–16. Nov.'",
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "year": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRangeSameMonth": "{month} {first}–{last}",
+  "@statsRangeSameMonth": {
+    "description": "Days of a week inside one month; first/last = day numbers, month = short month name ('Nov' / 'Nov.')",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRangeTwoMonths": "{first} – {last}",
+  "@statsRangeTwoMonths": {
+    "description": "Days of a week across two months; first/last like 'Oct 26' / '26. Okt.'",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "statsPreviousWeek": "Previous week",
+  "@statsPreviousWeek": {
+    "description": "Tooltip of the left arrow on the statistics page"
+  },
+  "statsNextWeek": "Next week",
+  "@statsNextWeek": {
+    "description": "Tooltip of the right arrow on the statistics page"
+  },
+  "statsChartTitle": "Calories per day",
+  "statsGoalLine": "Line: your daily goal ({goal} kcal)",
+  "@statsGoalLine": {
+    "description": "Legend under the week chart",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "statsChartSemantics": "Calories per day: {days}.",
+  "@statsChartSemantics": {
+    "description": "Screen reader text of the week chart; days = comma-separated list of statsDay* texts",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "statsChartSemanticsGoal": "Daily goal: {goal} kcal.",
+  "@statsChartSemanticsGoal": {
+    "description": "Added to the screen reader text of the week chart when a goal is set",
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDayKcal": "{day} {kcal} kcal",
+  "@statsDayKcal": {
+    "description": "One day in the screen reader text of the week chart, e.g. 'Montag 1.850 kcal'",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDayNoEntries": "{day} no entries",
+  "@statsDayNoEntries": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDayKcalUnknown": "{day} kcal unknown",
+  "@statsDayKcalUnknown": {
+    "description": "A day whose entries all have no kcal value",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageKcalTitle": "Ø kcal per day",
+  "@statsAverageKcalTitle": {
+    "description": "Tile title; Ø means average"
+  },
+  "statsAverageKcalSemantics": "Average: {value} kcal per day",
+  "@statsAverageKcalSemantics": {
+    "description": "Screen reader text of the average tile (Ø is not read well)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDaysLoggedTitle": "Days with entries",
+  "statsDaysLoggedValue": "{count} of 7",
+  "@statsDaysLoggedValue": {
+    "description": "Number of days in the week with at least one entry",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageMacrosTitle": "Ø per day",
+  "@statsAverageMacrosTitle": {
+    "description": "Title of the card with average protein, carbs and fat"
+  },
+  "statsAverageMacroSemantics": "Average {nutrient}: {value} per day",
+  "@statsAverageMacroSemantics": {
+    "placeholders": {
+      "nutrient": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageNote": "Averages only count the days with entries.",
+  "statsEmptyTitle": "No entries this week",
+  "statsEmptyText": "As soon as you log something, you'll see your week here."
 }

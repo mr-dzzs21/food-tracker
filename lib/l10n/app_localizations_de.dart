@@ -49,9 +49,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get actionClose => 'Schließen';
 
   @override
-  String get actionOk => 'OK';
-
-  @override
   String get mealBreakfast => 'Frühstück';
 
   @override
@@ -103,9 +100,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get productUnknownName => 'Unbekanntes Produkt';
-
-  @override
-  String get placeholderComingSoon => 'Dieser Bildschirm entsteht gerade.';
 
   @override
   String get mealUnnamed => 'Mahlzeit';
@@ -1021,4 +1015,101 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aboutLicenses => 'Open-Source-Lizenzen';
+
+  @override
+  String get statsThisWeek => 'Diese Woche';
+
+  @override
+  String statsWeekTitle(String week, String range) {
+    return 'KW $week · $range';
+  }
+
+  @override
+  String statsWeekTitleWithYear(String week, String year, String range) {
+    return 'KW $week/$year · $range';
+  }
+
+  @override
+  String statsRangeSameMonth(String first, String last, String month) {
+    return '$first.–$last. $month';
+  }
+
+  @override
+  String statsRangeTwoMonths(String first, String last) {
+    return '$first – $last';
+  }
+
+  @override
+  String get statsPreviousWeek => 'Vorherige Woche';
+
+  @override
+  String get statsNextWeek => 'Nächste Woche';
+
+  @override
+  String get statsChartTitle => 'Kalorien pro Tag';
+
+  @override
+  String statsGoalLine(String goal) {
+    return 'Linie: dein Tagesziel ($goal kcal)';
+  }
+
+  @override
+  String statsChartSemantics(String days) {
+    return 'Kalorien pro Tag: $days.';
+  }
+
+  @override
+  String statsChartSemanticsGoal(String goal) {
+    return 'Tagesziel: $goal kcal.';
+  }
+
+  @override
+  String statsDayKcal(String day, String kcal) {
+    return '$day $kcal kcal';
+  }
+
+  @override
+  String statsDayNoEntries(String day) {
+    return '$day keine Einträge';
+  }
+
+  @override
+  String statsDayKcalUnknown(String day) {
+    return '$day kcal unbekannt';
+  }
+
+  @override
+  String get statsAverageKcalTitle => 'Ø kcal pro Tag';
+
+  @override
+  String statsAverageKcalSemantics(String value) {
+    return 'Durchschnitt: $value kcal pro Tag';
+  }
+
+  @override
+  String get statsDaysLoggedTitle => 'Tage mit Einträgen';
+
+  @override
+  String statsDaysLoggedValue(String count) {
+    return '$count von 7';
+  }
+
+  @override
+  String get statsAverageMacrosTitle => 'Ø pro Tag';
+
+  @override
+  String statsAverageMacroSemantics(String nutrient, String value) {
+    return 'Durchschnitt $nutrient: $value pro Tag';
+  }
+
+  @override
+  String get statsAverageNote =>
+      'Durchschnitte zählen nur die Tage mit Einträgen.';
+
+  @override
+  String get statsEmptyTitle => 'Keine Einträge in dieser Woche';
+
+  @override
+  String get statsEmptyText =>
+      'Sobald du etwas einträgst, siehst du hier deine Woche.';
 }

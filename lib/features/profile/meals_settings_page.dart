@@ -197,7 +197,7 @@ class _MealsListState extends ConsumerState<_MealsList> {
       buildDefaultDragHandles: false,
       onReorderItem: _reorder,
       // Room for the floating "Mahlzeit hinzufügen" button.
-      padding: const EdgeInsets.only(bottom: 96),
+      padding: const EdgeInsets.only(bottom: Spacing.belowFab),
       header: Padding(
         padding: const EdgeInsets.fromLTRB(
           Spacing.l,

@@ -66,6 +66,18 @@ class DiaryRepository {
     );
   }
 
+  /// The entries from day [first] to day [last] (both included, keys
+  /// `yyyy-MM-dd`), for the week statistics. One query for the whole range.
+  ///
+  /// Day keys sort like dates, so a text comparison finds the right days.
+  Stream<List<DiaryEntry>> watchEntriesBetween(String first, String last) {
+    _checkDay(first);
+    _checkDay(last);
+    return (_db.select(
+      _db.diaryEntries,
+    )..where((e) => e.day.isBetweenValues(first, last))).watch();
+  }
+
   /// All meals (also hidden ones), sorted by their position.
   Stream<List<MealSlot>> watchMealSlots() =>
       (_db.select(_db.mealSlots)..orderBy([
