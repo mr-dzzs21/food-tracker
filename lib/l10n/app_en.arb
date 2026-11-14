@@ -1,0 +1,38 @@
+{
+  "@@locale": "en",
+  "appTitle": "Food Tracker",
+  "@appTitle": {
+    "description": "App name shown in the task switcher"
+  },
+  "tabToday": "Today",
+  "tabScan": "Scan",
+  "tabStats": "Statistics",
+  "tabProfile": "Profile",
+  "actionRetry": "Try again",
+  "actionCancel": "Cancel",
+  "actionSave": "Save",
+  "actionDelete": "Delete",
+  "actionUndo": "Undo",
+  "actionAdd": "Add",
+  "actionEdit": "Edit",
+  "actionClose": "Close",
+  "actionOk": "OK",
+  "mealBreakfast": "Breakfast",
+  "mealLunch": "Lunch",
+  "mealDinner": "Dinner",
+  "mealSnacks": "Snacks",
+  "failureInvalidBarcode": "This barcode looks invalid. Please scan it again.",
+  "failureNotFound": "We don't know this product yet. You can add it yourself.",
+  "failureNotFood": "This doesn't seem to be a food product.",
+  "failureIncomplete": "Nutrition values are missing for this product. You can fill them in yourself.",
+  "failureOffline": "You're offline. Your diary still works – product search needs internet.",
+  "failureTimeout": "Open Food Facts isn't responding right now. Try again in a moment.",
+  "failureRateLimited": "Too many requests in a short time. Wait a minute, then try again.",
+  "failureServer": "Open Food Facts has a problem right now. Try again later.",
+  "failureMaintenance": "Open Food Facts is unavailable right now (maintenance or high load). Try again later.",
+  "errorGeneric": "Something went wrong.",
+  "placeholderComingSoon": "This screen is being built.",
+  "@placeholderComingSoon": {
+    "description": "Temporary text for screens that are not built yet"
+  }
+}

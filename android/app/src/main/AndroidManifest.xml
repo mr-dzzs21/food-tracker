@@ -2,7 +2,7 @@
     <!-- Nötig, damit die App Produkte bei Open Food Facts abrufen kann. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="food_tracker"
+        android:label="Food Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
