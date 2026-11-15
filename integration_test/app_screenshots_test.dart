@@ -231,6 +231,10 @@ void main() {
 
   Future<void> shot(WidgetTester tester, String name) async {
     await tester.pumpAndSettle();
+    // On a real device the database answers asynchronously and tab changes
+    // animate: wait a moment so the picture shows the finished screen.
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
     await binding.takeScreenshot(name);
   }
 

@@ -727,8 +727,13 @@ class _AmountChoices extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    String amountText(double value) =>
-        formatAmount(value, isLiquid: food.isLiquid, locale: l10n.localeName);
+    // A non-breaking space keeps number and unit together, so a narrow pill
+    // never shows "44" on one line and "g" on the next.
+    String amountText(double value) => formatAmount(
+      value,
+      isLiquid: food.isLiquid,
+      locale: l10n.localeName,
+    ).replaceAll(' ', ' ');
     final serving = food.servingSize;
     final last = lastAmount;
     return PillChoices<double>(

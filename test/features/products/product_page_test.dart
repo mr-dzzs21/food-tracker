@@ -329,11 +329,11 @@ void main() {
     expect(isSelectedPill(tester, 'Mittagessen'), isTrue);
     expect(find.text('Tag: Heute, 14. Nov.'), findsOneWidget);
     expect(find.widgetWithText(TextField, '100'), findsOneWidget);
-    expect(isSelectedPill(tester, '100 g'), isTrue);
-    await tester.tap(find.text('Zuletzt: 80 g'));
+    expect(isSelectedPill(tester, '100\u00A0g'), isTrue);
+    await tester.tap(find.text('Zuletzt: 80\u00A0g'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(TextField, '80'), findsOneWidget);
-    expect(isSelectedPill(tester, 'Zuletzt: 80 g'), isTrue);
+    expect(isSelectedPill(tester, 'Zuletzt: 80\u00A0g'), isTrue);
     expect(find.text('80 g zum Mittagessen · 72 kcal'), findsOneWidget);
 
     await tester.tap(find.byType(CtaButton));
