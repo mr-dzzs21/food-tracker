@@ -37,7 +37,7 @@ dependencies:
   material_ui: ^1.11.0
   # Only for CupertinoPageTransitionsBuilder (iOS-style page slide on every
   # platform). material_ui already depends on it.
-  cupertino_ui: ^1.1.6
+  cupertino_ui: ^1.1.7
   flutter_riverpod: ^3.5.0
   go_router: ^18.1.4
   drift: ^2.35.4
