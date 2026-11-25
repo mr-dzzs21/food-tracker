@@ -6,12 +6,10 @@ import '../../../core/widgets/card_list.dart';
 import '../../../core/widgets/icon_square.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
-import '../basic_foods.dart';
-import '../off_product_mapper.dart';
 
-/// One food in a list (recents, favourites, own foods, search results):
-/// name, brand and kcal per 100 g/ml – a [CardRow], so put several of them
-/// into a `CardGroup`.
+/// One stored food in a list (recents, favourites, own foods): name, brand
+/// and kcal per 100 g/ml – a [CardRow], so put several of them into a
+/// `CardGroup`. Search hits use the shorter `FoodResultRow`.
 ///
 /// No product photos in lists: fewer downloads, and the list stays calm. A
 /// small icon square says "food" or "drink" instead.
@@ -23,7 +21,6 @@ class FoodTile extends StatelessWidget {
     required this.kcal,
     required this.isLiquid,
     required this.onTap,
-    this.nutriScore,
     this.isFavourite = false,
     this.trailing,
   });
@@ -45,36 +42,6 @@ class FoodTile extends StatelessWidget {
          trailing: trailing,
        );
 
-  /// A basic food (BLS) in a search, named in the UI language.
-  FoodTile.basicFood(
-    BasicFood food, {
-    Key? key,
-    required String languageCode,
-    required VoidCallback onTap,
-  }) : this(
-         key: key,
-         name: food.nameFor(languageCode),
-         brand: null,
-         kcal: food.nutrients.kcal,
-         isLiquid: food.isLiquid,
-         onTap: onTap,
-       );
-
-  /// A hit of the Open Food Facts search.
-  FoodTile.offProduct(
-    OffProduct product, {
-    Key? key,
-    required VoidCallback onTap,
-  }) : this(
-         key: key,
-         name: product.name ?? '',
-         brand: product.brand,
-         kcal: product.nutrients.kcal,
-         isLiquid: product.isLiquid,
-         nutriScore: product.nutriScore,
-         onTap: onTap,
-       );
-
   /// Empty for products without a name ("Unbekanntes Produkt" is shown).
   final String name;
   final String? brand;
@@ -83,8 +50,6 @@ class FoodTile extends StatelessWidget {
   final double? kcal;
   final bool isLiquid;
 
-  /// "A" … "E" (only Open Food Facts products have one).
-  final String? nutriScore;
   final bool isFavourite;
   final VoidCallback onTap;
 
@@ -95,12 +60,7 @@ class FoodTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final brand = this.brand;
-    final nutriScore = this.nutriScore;
-    final details = [
-      kcalPer100Text(kcal, isLiquid: isLiquid, l10n: l10n),
-      // Plain text only – no logo, no colours (owner decision).
-      if (nutriScore != null) l10n.searchNutriScore(nutriScore),
-    ].join(' · ');
+    final details = kcalPer100Text(kcal, isLiquid: isLiquid, l10n: l10n);
     final colors = context.appColors;
     return CardRow(
       leading: IconSquare(

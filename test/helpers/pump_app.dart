@@ -13,6 +13,8 @@ import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/data/settings_repository.dart';
 import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/basic_foods_repository.dart';
+import 'package:food_tracker/features/products/simple_foods.dart';
+import 'package:food_tracker/features/products/simple_foods_repository.dart';
 import 'package:food_tracker/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -48,18 +50,23 @@ void useInMemoryPreferences() {
 ///
 /// [basicFoods] are the BLS foods the search finds (none by default): the
 /// real file is not loaded in tests, because that runs in a background
-/// isolate that widget tests do not wait for.
+/// isolate that widget tests do not wait for. [simpleFoods] likewise (the
+/// real asset loading also decodes larger files in an isolate).
 List<Override> testOverrides({
   required AppDatabase db,
   http.Client? client,
   DateTime? now,
   List<BasicFood> basicFoods = const [],
+  List<SimpleFood> simpleFoods = const [],
 }) {
   useInMemoryPreferences();
   return [
     databaseProvider.overrideWithValue(db),
     basicFoodsLoaderProvider.overrideWithValue(
       () async => BasicFoodIndex(basicFoods),
+    ),
+    simpleFoodsLoaderProvider.overrideWithValue(
+      () async => SimpleFoodIndex(simpleFoods),
     ),
     httpClientProvider.overrideWithValue(client ?? offlineClient()),
     clockProvider.overrideWithValue(Clock.fixed(now ?? testNow)),
@@ -77,6 +84,7 @@ Future<void> pumpFoodTrackerApp(
   Locale locale = const Locale('de'),
   ThemeMode? themeMode,
   List<BasicFood> basicFoods = const [],
+  List<SimpleFood> simpleFoods = const [],
   List<Override> extraOverrides = const [],
 }) async {
   final overrides = testOverrides(
@@ -84,6 +92,7 @@ Future<void> pumpFoodTrackerApp(
     client: client,
     now: now,
     basicFoods: basicFoods,
+    simpleFoods: simpleFoods,
   );
   // The app reads its language (and theme) from the settings, so store them
   // there.
@@ -113,6 +122,7 @@ Future<void> pumpWidgetInApp(
   Locale locale = const Locale('de'),
   Brightness brightness = Brightness.light,
   List<BasicFood> basicFoods = const [],
+  List<SimpleFood> simpleFoods = const [],
   List<Override> extraOverrides = const [],
 }) async {
   await tester.pumpWidget(
@@ -124,6 +134,7 @@ Future<void> pumpWidgetInApp(
           client: client,
           now: now,
           basicFoods: basicFoods,
+          simpleFoods: simpleFoods,
         ),
         ...extraOverrides,
       ],

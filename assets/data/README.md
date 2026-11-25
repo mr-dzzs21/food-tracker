@@ -25,3 +25,40 @@ product page of a basic food, under the basic-food search results and on the Abo
 
 The values are averages for a kind of food; individual products can differ. The BLS data is not covered by the
 app's MIT licence.
+
+## `simple_foods_bls.tsv` and `simple_foods_off.tsv` – simple foods
+
+The short list of everyday foods the search shows first ("Skyr natur", "Reis gekocht"), with search
+words and a typical portion. Made by `tool/simple_foods/build_simple_foods.py` from the hand-written
+list `tool/simple_foods/foods.tsv` (how to change it: `tool/simple_foods/README.md`). One file per
+licence, so the licences do not mix:
+
+### `simple_foods_bls.tsv` – values from the BLS
+
+**Source and licence:** the same as `bls_4_0.tsv` above – Max Rubner-Institut (2025):
+Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe.
+DOI: [10.25826/Data20251217-134202-0](https://doi.org/10.25826/Data20251217-134202-0).
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+**Changes made for this app:** in addition to the changes listed for `bls_4_0.tsv`, each row takes the
+8 values of one BLS food (column `bls_code`) unchanged and adds our own short names, search words and
+a typical portion. Some foods are marked as drinks (`liquid`) where the BLS file does not (kefir).
+The app names the BLS as the source under the search results and on the product page.
+
+### `simple_foods_off.tsv` – typical values from Open Food Facts
+
+For the few foods the BLS does not have (for example "Skyr Vanille", "Proteinriegel", "Energy Drink"),
+the values are the **median** of Open Food Facts products of that kind sold in Germany. Which products
+and how many went into each median: `tool/simple_foods/off_products.tsv` (column `off_products` here
+gives the number).
+
+**Source:** Open Food Facts, <https://world.openfoodfacts.org>. **Licence:** this file is a database
+derived from the Open Food Facts database and is made available under the
+[Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/); the individual
+contents are under the [Database Contents License (DbCL) 1.0](https://opendatacommons.org/licenses/dbcl/1-0/).
+The same applies to `tool/simple_foods/off_products.tsv`. The app names Open Food Facts on the product
+page of such a food ("Durchschnitt aus N Produkten von Open Food Facts"), under the search results and
+on the About page.
+
+The names, search words and portions in both files are our own (MIT, like the app). All values are
+averages for a kind of food; individual products can differ.

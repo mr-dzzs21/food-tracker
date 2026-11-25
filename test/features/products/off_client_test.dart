@@ -337,6 +337,56 @@ void main() {
       expect(h.requests, hasLength(2));
     });
 
+    test(
+      'a search cancelled while it waits for its turn is not sent',
+      () async {
+        final requests = <http.Request>[];
+        final cancel = Completer<void>();
+        final client = OpenFoodFactsClient(
+          MockClient((request) async {
+            requests.add(request);
+            return jsonResponse(fixtureText('search_haferflocken.json'));
+          }),
+          userAgent: userAgent,
+          clock: Clock.fixed(DateTime(2026, 11, 14, 12)),
+          // The user types on while the second search waits for its slot.
+          delay: (_) async {
+            if (!cancel.isCompleted) cancel.complete();
+            await Future<void>.delayed(Duration.zero);
+          },
+        );
+
+        await client.search('sky');
+        await expectLater(
+          client.search('skyr', cancel: cancel.future),
+          throwsA(isA<SearchCancelled>()),
+        );
+        expect(requests, hasLength(1));
+        // A search that is still wanted goes out as usual.
+        await client.search('skyr');
+        expect(requests, hasLength(2));
+        expect(requests.last.url.queryParameters['q'], startsWith('skyr '));
+      },
+    );
+
+    test('a running search is aborted when it is cancelled', () async {
+      final fake = _NeverAnswering();
+      final client = OpenFoodFactsClient(
+        fake,
+        userAgent: userAgent,
+        delay: (_) async {},
+      );
+      final cancel = Completer<void>();
+
+      final search = client.search('skyr', cancel: cancel.future);
+      await Future<void>.delayed(Duration.zero);
+      expect(fake.sent, hasLength(1));
+      cancel.complete();
+
+      // Not "offline": an aborted request is no failure to show.
+      await expectLater(search, throwsA(isA<SearchCancelled>()));
+    });
+
     test('a 404 from the search server is a server problem', () async {
       final h = Harness((_) async => jsonResponse('{}', status: 404));
       await expectLater(
@@ -345,4 +395,24 @@ void main() {
       );
     });
   });
+}
+
+/// An HTTP client that never answers but honours the abort trigger of a
+/// request, like the real clients do.
+class _NeverAnswering extends http.BaseClient {
+  final sent = <http.BaseRequest>[];
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    sent.add(request);
+    final response = Completer<http.StreamedResponse>();
+    if (request case http.Abortable(:final abortTrigger?)) {
+      unawaited(
+        abortTrigger.then((_) {
+          response.completeError(http.RequestAbortedException(request.url));
+        }),
+      );
+    }
+    return response.future;
+  }
 }

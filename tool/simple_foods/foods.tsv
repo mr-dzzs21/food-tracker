@@ -1,0 +1,417 @@
+# Simple foods: the short list the search shows first. Edit this file, then run
+# python3 tool/simple_foods/build_simple_foods.py (see tool/simple_foods/README.md).
+# Columns: key, German and English name, search words (separated by |), source
+# (bls:<BLS code> or off:<key in off_averages.py>), typical portion in g or ml and its
+# name, and liquid (empty = as the source says, 1 = drink, 0 = food). Lines with # are
+# section titles; the order of the lines is the order of equally good search hits.
+key	name_de	name_en	synonyms_de	synonyms_en	source	portion_g	portion_de	portion_en	liquid
+# Brot und Gebäck
+broetchen	Brötchen	Bread roll	Semmel|Schrippe|Weck|Weckle|Wecken|Rundstück|Kaiserbrötchen|Weizenbrötchen	roll|white roll	bls:B511000	60	1 Brötchen	1 roll	
+vollkornbroetchen	Vollkornbrötchen	Wholemeal roll	Vollkornsemmel|Vollkornweck|Brötchen	wholegrain roll	bls:B401000	70	1 Brötchen	1 roll	
+koernerbroetchen	Körnerbrötchen	Multigrain roll	Mehrkornbrötchen|Kornspitz|Kürbiskernbrötchen|Brötchen	seeded roll	bls:B591000	70	1 Brötchen	1 roll	
+roggenbroetchen	Roggenbrötchen	Rye roll	Roggensemmel|Brötchen		bls:B521000	60	1 Brötchen	1 roll	
+dinkelbroetchen	Dinkelbrötchen	Spelt roll	Brötchen		bls:B561000	60	1 Brötchen	1 roll	
+brezel	Brezel	Pretzel	Breze|Brezn|Laugenbrezel|Laugenbrötchen|Laugenstange|Laugengebäck|Laugenecke	pretzel roll	bls:B723000	80	1 Brezel	1 pretzel	
+croissant	Croissant	Croissant	Buttercroissant|Hörnchen		bls:D771600	60	1 Croissant	1 croissant	
+vollkornbrot	Vollkornbrot	Wholemeal bread	Schwarzbrot|Körnerbrot|Brot	wholegrain bread|brown bread|bread	bls:B101000	50	1 Scheibe	1 slice	
+mischbrot	Mischbrot	Mixed rye bread	Roggenmischbrot|Graubrot|Bauernbrot|Brot	rye bread|bread	bls:B271000	50	1 Scheibe	1 slice	
+weizenmischbrot	Weizenmischbrot	Wheat and rye bread	Brot	bread	bls:B251000	50	1 Scheibe	1 slice	
+roggenbrot	Roggenbrot	Rye bread	Brot	bread	bls:B221000	50	1 Scheibe	1 slice	
+dinkelbrot	Dinkelbrot	Spelt bread	Brot	bread	bls:B710500	50	1 Scheibe	1 slice	
+weissbrot	Weißbrot	White bread	Weizenbrot|Kastenweißbrot|Brot	bread	bls:B311000	40	1 Scheibe	1 slice	
+toastbrot	Toastbrot	Toast	Toast|Buttertoast|Sandwichtoast|Weizentoast	sandwich bread	bls:B314000	25	1 Scheibe	1 slice	
+vollkorntoast	Vollkorntoast	Wholemeal toast	Vollkorntoastbrot|Toast	wholegrain toast	bls:B111200	25	1 Scheibe	1 slice	
+pumpernickel	Pumpernickel	Pumpernickel	Brot		bls:B780500	40	1 Scheibe	1 slice	
+baguette	Baguette	Baguette	Stangenweißbrot|Weizenbaguette	French bread	bls:B781200	50	1 Stück	1 piece	
+fladenbrot	Fladenbrot	Flatbread	Pide|Pita|Türkisches Brot|Weizenfladenbrot	pita|flat bread	bls:B782100	100	1 Stück	1 piece	
+wrap	Wrap	Wrap	Tortilla|Weizentortilla|Tortillafladen	tortilla	bls:B783012	60	1 Wrap	1 wrap	
+knaeckebrot	Knäckebrot	Crispbread	Roggenknäckebrot|Knäcke		bls:B6A2000	10	1 Scheibe	1 slice	
+zwieback	Zwieback	Rusk		zwieback	bls:D032000	10	1 Scheibe	1 slice	
+eiweissbroetchen	Eiweißbrötchen	Protein roll	Proteinbrötchen|Low-Carb-Brötchen|Eiweißbrot	protein bread	bls:B881200	60	1 Brötchen	1 roll	
+milchbroetchen	Milchbrötchen	Milk bun	Brioche	brioche bun	bls:D7A5400	40	1 Brötchen	1 bun	
+butterbrezel	Butterbrezel	Pretzel with butter	Butterbreze|Brezel mit Butter|Laugenbrezel mit Butter		bls:X061410	100	1 Brezel	1 pretzel	
+# Getreide, Beilagen
+haferflocken	Haferflocken	Oat flakes	Hafer|Haferflocken zart|Haferflocken kernig	oats|rolled oats	bls:C133000	40	4 EL	4 tbsp	
+porridge	Porridge (mit Wasser)	Porridge (with water)	Haferbrei|Haferschleim	oatmeal	bls:C133032	250	1 Schüssel	1 bowl	
+muesli	Müsli	Muesli	Früchtemüsli|Müslimischung|Müesli		bls:C512300	50	1 Portion	1 serving	
+knuspermuesli	Knuspermüsli	Crunchy muesli	Granola|Crunchy|Schokomüsli|Müsli	granola	bls:C514200	50	1 Portion	1 serving	
+cornflakes	Cornflakes	Cornflakes	Cerealien|Frühstücksflocken	corn flakes|cereal	bls:C515000	30	1 Portion	1 serving	
+reis-gekocht	Reis gekocht	Rice, cooked	Reis|Basmatireis|Jasminreis|Langkornreis|weißer Reis	rice|white rice|basmati	bls:C352032	150	1 Portion	1 serving	
+reis-roh	Reis roh	Rice, uncooked	Reis|Basmatireis|Jasminreis|Langkornreis|Reis trocken	rice|dry rice	bls:C352000	60	1 Portion	1 serving	
+vollkornreis-gekocht	Vollkornreis gekocht	Brown rice, cooked	Naturreis|brauner Reis		bls:C351032	150	1 Portion	1 serving	
+vollkornreis-roh	Vollkornreis roh	Brown rice, uncooked	Naturreis|brauner Reis		bls:C351000	60	1 Portion	1 serving	
+nudeln-gekocht	Nudeln gekocht	Pasta, cooked	Nudel|Pasta|Spaghetti|Penne|Fusilli|Makkaroni|Teigwaren|Spirelli|Farfalle|Hörnchennudeln|Rigatoni|Tagliatelle	spaghetti|noodles	bls:E401032	200	1 Portion	1 serving	
+nudeln-roh	Nudeln roh	Pasta, uncooked	Nudel|Pasta|Spaghetti|Penne|Fusilli|Makkaroni|Teigwaren|Nudeln trocken	spaghetti|noodles|dry pasta	bls:E401000	80	1 Portion	1 serving	
+vollkornnudeln-gekocht	Vollkornnudeln gekocht	Wholewheat pasta, cooked	Vollkornpasta|Vollkornspaghetti	wholegrain pasta	bls:E500032	200	1 Portion	1 serving	
+vollkornnudeln-roh	Vollkornnudeln roh	Wholewheat pasta, uncooked	Vollkornpasta|Vollkornspaghetti	wholegrain pasta	bls:E510000	80	1 Portion	1 serving	
+eiernudeln	Eiernudeln gekocht	Egg noodles, cooked	Spätzle|Bandnudeln|Eierspätzle|Eierteigwaren	egg pasta	bls:E432032	200	1 Portion	1 serving	
+tortellini	Tortellini gekocht	Tortellini, cooked	Tortelloni|Ravioli	ravioli	bls:E609232	200	1 Portion	1 serving	
+gnocchi	Gnocchi	Gnocchi	Kartoffelgnocchi		bls:K270032	200	1 Portion	1 serving	
+schupfnudeln	Schupfnudeln	Potato noodles	Fingernudeln|Bubespitzle		bls:E605032	200	1 Portion	1 serving	
+couscous-gekocht	Couscous gekocht	Couscous, cooked	Couscous|Kuskus|Cous Cous		bls:C119232	150	1 Portion	1 serving	
+couscous-roh	Couscous roh	Couscous, uncooked	Couscous|Kuskus		bls:C119200	60	1 Portion	1 serving	
+bulgur-gekocht	Bulgur gekocht	Bulgur, cooked	Bulgur|Weizengrütze		bls:C119132	150	1 Portion	1 serving	
+bulgur-roh	Bulgur roh	Bulgur, uncooked	Bulgur		bls:C119100	60	1 Portion	1 serving	
+quinoa-gekocht	Quinoa gekocht	Quinoa, cooked	Quinoa		bls:C118032	150	1 Portion	1 serving	
+quinoa-roh	Quinoa roh	Quinoa, uncooked	Quinoa		bls:C118000	60	1 Portion	1 serving	
+kartoffeln-gekocht	Kartoffeln gekocht	Potatoes, boiled	Kartoffel|Salzkartoffeln|Pellkartoffeln|Erdäpfel|Erdapfel|Grumbeere	potato	bls:K110132	200	1 Portion	1 serving	
+kartoffeln-roh	Kartoffeln roh	Potatoes, raw	Kartoffel|Erdäpfel|Erdapfel	potato	bls:K110100	200	1 Portion	1 serving	
+pommes	Pommes	French fries	Pommes frites|Fritten|Fritte	fries|chips	bls:K130592	150	1 Portion	1 serving	
+ofen-pommes	Ofen-Pommes	Oven chips	Backofen-Pommes|Pommes frites	oven fries|fries	bls:K130362	150	1 Portion	1 serving	
+kartoffelpueree	Kartoffelpüree	Mashed potatoes	Kartoffelbrei|Kartoffelstampf|Stampfkartoffeln|Püree	mash|mashed potato	bls:X634012	200	1 Portion	1 serving	
+bratkartoffeln	Bratkartoffeln	Fried potatoes	Röstkartoffeln	home fries	bls:X651063	200	1 Portion	1 serving	
+kroketten	Kroketten	Croquettes	Kartoffelkroketten	potato croquettes	bls:K282262	150	1 Portion	1 serving	
+kartoffelpuffer	Kartoffelpuffer	Potato pancakes	Reibekuchen|Reibeplätzchen|Reiberdatschi|Rösti|Kartoffelrösti	hash browns|latkes	bls:X655022	150	1 Portion	1 serving	
+suesskartoffel	Süßkartoffel	Sweet potato	Süßkartoffeln|Batate		bls:K420100	200	1 Portion	1 serving	
+semmelknoedel	Semmelknödel	Bread dumpling	Knödel|Serviettenknödel	dumpling	bls:E606032	100	1 Knödel	1 dumpling	
+kartoffelknoedel	Kartoffelknödel	Potato dumpling	Knödel|Klöße|Kloß|Kartoffelklöße	dumpling	bls:K241232	100	1 Knödel	1 dumpling	
+mehl	Weizenmehl	Wheat flour	Mehl|Mehl Type 405	flour	bls:C214100	30	2 EL	2 tbsp	
+# Milch und Milchprodukte
+milch-15	Milch 1,5 %	Milk 1.5 %	Milch|fettarme Milch|H-Milch|Frischmilch|Kuhmilch	milk|semi-skimmed milk|low-fat milk	bls:M111200	200	1 Glas	1 glass	
+milch-35	Milch 3,5 %	Milk 3.5 %	Milch|Vollmilch|H-Milch|Frischmilch|Kuhmilch	milk|whole milk	bls:M111300	200	1 Glas	1 glass	
+magermilch	Magermilch	Skimmed milk	Milch|entrahmte Milch	skim milk|milk	bls:M111100	200	1 Glas	1 glass	
+milch-laktosefrei	Laktosefreie Milch	Lactose-free milk	Milch|laktosefrei	milk	bls:M114200	200	1 Glas	1 glass	
+buttermilch	Buttermilch	Buttermilk			bls:M150000	200	1 Glas	1 glass	
+kefir	Kefir	Kefir			bls:M130200	200	1 Glas	1 glass	1
+kakao	Kakao	Cocoa drink	Kakaogetränk|Schokomilch|Schokoladenmilch|Trinkschokolade|heiße Schokolade	hot chocolate|chocolate milk	bls:M206200	250	1 Becher	1 mug	
+joghurt-15	Joghurt natur 1,5 %	Plain yoghurt 1.5 %	Joghurt|Naturjoghurt|Jogurt|fettarmer Joghurt	yoghurt|yogurt	bls:M141200	150	1 Becher	1 pot	
+joghurt-35	Joghurt natur 3,5 %	Plain yoghurt 3.5 %	Joghurt|Naturjoghurt|Jogurt|Vollmilchjoghurt	yoghurt|yogurt	bls:M141300	150	1 Becher	1 pot	
+joghurt-01	Joghurt natur 0,1 %	Fat-free yoghurt	Joghurt|Magerjoghurt|Jogurt	yoghurt|yogurt	bls:M141100	150	1 Becher	1 pot	
+fruchtjoghurt	Fruchtjoghurt	Fruit yoghurt	Joghurt|Jogurt|Erdbeerjoghurt|Kirschjoghurt|Joghurt mit Früchten	fruit yogurt	bls:M241300	150	1 Becher	1 pot	
+griechischer-joghurt	Griechischer Joghurt	Greek yoghurt	Joghurt|Joghurt griechischer Art|Greek Yogurt	Greek yogurt	off:griechischer-joghurt	150	1 Portion	1 serving	
+skyr-natur	Skyr natur	Skyr, plain	Skyr pur|isländischer Joghurt		bls:M710100	150	1 Portion	1 serving	
+skyr-vanille	Skyr Vanille	Skyr, vanilla	Vanilleskyr	vanilla skyr	off:skyr-vanille	150	1 Portion	1 serving	
+skyr-frucht	Skyr Frucht	Skyr, fruit	Fruchtskyr|Skyr Erdbeere|Skyr Himbeere|Skyr Heidelbeere|Skyr Kirsche|Skyr Pfirsich	fruit skyr	off:skyr-frucht	150	1 Portion	1 serving	
+magerquark	Magerquark	Low-fat quark	Quark|Topfen|Magertopfen|Speisequark	quark|curd cheese	bls:M713100	125	1 Portion	1 serving	
+quark-20	Speisequark 20 %	Quark 20 %	Quark|Halbfettquark|Topfen	quark	bls:M713300	125	1 Portion	1 serving	
+quark-40	Speisequark 40 %	Quark 40 %	Quark|Sahnequark|Topfen	quark	bls:M713500	125	1 Portion	1 serving	
+huettenkaese	Hüttenkäse	Cottage cheese	körniger Frischkäse		bls:M711300	100	1 Portion	1 serving	
+vanillepudding	Vanillepudding	Vanilla pudding	Pudding	custard|pudding	bls:R481132	125	1 Becher	1 pot	
+schokopudding	Schokopudding	Chocolate pudding	Schokoladenpudding|Pudding	pudding	bls:R481232	125	1 Becher	1 pot	
+proteinpudding	Proteinpudding	Protein pudding	High-Protein-Pudding|Eiweißpudding|Pudding	pudding	off:proteinpudding	200	1 Becher	1 pot	
+milchreis	Milchreis	Rice pudding			bls:X810033	200	1 Portion	1 serving	
+griessbrei	Grießbrei	Semolina pudding	Grießpudding		bls:X951113	200	1 Portion	1 serving	
+# Käse
+gouda	Gouda	Gouda	Käse|Schnittkäse	cheese	bls:M402600	25	1 Scheibe	1 slice	
+emmentaler	Emmentaler	Emmental	Käse|Schweizer Käse|Reibekäse	Swiss cheese|cheese	bls:M304600	25	1 Scheibe	1 slice	
+edamer	Edamer	Edam	Käse|Schnittkäse	cheese	bls:M401600	25	1 Scheibe	1 slice	
+butterkaese	Butterkäse	Butter cheese	Käse|Schnittkäse	cheese	bls:M501600	25	1 Scheibe	1 slice	
+tilsiter	Tilsiter	Tilsit cheese	Käse|Schnittkäse	cheese	bls:M403600	25	1 Scheibe	1 slice	
+bergkaese	Bergkäse	Mountain cheese	Käse|Hartkäse	cheese	bls:M302600	25	1 Scheibe	1 slice	
+parmesan	Parmesan	Parmesan	Käse|Hartkäse|Grana Padano|Parmigiano	cheese	bls:M306400	10	1 EL gerieben	1 tbsp grated	
+mozzarella	Mozzarella	Mozzarella	Käse|Büffelmozzarella	cheese	bls:M032100	125	1 Kugel	1 ball	
+mozzarella-light	Mozzarella light	Mozzarella, light	Mozzarella leicht|Käse	cheese	bls:M0A1000	125	1 Kugel	1 ball	
+feta	Feta	Feta	Schafskäse|Hirtenkäse|Weißkäse|Käse	cheese	bls:M012200	50	1 Portion	1 serving	
+halloumi	Halloumi	Halloumi	Grillkäse|Käse	cheese	bls:M524500	50	1 Portion	1 serving	
+camembert	Camembert	Camembert	Weichkäse|Käse	cheese	bls:M602600	30	1 Stück	1 piece	
+brie	Brie	Brie	Weichkäse|Käse	cheese	bls:M601600	30	1 Stück	1 piece	
+harzer	Harzer Käse	Harz cheese	Harzer|Handkäse|Quargel|Sauermilchkäse|Käse	cheese	bls:M730100	30	1 Stück	1 piece	
+scheiblettenkaese	Scheiblettenkäse	Processed cheese slices	Schmelzkäse|Toastkäse|Burgerkäse|Käse	cheese slices|cheese	bls:M771400	20	1 Scheibe	1 slice	
+frischkaese	Frischkäse	Cream cheese	Doppelrahmfrischkäse|Frischkäse natur		bls:M710800	30	1 Portion	1 serving	
+frischkaese-light	Frischkäse light	Cream cheese, light	Frischkäse leicht		bls:M820500	30	1 Portion	1 serving	
+kraeuterfrischkaese	Kräuterfrischkäse	Herb cream cheese	Frischkäse mit Kräutern		bls:M827700	30	1 Portion	1 serving	
+ricotta	Ricotta	Ricotta			bls:M741600	50	1 Portion	1 serving	
+mascarpone	Mascarpone	Mascarpone			bls:M7A6800	50	1 Portion	1 serving	
+# Butter, Sahne, Eier
+butter	Butter	Butter	Süßrahmbutter|Sauerrahmbutter|Markenbutter		bls:Q630000	10	1 Portion	1 serving	
+margarine	Margarine	Margarine	Pflanzenmargarine		bls:Q400000	10	1 Portion	1 serving	
+sahne	Sahne	Cream	Schlagsahne|Rahm|Schlagrahm	whipping cream	bls:M173800	30	2 EL	2 tbsp	
+kaffeesahne	Kaffeesahne	Coffee cream	Sahne	cream	bls:M171500	10	1 Portion	1 serving	
+saure-sahne	Saure Sahne	Sour cream	Sauerrahm		bls:M172500	30	2 EL	2 tbsp	
+schmand	Schmand	Schmand (sour cream 20 %)	Sauerrahm	sour cream	bls:M172700	30	2 EL	2 tbsp	
+creme-fraiche	Crème fraîche	Crème fraîche	Creme fraiche		bls:M176800	30	2 EL	2 tbsp	
+ei	Ei	Egg	Eier|Hühnerei	eggs	bls:E111100	60	1 Ei	1 egg	
+ei-gekocht	Ei gekocht	Boiled egg	Eier|Frühstücksei|hart gekochtes Ei	eggs	bls:E111132	60	1 Ei	1 egg	
+spiegelei	Spiegelei	Fried egg	Spiegeleier|Ei	eggs	bls:Y710142	60	1 Spiegelei	1 fried egg	
+ruehrei	Rührei	Scrambled eggs	Rühreier|Ei	eggs	bls:Y720143	120	1 Portion	1 serving	
+# Fleisch und Wurst
+haehnchenbrust	Hähnchenbrust roh	Chicken breast, raw	Hähnchen|Hühnchen|Huhn|Hähnchenbrustfilet|Hühnerbrust|Hähnchenfilet|Chicken	chicken	bls:V416100	150	1 Filet	1 fillet	
+haehnchenbrust-gebraten	Hähnchenbrust gebraten	Chicken breast, fried	Hähnchen|Hühnchen|Huhn|Hähnchenbrustfilet|Hühnerbrust|Hähnchenfilet|Chicken	chicken	bls:V416182	120	1 Filet	1 fillet	
+haehnchenschenkel	Hähnchenschenkel gebraten	Chicken leg, roasted	Hähnchen|Hähnchenkeule|Hühnerbein|Hühnchen	chicken|drumstick	bls:V4B5162	150	1 Schenkel	1 leg	
+putenbrust	Putenbrust roh	Turkey breast, raw	Pute|Putenbrustfilet|Putenschnitzel|Putenfilet|Truthahn	turkey	bls:V486100	150	1 Filet	1 fillet	
+putenbrust-gebraten	Putenbrust gebraten	Turkey breast, fried	Pute|Putenbrustfilet|Putenschnitzel|Putenfilet|Truthahn	turkey	bls:V486182	120	1 Filet	1 fillet	
+hackfleisch-gemischt	Hackfleisch gemischt	Minced meat, mixed	Hack|Gehacktes|Faschiertes|gemischtes Hack	mince|ground meat	bls:U050100	125	1 Portion	1 serving	
+hackfleisch-rind	Rinderhackfleisch	Minced beef	Hackfleisch|Hack|Rinderhack|Gehacktes|Faschiertes	mince|ground beef	bls:U010100	125	1 Portion	1 serving	
+rindersteak	Rindersteak roh	Beef steak, raw	Steak|Rumpsteak|Entrecote|Hüftsteak|Rind|Rindfleisch	steak|beef	bls:U131100	200	1 Steak	1 steak	
+rindersteak-gebraten	Rindersteak gebraten	Beef steak, fried	Steak|Rumpsteak|Entrecote|Hüftsteak|Rind|Rindfleisch	steak|beef	bls:U131182	160	1 Steak	1 steak	
+schweineschnitzel	Schweineschnitzel roh	Pork escalope, raw	Schnitzel|Schweinefleisch|Schnitzel natur	pork	bls:U541100	150	1 Schnitzel	1 escalope	
+schnitzel-paniert	Schnitzel paniert	Breaded schnitzel	Schnitzel|Schnitzel Wiener Art|paniertes Schnitzel|Schweineschnitzel paniert	schnitzel	bls:Y332132	180	1 Schnitzel	1 schnitzel	
+wiener-schnitzel	Wiener Schnitzel	Wiener schnitzel	Schnitzel|Kalbsschnitzel paniert	veal schnitzel	bls:Y231322	180	1 Schnitzel	1 schnitzel	
+rindergulasch	Rindergulasch	Beef goulash	Gulasch	goulash	bls:Y141123	250	1 Portion	1 serving	
+kasseler	Kasseler	Smoked pork loin	Kassler		bls:W511000	150	1 Portion	1 serving	
+frikadelle	Frikadelle	Meat patty	Bulette|Fleischpflanzerl|Fleischküchle|Hackbällchen|Fleischklops|Klops|Fleischlaberl	meatball	bls:U051182	100	1 Frikadelle	1 patty	
+gyros	Gyros	Gyros	Gyrosfleisch		bls:Y384112	150	1 Portion	1 serving	
+salami	Salami	Salami	Wurst|Aufschnitt		bls:W140000	20	1 Portion	1 serving	
+kochschinken	Kochschinken	Cooked ham	Schinken|gekochter Schinken|Hinterschinken|Toastschinken|Aufschnitt	ham	bls:W424000	25	1 Scheibe	1 slice	
+lachsschinken	Lachsschinken	Cured pork loin	Schinken|Aufschnitt	ham	bls:W443000	20	1 Portion	1 serving	
+rohschinken	Rohschinken	Dry-cured ham	Schinken|Schwarzwälder Schinken|Serrano|Parmaschinken|Katenschinken|Prosciutto	prosciutto|ham	bls:U682700	20	1 Portion	1 serving	
+putenbrust-aufschnitt	Putenbrust (Aufschnitt)	Turkey breast slices	Putenaufschnitt|Putenschinken|Geflügelaufschnitt|Aufschnitt	turkey ham	bls:W561000	20	1 Portion	1 serving	
+speck	Speck	Bacon	Frühstücksspeck|Bacon|Bauchspeck|Speckwürfel		bls:W415000	30	1 Portion	1 serving	
+bacon-gebraten	Bacon gebraten	Bacon, fried	Speck|gebratener Speck	crispy bacon	bls:W415082	20	1 Portion	1 serving	
+wiener-wuerstchen	Wiener Würstchen	Frankfurter sausage	Wiener|Wienerle|Würstchen|Frankfurter|Saitenwürstchen	frankfurter|hot dog sausage	bls:W211200	50	1 Würstchen	1 sausage	
+gefluegelwuerstchen	Geflügelwürstchen	Chicken sausages	Geflügel-Wiener|Puten-Wiener|Würstchen		bls:W212000	50	1 Würstchen	1 sausage	
+bockwurst	Bockwurst	Bockwurst	Würstchen|Wurst	sausage	bls:W211100	100	1 Bockwurst	1 sausage	
+bratwurst	Bratwurst	Bratwurst	Rostbratwurst|Thüringer|Nürnberger|Grillwurst|Wurst	sausage	bls:W222172	100	1 Bratwurst	1 sausage	
+leberwurst	Leberwurst	Liver sausage	Kalbsleberwurst|Streichwurst|Wurst	liverwurst	bls:W310000	25	1 Portion	1 serving	
+leberkaese	Leberkäse	Leberkäse (meat loaf)	Fleischkäse|Leberkäs	meatloaf	bls:W256100	100	1 Scheibe	1 slice	
+fleischwurst	Fleischwurst	Fleischwurst (bologna)	Lyoner|Ringwurst|Wurst|Aufschnitt	bologna	bls:W234000	30	1 Portion	1 serving	
+mortadella	Mortadella	Mortadella	Aufschnitt|Wurst		bls:W231200	20	1 Portion	1 serving	
+teewurst	Teewurst	Teewurst	Streichwurst|Wurst		bls:W121100	20	1 Portion	1 serving	
+# Fisch
+lachs	Lachs roh	Salmon, raw	Lachsfilet|Fisch	salmon|fish	bls:T410100	125	1 Filet	1 fillet	
+lachs-gebraten	Lachs gebraten	Salmon, fried	Lachsfilet|Fisch	salmon|fish	bls:T410082	110	1 Filet	1 fillet	
+raeucherlachs	Räucherlachs	Smoked salmon	Lachs geräuchert|Lachs	salmon|lox	bls:T410600	50	1 Portion	1 serving	
+thunfisch-saft	Thunfisch (Dose, im eigenen Saft)	Tuna (canned in water)	Thunfisch|Tunfisch|Thunfisch natur|Thunfisch Dose|Fisch	tuna|canned tuna	bls:T121902	140	1 Dose abgetropft	1 can drained	
+thunfisch-oel	Thunfisch in Öl	Tuna in oil	Thunfisch|Tunfisch|Thunfisch Dose|Fisch	tuna	bls:T121702	140	1 Dose abgetropft	1 can drained	
+fischstaebchen	Fischstäbchen	Fish fingers	Fisch	fish sticks	bls:T930182	90	3 Stück	3 pieces	
+kabeljau	Kabeljau	Cod	Dorsch|Kabeljaufilet|Fischfilet|Fisch	fish	bls:T204100	150	1 Filet	1 fillet	
+seelachs	Seelachs	Pollock	Alaska-Seelachs|Seelachsfilet|Fischfilet|Fisch	fish	bls:T213100	150	1 Filet	1 fillet	
+garnelen	Garnelen	Prawns	Shrimps|Krabben|Scampi|Gambas|Krevetten	shrimp	bls:T753132	100	1 Portion	1 serving	
+matjes	Matjes	Matjes herring	Matjesfilet|Hering|Heringsfilet|Fisch	herring|fish	bls:T811100	100	1 Portion	1 serving	
+makrele	Makrele geräuchert	Smoked mackerel	Makrele|Räuchermakrele|Fisch	mackerel|fish	bls:T107600	100	1 Portion	1 serving	
+sardinen	Sardinen in Öl	Sardines in oil	Ölsardinen|Sardinen|Fisch	sardines|fish	bls:T105702	90	1 Dose abgetropft	1 can drained	
+# Vegetarisch, Hülsenfrüchte
+tofu	Tofu	Tofu	Tofu natur	bean curd	bls:H861000	100	1 Portion	1 serving	
+linsen-gekocht	Linsen gekocht	Lentils, cooked	Linse|Tellerlinsen|Berglinsen|Linsen Dose	lentils	bls:H730132	150	1 Portion	1 serving	
+linsen-roh	Linsen roh	Lentils, dry	Linse|Tellerlinsen|Berglinsen	lentils	bls:H725100	60	1 Portion	1 serving	
+rote-linsen	Rote Linsen roh	Red lentils, dry	Linsen|Linse	lentils	bls:H730000	60	1 Portion	1 serving	
+kichererbsen	Kichererbsen (Dose)	Chickpeas (canned)	Kichererbse|Kichererbsen gekocht	chickpeas|garbanzo	bls:H720902	120	1 Portion	1 serving	
+kichererbsen-roh	Kichererbsen roh	Chickpeas, dry	Kichererbse|Kichererbsen getrocknet	chickpeas	bls:G770400	60	1 Portion	1 serving	
+kidneybohnen	Kidneybohnen (Dose)	Kidney beans (canned)	rote Bohnen|Bohnen	beans	bls:H742902	120	1 Portion	1 serving	
+baked-beans	Baked Beans	Baked beans	weiße Bohnen in Tomatensoße|Bohnen in Tomatensauce|Bohnen	beans	bls:H900900	200	1 Portion	1 serving	
+falafel	Falafel	Falafel	Falafelbällchen		bls:Y9A1050	100	4 Bällchen	4 balls	
+hummus	Hummus	Hummus	Humus|Kichererbsenmus|Kichererbsenpüree	houmous	bls:H960000	30	2 EL	2 tbsp	
+seitan	Seitan	Seitan	Weizengluten		bls:C558000	100	1 Portion	1 serving	
+sojagranulat	Sojagranulat (trocken)	Textured soy protein (dry)	Sojaschnetzel|Sojahack|Soja	soy mince	bls:H765000	30	1 Portion	1 serving	
+veggie-burger	Veggie-Burger-Patty	Veggie burger patty	vegetarischer Burger|veganer Burger|Gemüsebratling|Bratling|Sojabratling|vegane Frikadelle	plant-based patty|veggie patty	bls:H926100	100	1 Patty	1 patty	
+vegane-bratwurst	Vegane Bratwurst	Vegan sausage	vegetarische Bratwurst|Veggie-Wurst	veggie sausage	bls:H910300	100	1 Bratwurst	1 sausage	
+edamame	Edamame	Edamame	Sojabohnen	soybeans	bls:G750100	100	1 Portion	1 serving	
+# Gemüse
+tomate	Tomate	Tomato	Tomaten|Strauchtomate|Rispentomate|Cherrytomaten|Cocktailtomaten|Paradeiser	tomatoes|cherry tomatoes	bls:G561100	80	1 Tomate	1 tomato	
+gurke	Gurke	Cucumber	Salatgurke|Gurken|Schlangengurke|Minigurke		bls:G520100	100	1 Portion	1 serving	
+paprika	Paprika	Bell pepper	Paprikaschote|rote Paprika|gelbe Paprika|grüne Paprika|Spitzpaprika	pepper|red pepper|capsicum	bls:G543100	150	1 Paprika	1 pepper	
+karotte	Karotte	Carrot	Karotten|Möhre|Möhren|Mohrrübe|Gelbe Rübe|Rüebli	carrots	bls:G620100	80	1 Karotte	1 carrot	
+zwiebel	Zwiebel	Onion	Zwiebeln|rote Zwiebel|Gemüsezwiebel	onions	bls:G480100	80	1 Zwiebel	1 onion	
+knoblauch	Knoblauch	Garlic	Knoblauchzehe	garlic clove	bls:G490100	4	1 Zehe	1 clove	
+brokkoli	Brokkoli	Broccoli	Broccoli		bls:G312100	150	1 Portion	1 serving	
+blumenkohl	Blumenkohl	Cauliflower	Karfiol		bls:G311100	150	1 Portion	1 serving	
+zucchini	Zucchini	Courgette	Zucchetti	zucchini	bls:G582100	150	1 Portion	1 serving	
+aubergine	Aubergine	Aubergine	Melanzani	eggplant	bls:G510100	150	1 Portion	1 serving	
+spinat	Spinat	Spinach	Blattspinat|Babyspinat		bls:G211100	100	1 Portion	1 serving	
+kopfsalat	Kopfsalat	Lettuce	Salat|Blattsalat|grüner Salat|Pflücksalat|Lollo Rosso|Lollo Bionda	salad	bls:G105100	50	1 Portion	1 serving	
+eisbergsalat	Eisbergsalat	Iceberg lettuce	Salat|Eisberg	salad|iceberg	bls:G103100	50	1 Portion	1 serving	
+feldsalat	Feldsalat	Lamb's lettuce	Salat|Rapunzel|Ackersalat|Nüsslisalat|Vogerlsalat	salad|corn salad	bls:G104100	50	1 Portion	1 serving	
+rucola	Rucola	Rocket	Salat|Rauke	salad|arugula	bls:G130100	30	1 Portion	1 serving	
+roemersalat	Römersalat	Romaine lettuce	Salat|Romanasalat|Romana	salad|romaine	bls:G107100	50	1 Portion	1 serving	
+champignons	Champignons	Mushrooms	Pilze|Champignon|Egerlinge|Schwammerl		bls:K701100	100	1 Portion	1 serving	
+kohlrabi	Kohlrabi	Kohlrabi			bls:G331100	150	1 Portion	1 serving	
+lauch	Lauch	Leek	Porree	leeks	bls:G470100	100	1 Portion	1 serving	
+fruehlingszwiebel	Frühlingszwiebel	Spring onion	Frühlingszwiebeln|Lauchzwiebel	scallion|green onion	bls:G482100	15	1 Stück	1 piece	
+radieschen	Radieschen	Radish		radishes	bls:G691100	50	1 Portion	1 serving	
+rote-bete	Rote Bete (gekocht)	Beetroot (cooked)	Rote Bete|Rote Rüben|Rote Beete	beets|beetroot	bls:G613132	100	1 Portion	1 serving	
+kuerbis	Kürbis (Hokkaido)	Pumpkin (Hokkaido)	Kürbis|Hokkaido|Butternut	squash|pumpkin	bls:G581000	200	1 Portion	1 serving	
+mais	Mais (Dose)	Sweetcorn (canned)	Mais|Zuckermais|Gemüsemais|Maiskörner	corn|sweetcorn	bls:G570902	80	1 Portion	1 serving	
+erbsen	Erbsen (TK)	Peas (frozen)	Erbse|grüne Erbsen|Tiefkühlerbsen	peas	bls:G760200	100	1 Portion	1 serving	
+erbsen-moehren	Erbsen und Möhren	Peas and carrots	Erbsen|Möhren|Karotten	peas|carrots	bls:G992100	150	1 Portion	1 serving	
+gruene-bohnen	Grüne Bohnen	Green beans	Bohnen|Prinzessbohnen|Brechbohnen|Buschbohnen|Fisolen	beans	bls:G710100	150	1 Portion	1 serving	
+rosenkohl	Rosenkohl	Brussels sprouts	Kohlsprossen	sprouts	bls:G332100	150	1 Portion	1 serving	
+weisskohl	Weißkohl	White cabbage	Weißkraut|Kohl|Kraut	cabbage	bls:G342100	150	1 Portion	1 serving	
+rotkohl	Rotkohl	Red cabbage (with apple)	Rotkraut|Blaukraut|Apfelrotkohl|Kohl	cabbage	bls:X537063	150	1 Portion	1 serving	
+sauerkraut	Sauerkraut	Sauerkraut	Kraut		bls:G345100	150	1 Portion	1 serving	
+spargel	Spargel	Asparagus	weißer Spargel|grüner Spargel		bls:G450100	250	1 Portion	1 serving	
+knollensellerie	Knollensellerie	Celeriac	Sellerie|Zeller	celery	bls:G660100	100	1 Portion	1 serving	
+staudensellerie	Staudensellerie	Celery	Bleichsellerie|Stangensellerie|Sellerie		bls:G220100	50	1 Stange	1 stick	
+fenchel	Fenchel	Fennel			bls:G430100	150	1 Portion	1 serving	
+chinakohl	Chinakohl	Chinese cabbage	Kohl	napa cabbage|cabbage	bls:G321100	100	1 Portion	1 serving	
+pak-choi	Pak Choi	Pak choi	Pak Choy|Bok Choy	bok choy	bls:G324100	100	1 Portion	1 serving	
+gruenkohl	Grünkohl	Kale	Braunkohl|Kohl		bls:G322100	100	1 Portion	1 serving	
+avocado	Avocado	Avocado	Avocados		bls:F502100	80	½ Avocado	½ avocado	
+oliven	Oliven	Olives	Olive|grüne Oliven		bls:H510802	30	1 Portion	1 serving	
+gewuerzgurke	Gewürzgurke	Pickled gherkin	Essiggurke|saure Gurke|Cornichons|Gurke	pickles|gherkins	bls:G520802	40	1 Gurke	1 gherkin	
+tomaten-dose	Tomaten (Dose)	Canned tomatoes	gehackte Tomaten|Dosentomaten|Pizzatomaten|geschälte Tomaten|Tomaten stückig	tomatoes	bls:G560900	100	1 Portion	1 serving	
+passierte-tomaten	Passierte Tomaten	Passata	Tomaten passiert|Passata	tomatoes	bls:R161200	100	1 Portion	1 serving	
+tomatenmark	Tomatenmark	Tomato paste		tomato purée	bls:R160000	15	1 EL	1 tbsp	
+# Obst
+apfel	Apfel	Apple	Äpfel	apples	bls:F110100	150	1 Apfel	1 apple	
+banane	Banane	Banana	Bananen	bananas	bls:F503100	120	1 Banane	1 banana	
+birne	Birne	Pear	Birnen	pears	bls:F130100	150	1 Birne	1 pear	
+orange	Orange	Orange	Orangen|Apfelsine	oranges	bls:F603100	150	1 Orange	1 orange	
+mandarine	Mandarine	Mandarin	Mandarinen	tangerine	bls:F606100	70	1 Mandarine	1 mandarin	
+clementine	Clementine	Clementine	Clementinen|Klementine|Mandarine	tangerine	bls:F607100	70	1 Clementine	1 clementine	
+erdbeeren	Erdbeeren	Strawberries	Erdbeere	strawberry	bls:F301100	150	1 Portion	1 serving	
+himbeeren	Himbeeren	Raspberries	Himbeere	raspberry	bls:F302100	125	1 Portion	1 serving	
+heidelbeeren	Heidelbeeren	Blueberries	Blaubeeren|Heidelbeere|Blaubeere	blueberry	bls:F304100	125	1 Portion	1 serving	
+brombeeren	Brombeeren	Blackberries	Brombeere	blackberry	bls:F303100	125	1 Portion	1 serving	
+johannisbeeren	Johannisbeeren	Redcurrants	rote Johannisbeeren|Ribisel	currants	bls:F321100	100	1 Portion	1 serving	
+kirschen	Kirschen	Cherries	Kirsche|Süßkirschen	cherry	bls:F211100	150	1 Portion	1 serving	
+weintrauben	Weintrauben	Grapes	Trauben|Weintraube	grape	bls:F310100	125	1 Portion	1 serving	
+ananas	Ananas	Pineapple			bls:F501100	150	1 Portion	1 serving	
+mango	Mango	Mango	Mangos		bls:F516100	150	1 Portion	1 serving	
+kiwi	Kiwi	Kiwi	Kiwis	kiwifruit	bls:F514100	75	1 Kiwi	1 kiwi	
+pfirsich	Pfirsich	Peach	Pfirsiche	peaches	bls:F203100	150	1 Pfirsich	1 peach	
+nektarine	Nektarine	Nectarine	Nektarinen		bls:F202100	150	1 Nektarine	1 nectarine	
+aprikose	Aprikose	Apricot	Aprikosen|Marille|Marillen	apricots	bls:F201100	50	1 Aprikose	1 apricot	
+pflaume	Pflaume	Plum	Pflaumen|Zwetschge|Zwetschgen|Zwetschke	plums	bls:F220100	40	1 Pflaume	1 plum	
+wassermelone	Wassermelone	Watermelon	Melone	melon	bls:F535100	250	1 Stück	1 slice	
+honigmelone	Honigmelone	Honeydew melon	Melone|Zuckermelone|Galiamelone|Cantaloupe	melon	bls:F533100	200	1 Stück	1 slice	
+grapefruit	Grapefruit	Grapefruit	Pampelmuse|Pomelo		bls:F604100	200	½ Grapefruit	½ grapefruit	
+zitrone	Zitrone	Lemon	Zitronen	lemons	bls:F601100	60	1 Zitrone	1 lemon	
+granatapfel	Granatapfel	Pomegranate	Granatapfelkerne		bls:F506100	100	1 Portion	1 serving	
+papaya	Papaya	Papaya			bls:F517100	150	1 Portion	1 serving	
+feige	Feige	Fig	Feigen	figs	bls:F505100	50	1 Feige	1 fig	
+datteln	Datteln (getrocknet)	Dates (dried)	Datteln|Dattel	dates	bls:F504400	30	3 Datteln	3 dates	
+rosinen	Rosinen	Raisins	Sultaninen	sultanas	bls:F840100	30	1 Portion	1 serving	
+cranberries	Cranberries (getrocknet)	Dried cranberries	Cranberries		bls:F414400	30	1 Portion	1 serving	
+apfelmus	Apfelmus	Apple sauce	Apfelkompott	applesauce	bls:F921900	100	1 Portion	1 serving	
+apfelmark	Apfelmark (ungesüßt)	Apple purée (unsweetened)	Apfelmus ungesüßt|Apfelmus ohne Zucker		bls:F923900	100	1 Portion	1 serving	
+# Nüsse, Samen, Öle, Aufstriche
+mandeln	Mandeln	Almonds	Mandel|Nüsse	almond|nuts	bls:H210100	25	1 Handvoll	1 handful	
+walnuesse	Walnüsse	Walnuts	Walnuss|Walnusskerne|Nüsse	walnut|nuts	bls:H120100	25	1 Handvoll	1 handful	
+haselnuesse	Haselnüsse	Hazelnuts	Haselnuss|Haselnusskerne|Nüsse	hazelnut|nuts	bls:H130100	25	1 Handvoll	1 handful	
+cashews	Cashewkerne	Cashews	Cashew|Cashewnüsse|Cashews|Nüsse	cashew nuts|nuts	bls:H170100	25	1 Handvoll	1 handful	
+erdnuesse	Erdnüsse (geröstet, gesalzen)	Peanuts (roasted, salted)	Erdnüsse|Erdnuss|Nüsse	peanuts|nuts	bls:H110700	25	1 Handvoll	1 handful	
+pistazien	Pistazien	Pistachios	Pistazie|Nüsse	pistachio|nuts	bls:H250700	25	1 Handvoll	1 handful	
+studentenfutter	Studentenfutter	Trail mix	Nussmischung|Nüsse	nuts	bls:H810000	30	1 Handvoll	1 handful	
+sonnenblumenkerne	Sonnenblumenkerne	Sunflower seeds	Kerne	seeds	bls:H430100	15	1 EL	1 tbsp	
+kuerbiskerne	Kürbiskerne	Pumpkin seeds	Kerne	seeds	bls:H310100	15	1 EL	1 tbsp	
+leinsamen	Leinsamen	Linseed	Leinsaat	flaxseed|seeds	bls:H410100	10	1 EL	1 tbsp	
+chiasamen	Chiasamen	Chia seeds	Chia	seeds	bls:H480100	15	1 EL	1 tbsp	
+sesam	Sesam	Sesame	Sesamsamen	sesame seeds	bls:H420100	10	1 EL	1 tbsp	
+pinienkerne	Pinienkerne	Pine nuts	Kerne	nuts	bls:H320100	10	1 EL	1 tbsp	
+kokosraspeln	Kokosraspeln	Desiccated coconut	Kokosflocken|Kokos	coconut	bls:H150400	10	1 EL	1 tbsp	
+erdnussbutter	Erdnussbutter	Peanut butter	Erdnussmus|Erdnusscreme		bls:H880200	15	1 EL	1 tbsp	
+mandelmus	Mandelmus	Almond butter			bls:H212800	15	1 EL	1 tbsp	
+olivenoel	Olivenöl	Olive oil	Öl	oil	bls:Q120000	10	1 EL	1 tbsp	
+rapsoel	Rapsöl	Rapeseed oil	Öl|Speiseöl|Pflanzenöl	canola oil|oil	bls:Q180000	10	1 EL	1 tbsp	
+sonnenblumenoel	Sonnenblumenöl	Sunflower oil	Öl|Speiseöl|Pflanzenöl	oil	bls:Q320000	10	1 EL	1 tbsp	
+kokosoel	Kokosöl	Coconut oil	Kokosfett|Öl	oil	bls:Q550000	10	1 EL	1 tbsp	
+leinoel	Leinöl	Linseed oil	Öl	flaxseed oil|oil	bls:Q160000	10	1 EL	1 tbsp	
+butterschmalz	Butterschmalz	Clarified butter	Ghee|Butterreinfett	ghee	bls:Q683000	10	1 EL	1 tbsp	
+honig	Honig	Honey	Blütenhonig|Waldhonig		bls:S120000	20	1 EL	1 tbsp	
+marmelade	Marmelade	Jam	Konfitüre|Erdbeermarmelade|Kirschmarmelade|Gelee|Fruchtaufstrich	jelly	bls:S132000	20	1 Portion	1 serving	
+nuss-nougat-creme	Nuss-Nougat-Creme	Chocolate hazelnut spread	Nutella|Nougatcreme|Schokocreme|Schokoaufstrich|Nusscreme	Nutella	bls:S145000	15	1 Portion	1 serving	
+zucker	Zucker	Sugar	Haushaltszucker|weißer Zucker		bls:S111000	5	1 TL	1 tsp	
+ahornsirup	Ahornsirup	Maple syrup	Sirup	syrup	bls:S151100	20	1 EL	1 tbsp	
+# Süßes und Snacks
+vollmilchschokolade	Vollmilchschokolade	Milk chocolate	Schokolade|Milchschokolade|Schoki	chocolate	bls:S539900	25	¼ Tafel	¼ bar	
+zartbitterschokolade	Zartbitterschokolade	Dark chocolate	Schokolade|Halbbitter|dunkle Schokolade	chocolate	bls:S560000	25	¼ Tafel	¼ bar	
+bitterschokolade	Bitterschokolade (70 %)	Dark chocolate (70 %)	Schokolade|Edelbitter|dunkle Schokolade	chocolate	bls:S570000	25	¼ Tafel	¼ bar	
+weisse-schokolade	Weiße Schokolade	White chocolate	Schokolade	chocolate	bls:S580000	25	¼ Tafel	¼ bar	
+pralinen	Pralinen	Chocolates	Praline|Konfekt	pralines	bls:S620000	10	1 Praline	1 chocolate	
+schokokuss	Schokokuss	Chocolate marshmallow	Schaumkuss|Schokoküsse		bls:S582200	25	1 Stück	1 piece	
+gummibaerchen	Gummibärchen	Gummy bears	Gummibären|Fruchtgummi|Gummitiere|Weingummi	gummies	bls:S361000	25	1 Handvoll	1 handful	
+lakritz	Lakritz	Liquorice	Lakritze|Salmiak	licorice	bls:S410000	25	1 Handvoll	1 handful	
+marzipan	Marzipan	Marzipan			bls:S420000	20	1 Portion	1 serving	
+chips	Chips	Crisps	Kartoffelchips|Paprikachips|Stapelchips	potato chips|chips	bls:K280100	30	1 Handvoll	1 handful	
+tortilla-chips	Tortilla-Chips	Tortilla chips	Nachos|Tortillachips|Chips	nachos|chips	bls:C546000	30	1 Handvoll	1 handful	
+erdnussflips	Erdnussflips	Peanut puffs	Flips|Erdnusslocken		bls:D041000	30	1 Handvoll	1 handful	
+salzstangen	Salzstangen	Pretzel sticks	Salzbrezeln|Salzstängli|Knabbergebäck	pretzels	bls:D064000	30	1 Handvoll	1 handful	
+popcorn-suess	Popcorn süß	Popcorn, sweet	Popcorn		bls:C519000	30	1 Portion	1 serving	
+popcorn-salzig	Popcorn salzig	Popcorn, salted	Popcorn		bls:C518000	30	1 Portion	1 serving	
+cracker	Cracker	Crackers	Kräcker|Salzcracker		bls:D050000	25	1 Portion	1 serving	
+reiswaffeln	Reiswaffeln	Rice cakes	Reiswaffel|Puffreiswaffeln|Maiswaffeln		bls:C532700	8	1 Reiswaffel	1 rice cake	
+butterkekse	Butterkekse	Butter biscuits	Kekse|Keks|Butterkeks	biscuits|cookies	bls:D630400	25	3 Kekse	3 biscuits	
+schokokekse	Schokokekse	Chocolate biscuits	Schokoladenkekse|Kekse|Keks	chocolate cookies|cookies	bls:D630500	25	2 Kekse	2 biscuits	
+muesliriegel	Müsliriegel	Cereal bar	Getreideriegel|Riegel	granola bar	bls:S830000	25	1 Riegel	1 bar	
+proteinriegel	Proteinriegel	Protein bar	Eiweißriegel|Riegel	protein bars	off:proteinriegel	50	1 Riegel	1 bar	
+vanilleeis	Vanilleeis	Vanilla ice cream	Eis|Speiseeis|Eiscreme	ice cream	bls:S241000	50	1 Kugel	1 scoop	
+schokoeis	Schokoladeneis	Chocolate ice cream	Eis|Schokoeis|Speiseeis	ice cream	bls:S242000	50	1 Kugel	1 scoop	
+fruchteis	Fruchteis	Fruit ice cream	Eis|Sorbet|Speiseeis	sorbet|ice cream	bls:S220000	50	1 Kugel	1 scoop	
+berliner	Berliner	Jam doughnut	Krapfen|Kreppel|Berliner Ballen	doughnut	bls:D7A6200	70	1 Berliner	1 doughnut	
+donut	Donut	Doughnut	Doughnut|Donuts	donuts	bls:D741000	60	1 Donut	1 doughnut	
+muffin	Muffin (Schoko)	Chocolate muffin	Muffin|Schokomuffin|Muffins	muffin	bls:D400400	80	1 Muffin	1 muffin	
+franzbroetchen	Franzbrötchen	Cinnamon pastry			bls:D7A7200	90	1 Stück	1 piece	
+zimtschnecke	Zimtschnecke	Cinnamon roll	Zimtschnecken|Zimtschnegge	cinnamon bun	bls:D7A5300	90	1 Stück	1 piece	
+kaesekuchen	Käsekuchen	Cheesecake	Quarkkuchen|Käsetorte|Topfenkuchen|Kuchen	cake	bls:D480200	120	1 Stück	1 slice	
+apfelkuchen	Apfelkuchen	Apple pie	gedeckter Apfelkuchen|Apfeltorte|Kuchen	cake	bls:D181300	120	1 Stück	1 slice	
+apfelstrudel	Apfelstrudel	Apple strudel	Strudel		bls:D540200	150	1 Stück	1 piece	
+marmorkuchen	Marmorkuchen	Marble cake	Rührkuchen|Kuchen	cake	bls:D431100	70	1 Stück	1 slice	
+brownie	Brownie	Brownie	Brownies		bls:D4A2000	60	1 Stück	1 piece	
+waffel	Waffel	Waffle	Waffeln|Herzwaffel	waffles	bls:D621000	60	1 Waffel	1 waffle	
+pfannkuchen	Pfannkuchen	Pancake	Eierkuchen|Palatschinken|Crêpe|Pancakes|Plinsen	pancakes|crepe	bls:X925012	150	1 Pfannkuchen	1 pancake	
+germknoedel	Germknödel	Yeast dumpling	Hefeknödel|Dampfnudel		bls:X985162	150	1 Knödel	1 dumpling	
+tiramisu	Tiramisu	Tiramisu			bls:Y8D5010	120	1 Portion	1 serving	
+# Getränke
+wasser	Wasser	Water	Mineralwasser|Leitungswasser|Sprudel|Sprudelwasser|stilles Wasser|Trinkwasser	mineral water|sparkling water	bls:N110000	250	1 Glas	1 glass	
+cola	Cola	Cola	Coca-Cola|Colagetränk	coke	bls:N330000	330	1 Dose	1 can	
+cola-zero	Cola Zero	Cola Zero	Cola light|Cola zuckerfrei|Diät-Cola	diet coke	bls:N331000	330	1 Dose	1 can	
+spezi	Spezi	Cola and orange soda	Mezzo Mix|Cola-Mix|Colamix		bls:N390100	330	1 Dose	1 can	
+limonade	Limonade (Orange)	Orange soda	Limo|Orangenlimonade|Brause	orange soda|lemonade	bls:N310300	330	1 Dose	1 can	
+zitronenlimonade	Zitronenlimonade	Lemon soda	Limo|Zitronenlimo	lemonade|lemon-lime soda	bls:N310400	330	1 Dose	1 can	
+eistee	Eistee	Iced tea	Ice Tea|Eistee Pfirsich|Eistee Zitrone		bls:N019000	250	1 Glas	1 glass	
+energy-drink	Energy Drink	Energy drink	Energydrink|Energy	energy	off:energy-drink	250	1 Dose	1 can	1
+energy-drink-zero	Energy Drink zuckerfrei	Energy drink, sugar-free	Energydrink|Energy Zero|Energy	energy	off:energy-drink-zero	250	1 Dose	1 can	1
+apfelsaft	Apfelsaft	Apple juice	Saft|Apfelsaft naturtrüb	juice	bls:F110600	200	1 Glas	1 glass	
+orangensaft	Orangensaft	Orange juice	O-Saft|Saft	juice	bls:F603600	200	1 Glas	1 glass	
+multivitaminsaft	Multivitaminsaft	Multivitamin juice	Multivitamin|Mehrfruchtsaft|ACE-Saft|Saft	multifruit juice|juice	bls:F010600	200	1 Glas	1 glass	
+traubensaft	Traubensaft	Grape juice	Saft	juice	bls:F310600	200	1 Glas	1 glass	
+apfelschorle	Apfelschorle	Apple spritzer	Apfelsaftschorle|Schorle	apple juice spritzer	bls:N256000	250	1 Glas	1 glass	
+smoothie	Smoothie	Smoothie	Fruchtsmoothie	fruit smoothie	off:smoothie	250	1 Flasche	1 bottle	1
+tonic	Tonic Water	Tonic water	Tonic		bls:N314000	200	1 Glas	1 glass	
+malzbier	Malzbier	Malt beer	Malztrunk	malt drink	bls:P122000	330	1 Flasche	1 bottle	
+bier	Bier (Pils)	Beer (lager)	Bier|Pils|Pilsner|Helles|Lager|Export	beer|pilsner	bls:P163000	500	1 Flasche	1 bottle	
+bier-alkoholfrei	Alkoholfreies Bier	Alcohol-free beer	Bier alkoholfrei|alkoholfreies Pils|Bier	non-alcoholic beer|beer	bls:P163100	500	1 Flasche	1 bottle	
+weizenbier	Weizenbier	Wheat beer	Weißbier|Hefeweizen|Weizen|Bier	beer	bls:P151100	500	1 Flasche	1 bottle	
+weizen-alkoholfrei	Alkoholfreies Weizen	Alcohol-free wheat beer	Weizen alkoholfrei|Weißbier alkoholfrei|Bier	beer	bls:P151110	500	1 Flasche	1 bottle	
+radler	Radler	Shandy	Alsterwasser|Bier	beer	bls:P192000	500	1 Flasche	1 bottle	
+rotwein	Rotwein	Red wine	Wein	wine	bls:P2A3000	200	1 Glas	1 glass	
+weisswein	Weißwein	White wine	Wein	wine	bls:P210000	200	1 Glas	1 glass	
+rosewein	Roséwein	Rosé wine	Rosé|Wein	wine	bls:P273000	200	1 Glas	1 glass	
+sekt	Sekt	Sparkling wine	Prosecco|Schaumwein|Champagner|Crémant	prosecco|champagne	bls:P2A6000	100	1 Glas	1 glass	
+weinschorle	Weinschorle	Wine spritzer	Schorle|Weißweinschorle	spritzer	bls:P285000	250	1 Glas	1 glass	
+gin-tonic	Gin Tonic	Gin and tonic			bls:P9A4000	250	1 Glas	1 glass	
+wodka	Wodka	Vodka	Schnaps|Kurzer		bls:P712000	20	1 Shot	1 shot	
+gluehwein	Glühwein	Mulled wine			bls:P281000	200	1 Tasse	1 mug	
+kaffee	Kaffee schwarz	Black coffee	Kaffee|Filterkaffee|Americano|Café Crème	coffee	bls:N410100	150	1 Tasse	1 cup	
+kaffee-milch	Kaffee mit Milch	Coffee with milk	Kaffee	coffee	bls:N410200	150	1 Tasse	1 cup	
+milchkaffee	Milchkaffee	Café au lait	Kaffee|Café au Lait	coffee	bls:N491000	250	1 Tasse	1 cup	
+cappuccino	Cappuccino	Cappuccino	Kaffee	coffee	bls:N414000	200	1 Tasse	1 cup	
+latte-macchiato	Latte macchiato	Latte macchiato	Latte|Caffè Latte|Kaffee	latte|coffee	bls:N418000	300	1 Glas	1 glass	
+espresso	Espresso	Espresso	Kaffee	coffee	bls:N411100	30	1 Tasse	1 cup	
+tee	Tee	Tea	Schwarztee|Grüntee|grüner Tee|Früchtetee|Kräutertee|Pfefferminztee|Kamillentee|Rooibos	green tea|herbal tea	bls:N630000	250	1 Tasse	1 cup	
+tee-zucker	Tee mit Zucker	Tea with sugar	Tee gesüßt	sweet tea|tea	bls:N630600	250	1 Tasse	1 cup	
+haferdrink	Haferdrink	Oat drink	Hafermilch|Haferdrink ungesüßt	oat milk	bls:C660000	200	1 Glas	1 glass	
+mandeldrink	Mandeldrink	Almond drink	Mandelmilch	almond milk	bls:H800000	200	1 Glas	1 glass	
+sojadrink	Sojadrink	Soy drink	Sojamilch	soy milk	bls:H841100	200	1 Glas	1 glass	
+kokosmilch	Kokosmilch	Coconut milk	Kokosnussmilch		bls:H154000	100	1 Portion	1 serving	
+proteinpulver	Proteinpulver (Whey)	Whey protein powder	Proteinpulver|Eiweißpulver|Whey|Proteinshake|Eiweißshake	protein powder|whey|protein shake	off:proteinpulver	30	1 Messlöffel	1 scoop	
+# Gerichte, Fast Food, Soßen
+pizza-margherita	Pizza Margherita	Pizza Margherita	Pizza|Margherita	pizza	bls:X912033	350	1 Pizza	1 pizza	
+pizza-salami	Pizza Salami	Pizza salami	Pizza|Salamipizza	pizza|pepperoni pizza	bls:X914133	350	1 Pizza	1 pizza	
+pizza-funghi	Pizza Funghi	Pizza funghi	Pizza|Pilzpizza	pizza|mushroom pizza	bls:X912133	350	1 Pizza	1 pizza	
+pizza-tonno	Pizza Tonno	Pizza tonno	Pizza|Thunfischpizza	pizza|tuna pizza	bls:X915233	350	1 Pizza	1 pizza	
+pizza-hawaii	Pizza Hawaii	Pizza Hawaii	Pizza	pizza|Hawaiian pizza	bls:X9A5010	350	1 Pizza	1 pizza	
+doener	Döner Kebab	Doner kebab	Döner|Dönerkebab|Kebab|Dürüm	doner|kebab	bls:Y921062	400	1 Döner	1 kebab	
+doener-haehnchen	Hähnchen-Döner	Chicken doner	Döner|Dönerkebab|Kebab|Chicken-Döner	doner|kebab|chicken kebab	bls:Y921162	400	1 Döner	1 kebab	
+currywurst	Currywurst	Currywurst	Currywurst mit Soße		bls:Y943032	200	1 Portion	1 serving	
+currywurst-pommes	Currywurst mit Pommes	Currywurst with fries	Currywurst|Pommes	fries	bls:Y944062	400	1 Portion	1 serving	
+hamburger	Hamburger	Hamburger	Burger	burger	bls:Y911060	120	1 Burger	1 burger	
+cheeseburger	Cheeseburger	Cheeseburger	Burger|Käseburger	burger	bls:Y911160	130	1 Burger	1 burger	
+chickenburger	Chickenburger	Chicken burger	Burger|Hähnchenburger	burger	bls:Y9A1000	150	1 Burger	1 burger	
+chicken-nuggets	Chicken Nuggets	Chicken nuggets	Nuggets|Hähnchen-Nuggets	nuggets	off:chicken-nuggets	100	6 Stück	6 pieces	
+hot-dog	Hot Dog	Hot dog	Hotdog		bls:Y021512	150	1 Hot Dog	1 hot dog	
+spaghetti-bolognese	Spaghetti Bolognese	Spaghetti bolognese	Bolognese|Nudeln mit Hackfleischsoße|Spaghetti Bolo|Pasta Bolognese		bls:X740433	400	1 Portion	1 serving	
+lasagne	Lasagne	Lasagne	Lasagna	lasagna	bls:X730033	350	1 Portion	1 serving	
+kaesespaetzle	Käsespätzle	Cheese spätzle	Kässpätzle|Spätzle mit Käse		bls:X711412	350	1 Portion	1 serving	
+maultaschen	Maultaschen	Maultaschen			bls:X760112	250	1 Portion	1 serving	
+chili-con-carne	Chili con Carne	Chili con carne	Chili	chili	bls:X469753	350	1 Portion	1 serving	
+kartoffelsalat	Kartoffelsalat	Potato salad	schwäbischer Kartoffelsalat		bls:X1A2010	200	1 Portion	1 serving	
+kartoffelsalat-mayo	Kartoffelsalat mit Mayonnaise	Potato salad with mayonnaise	Kartoffelsalat|Kartoffelsalat Mayo	potato salad	bls:X1A2020	200	1 Portion	1 serving	
+gulaschsuppe	Gulaschsuppe	Goulash soup	Gulasch|Suppe	soup	bls:X455913	300	1 Teller	1 bowl	
+linseneintopf	Linseneintopf	Lentil stew	Linsensuppe|Eintopf	lentil soup|soup	bls:X461913	350	1 Teller	1 bowl	
+erbsensuppe	Erbsensuppe	Pea soup	Erbseneintopf|Eintopf|Suppe	soup	bls:X464753	350	1 Teller	1 bowl	
+kartoffelsuppe	Kartoffelsuppe	Potato soup	Suppe	soup	bls:X449023	300	1 Teller	1 bowl	
+tomatensuppe	Tomatensuppe	Tomato soup	Suppe	soup	bls:X444343	300	1 Teller	1 bowl	
+gemuesesuppe	Gemüsesuppe	Vegetable soup	Suppe	soup	bls:X416713	300	1 Teller	1 bowl	
+huehnersuppe	Hühnersuppe	Chicken soup	Hühnerbrühe|Hühnersuppe mit Fleisch|Suppe	soup	bls:X4A1020	300	1 Teller	1 bowl	
+fruehlingsrolle	Frühlingsrolle	Spring roll	Frühlingsrollen	spring rolls	bls:X9A3030	80	1 Stück	1 piece	
+tomatensauce	Tomatensauce	Tomato sauce	Tomatensoße|Nudelsoße|Pastasauce|Sugo	marinara	bls:X321813	100	1 Portion	1 serving	
+pesto	Pesto	Pesto	Pesto Genovese|Basilikumpesto|Pesto verde	basil pesto	bls:X372012	30	2 EL	2 tbsp	
+bratensosse	Bratensoße	Gravy	Bratensauce|Soße		bls:U990100	50	1 Portion	1 serving	
+tsatsiki	Tsatsiki	Tzatziki	Zaziki|Tzatziki		bls:X476512	50	1 Portion	1 serving	
+ketchup	Ketchup	Ketchup	Tomatenketchup|Curryketchup		bls:R141100	20	1 Portion	1 serving	
+mayonnaise	Mayonnaise	Mayonnaise	Mayo|Majo	mayo	bls:Q991000	15	1 EL	1 tbsp	
+remoulade	Remoulade	Remoulade			bls:Q999000	15	1 EL	1 tbsp	
+senf	Senf	Mustard	Mostrich		bls:R132000	10	1 TL	1 tsp	
+sojasauce	Sojasauce	Soy sauce	Sojasoße		bls:R143000	10	1 EL	1 tbsp	
+balsamico	Balsamico	Balsamic vinegar	Balsamicoessig|Essig	vinegar	bls:R125000	10	1 EL	1 tbsp	

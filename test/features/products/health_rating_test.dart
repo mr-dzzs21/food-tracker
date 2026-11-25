@@ -542,6 +542,28 @@ void main() {
     });
   });
 
+  test('Open Food Facts averages are rated like basic foods', () {
+    // Energy drink: 11 g sugars per 100 ml, no categories – drink limits
+    // (high only above 11.25 g).
+    final drink = rateProduct(
+      nutrients: const Nutrients(sugars: 11),
+      categories: const [],
+      source: FoodSource.offAverage,
+      isLiquid: true,
+    );
+    expect((drink as Rated).basis, RatingBasis.drink);
+    expect(drink.levels[RatedNutrient.sugars], medium);
+
+    final bar = rateProduct(
+      nutrients: const Nutrients(sugars: 3.4),
+      categories: const [],
+      source: FoodSource.offAverage,
+      isLiquid: false,
+    );
+    expect((bar as Rated).basis, RatingBasis.food);
+    expect(bar.levels[RatedNutrient.sugars], low);
+  });
+
   group('plus points', () {
     test('fibre exactly 6 g is high; the value is kept for the text', () {
       final points = plusPointsFor(const Nutrients(kcal: 400, fibre: 6.0));

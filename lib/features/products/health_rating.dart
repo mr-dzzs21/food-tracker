@@ -188,7 +188,8 @@ const _toBeRehydrated = 'en:dried-products-to-be-rehydrated';
 /// - Open Food Facts products ([source] `openFoodFacts`) use their
 ///   [categories]: drink thresholds for `en:beverages`, food thresholds
 ///   otherwise; no categories → [NotRated] (unknown type).
-/// - Own foods and basic foods (BLS) have no Open Food Facts categories:
+/// - Own foods, basic foods (BLS) and simple foods with Open Food Facts
+///   averages have no Open Food Facts categories:
 ///   food thresholds, or drink thresholds when [isLiquid]. A basic food of a
 ///   kind without a traffic light (water, coffee, spices, alcohol, …) carries
 ///   the matching category tag (tool/bls/README.md) and is not rated.
@@ -206,7 +207,7 @@ RatingResult rateProduct({
       basis = categories.contains('en:beverages')
           ? RatingBasis.drink
           : RatingBasis.food;
-    case FoodSource.user || FoodSource.bls:
+    case FoodSource.user || FoodSource.bls || FoodSource.offAverage:
       if (categories.isNotEmpty) {
         final notRated = _notRatedReason(categories);
         if (notRated != null) return notRated;

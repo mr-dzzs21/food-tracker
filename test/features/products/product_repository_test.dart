@@ -12,6 +12,7 @@ import 'package:food_tracker/features/products/health_rating.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/features/products/off_client.dart';
 import 'package:food_tracker/features/products/product_repository.dart';
+import 'package:food_tracker/features/products/simple_foods.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -332,6 +333,91 @@ void main() {
       await repo.saveBasicFood(flatbread, languageCode: 'de');
       expect(await db.select(db.foods).get(), hasLength(1));
     });
+  });
+
+  group('simple foods', () {
+    const banana = SimpleFood(
+      key: 'banane',
+      nameDe: 'Banane',
+      nameEn: 'Banana',
+      nutrients: Nutrients(kcal: 79, fat: 0.2, carbs: 18, protein: 1.2),
+      portionGrams: 120,
+      portionDe: '1 Banane',
+      portionEn: '1 banana',
+      blsCode: 'F503100',
+    );
+    const skyrVanilla = SimpleFood(
+      key: 'skyr-vanille',
+      nameDe: 'Skyr Vanille',
+      nameEn: 'Skyr, vanilla',
+      nutrients: Nutrients(kcal: 75, fat: 0.2, sugars: 9, protein: 9.2),
+      portionGrams: 150,
+      portionDe: '1 Portion',
+      portionEn: '1 serving',
+      offProductCount: 23,
+    );
+
+    test('one with BLS values is stored like that BLS food, with the short '
+        'name and the typical portion', () async {
+      final id = await repo.saveSimpleFood(banana, languageCode: 'de');
+
+      final food = (await repo.getFood(id))!;
+      expect(food.source, FoodSource.bls);
+      expect(food.externalId, 'F503100');
+      expect(food.name, 'Banane');
+      expect(food.servingSize, 120);
+      expect(food.servingLabel, '1 Banane');
+      expect(food.nutrients, banana.nutrients);
+      expect(rateFood(food), isA<Rated>());
+
+      // The same row as the BLS food with that code (one row per BLS food).
+      final blsId = await repo.saveBasicFood(
+        const BasicFood(
+          code: 'F503100',
+          nameDe: 'Banane roh',
+          nameEn: 'Banana raw',
+          nutrients: Nutrients(kcal: 79, fat: 0.2, carbs: 18, protein: 1.2),
+        ),
+        languageCode: 'de',
+      );
+      expect(blsId, id);
+      expect(await db.select(db.foods).get(), hasLength(1));
+    });
+
+    test('an Open Food Facts average gets its own kind and key', () async {
+      final id = await repo.saveSimpleFood(skyrVanilla, languageCode: 'en');
+      await repo.toggleFavourite(id);
+
+      final food = (await repo.getFood(id))!;
+      expect(food.source, FoodSource.offAverage);
+      expect(food.externalId, 'skyr-vanille');
+      expect(food.name, 'Skyr, vanilla');
+      expect(food.servingLabel, '1 serving');
+      // Rated like a basic food: food thresholds, no "unknown type".
+      expect(
+        rateFood(food),
+        isA<Rated>().having((r) => r.basis, 'basis', RatingBasis.food),
+      );
+
+      // Opening it again updates the row and keeps the star.
+      expect(await repo.saveSimpleFood(skyrVanilla, languageCode: 'de'), id);
+      final again = (await repo.getFood(id))!;
+      expect(again.name, 'Skyr Vanille');
+      expect(again.isFavourite, isTrue);
+      expect(await db.select(db.foods).get(), hasLength(1));
+    });
+
+    test(
+      'the local search leaves them out (they have their own section)',
+      () async {
+        await repo.saveSimpleFood(skyrVanilla, languageCode: 'de');
+        await insertOwnFood('Skyr mit Honig');
+        expect(
+          [for (final f in await repo.searchLocal('skyr')) f.name],
+          ['Skyr mit Honig'],
+        );
+      },
+    );
   });
 
   group('lists', () {

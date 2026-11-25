@@ -89,6 +89,8 @@ flutter:
   assets:
     - assets/fonts/Manrope-OFL.txt
     - assets/data/bls_4_0.tsv
+    - assets/data/simple_foods_bls.tsv
+    - assets/data/simple_foods_off.tsv
 
   # Manrope (SIL Open Font License 1.1), the app's own font. Static files, one
   # per weight, so no variable-font support is needed.

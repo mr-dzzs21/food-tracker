@@ -29,6 +29,7 @@ import 'food_source.dart';
 import 'nutrient_format.dart';
 import 'nutrients.dart';
 import 'product_repository.dart';
+import 'simple_foods_repository.dart';
 import 'widgets/nutrition_table.dart';
 import 'widgets/rating_section.dart';
 
@@ -378,6 +379,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     final barcode = food.barcode;
     final fromOff = food.source == FoodSource.openFoodFacts && barcode != null;
     final fromBls = food.source == FoodSource.bls;
+    final fromOffAverage = food.source == FoodSource.offAverage;
     final canAdd = amount != null && slot != null && !_adding;
 
     return Scaffold(
@@ -500,8 +502,20 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
                   ),
                   const SizedBox(height: Spacing.s),
                 ],
+                // Typical values from Open Food Facts products (ODbL): name
+                // the source and how many products they come from.
+                if (fromOffAverage) ...[
+                  Text(
+                    l10n.productAttribution,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  _OffAverageNote(food: food),
+                  const SizedBox(height: Spacing.m),
+                ],
                 Text(
-                  fromOff ? l10n.disclaimerShort : l10n.disclaimerRating,
+                  (fromOff || fromOffAverage)
+                      ? l10n.disclaimerShort
+                      : l10n.disclaimerRating,
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -650,8 +664,10 @@ class _ProductHeader extends ConsumerWidget {
                 // decision, Nutri-Score trademark rules).
                 if (nutriScore != null && 'ABCDE'.contains(nutriScore))
                   _InfoChip(l10n.productNutriScore(nutriScore)),
-                // Basic foods (BLS) have no brand: say what the values are.
-                if (food.source == FoodSource.bls)
+                // Basic and simple foods have no brand: say what the values
+                // are.
+                if (food.source == FoodSource.bls ||
+                    food.source == FoodSource.offAverage)
                   _InfoChip(l10n.productAverageChip),
               ],
             ),
@@ -708,6 +724,32 @@ class _ProductPhoto extends StatelessWidget {
   }
 }
 
+/// "Durchschnitt aus 23 Produkten von Open Food Facts." for a simple food
+/// with typical values; the number comes from the bundled list.
+class _OffAverageNote extends ConsumerWidget {
+  const _OffAverageNote({required this.food});
+
+  final Food food;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final key = food.externalId;
+    final count = key == null
+        ? null
+        : ref
+              .watch(simpleFoodsProvider)
+              .value
+              ?.find(FoodSource.offAverage, key)
+              ?.offProductCount;
+    return Text(
+      // Until the list is loaded (a moment): the general sentence.
+      count == null ? l10n.productBlsAverages : l10n.productOffAverages(count),
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+  }
+}
+
 /// A small white pill with a soft shadow ("pro 100 g").
 class _InfoChip extends StatelessWidget {
   const _InfoChip(this.label);
@@ -755,12 +797,23 @@ class _AmountChoices extends StatelessWidget {
     ).replaceAll(' ', ' ');
     final serving = food.servingSize;
     final last = lastAmount;
+    // Simple foods know what their portion is ("1 Banane (120 g)"); other
+    // labels (from Open Food Facts, often just "30 g") are not shown.
+    final servingName = switch (food.source) {
+      FoodSource.bls || FoodSource.offAverage => food.servingLabel,
+      _ => null,
+    };
     return PillChoices<double>(
       segmented: true,
       choices: [
         PillChoice(amountText(100), 100),
         if (serving != null && serving > 0)
-          PillChoice(l10n.productServingChip(amountText(serving)), serving),
+          PillChoice(
+            servingName == null
+                ? l10n.productServingChip(amountText(serving))
+                : l10n.foodPortionLabel(servingName, amountText(serving)),
+            serving,
+          ),
         if (last != null && last != 100 && last != serving)
           PillChoice(l10n.productLastAmountChip(amountText(last)), last),
       ],

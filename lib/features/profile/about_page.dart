@@ -73,8 +73,9 @@ class AboutPage extends ConsumerWidget {
               ),
             ],
           ),
-          // Required by the licences: Open Food Facts (ODbL / CC BY-SA) and
-          // the BLS (CC BY 4.0: source, licence and what was changed).
+          // Required by the licences: Open Food Facts (ODbL / CC BY-SA, also
+          // for the typical values made from its products) and the BLS
+          // (CC BY 4.0: source, licence and what was changed).
           _Section(
             title: l10n.aboutDataSourceTitle,
             children: [
@@ -97,6 +98,8 @@ class AboutPage extends ConsumerWidget {
                 label: l10n.aboutBlsLicence,
                 onPressed: () => openLink(context, ccByLicence),
               ),
+              const SizedBox(height: Spacing.m),
+              Text(l10n.aboutOffAveragesText),
             ],
           ),
           _Section(

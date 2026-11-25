@@ -9,15 +9,16 @@ import '../../../core/widgets/status_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../off_product_mapper.dart';
 import '../product_repository.dart';
-import 'food_tile.dart';
+import 'food_result_row.dart';
 
-/// Open Food Facts search results for [query], page by page; hits with
-/// known kcal first ([knownKcalFirst]).
+/// Open Food Facts search results for [query] ("Markenprodukte"), page by
+/// page; hits with known kcal first ([knownKcalFirst]).
 ///
 /// Loads the first page when shown and one more page per tap on
-/// "Mehr laden" – never while the user types (OFF allows only a few searches
-/// per minute; the client also spaces requests out). Shown inside a
-/// scrolling list, so it is a plain [Column].
+/// "Mehr laden". The screens show it only for a text the user stopped typing
+/// for a moment (OFF allows only a few searches per minute; the client also
+/// spaces requests out and drops searches nobody needs any more). Shown
+/// inside a scrolling list, so it is a plain [Column].
 class OnlineSearchResults extends ConsumerStatefulWidget {
   const OnlineSearchResults({
     super.key,
@@ -87,7 +88,7 @@ class _OnlineSearchResultsState extends ConsumerState<OnlineSearchResults> {
           child: CardGroup(
             children: [
               for (final product in products)
-                FoodTile.offProduct(
+                FoodResultRow.offProduct(
                   product,
                   onTap: () => widget.onOpen(product),
                 ),

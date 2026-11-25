@@ -135,17 +135,23 @@ class OpenFoodFactsClient {
     return parsed;
   }
 
-  /// Searches products by text. Only call this when the user submits the
-  /// search, never while typing (OFF rules).
+  /// Searches products by text. Call it on submit or after the user stopped
+  /// typing for a moment, never for every key press (OFF rules); searches
+  /// are spaced out by [minSearchInterval].
   ///
   /// [page] starts at 1. An empty [query] gives an empty result without a
   /// request. Only products sold in Germany are found
   /// ([searchCountryFilter]).
+  ///
+  /// When [cancel] completes (nobody needs the results any more, for example
+  /// because the user typed on), a search still waiting for its turn is not
+  /// sent and a running request is aborted; both throw [SearchCancelled].
   Future<OffSearchPage> search(
     String query, {
     int page = 1,
     int pageSize = 20,
     String languageCode = 'de',
+    Future<void>? cancel,
   }) async {
     // Quotes and colons mean something in the search syntax ("field:value")
     // and would break the country filter, so they become spaces.
@@ -155,7 +161,12 @@ class OpenFoodFactsClient {
         .replaceAll(RegExp(r'\s+'), ' ');
     if (words.isEmpty) return OffSearchPage.empty;
 
+    var cancelled = false;
+    if (cancel != null) unawaited(cancel.then((_) => cancelled = true));
     await _waitForSearchSlot();
+    // Waiting for the slot can take two seconds – the user may have typed on.
+    if (cancelled) throw const SearchCancelled();
+    _lastSearchAt = _clock.now();
     final uri = Uri.https(searchHost, '/search', {
       // Words and filter are combined with AND.
       'q': '$words $searchCountryFilter',
@@ -165,41 +176,59 @@ class OpenFoodFactsClient {
       'page': '$page',
       'fields': searchFields,
     });
-    final response = await _getJson(uri, retry: true);
+    final response = await _getJson(
+      uri,
+      retry: true,
+      cancel: cancel,
+      isCancelled: () => cancelled,
+    );
     if (response.statusCode != 200) throw const ServerUnavailable();
     return parseOffSearchPage(response.body, languageCode: languageCode);
   }
 
   /// Sends a GET request and returns the JSON object, trying once more after
-  /// a temporary problem when [retry] is true.
-  Future<_JsonResponse> _getJson(Uri uri, {required bool retry}) async {
+  /// a temporary problem when [retry] is true (not when [isCancelled] says
+  /// the result is no longer needed).
+  Future<_JsonResponse> _getJson(
+    Uri uri, {
+    required bool retry,
+    Future<void>? cancel,
+    bool Function()? isCancelled,
+  }) async {
     _throwIfCoolingDown();
     try {
-      return await _send(uri);
+      return await _send(uri, cancel);
     } on _TemporaryFailure catch (first) {
       if (!retry) throw first.failure;
       // Wait 1–2 s. The random part ("jitter") keeps many phones from
       // retrying at exactly the same moment.
       await _delay(Duration(milliseconds: 1000 + _random.nextInt(1001)));
+      if (isCancelled?.call() ?? false) throw const SearchCancelled();
       try {
-        return await _send(uri);
+        return await _send(uri, cancel);
       } on _TemporaryFailure catch (second) {
         throw second.failure;
       }
     }
   }
 
-  /// One request. Throws [_TemporaryFailure] for problems worth one more
-  /// try, and an [AppFailure] for everything else.
-  Future<_JsonResponse> _send(Uri uri) async {
+  /// One request; [cancel] aborts it. Throws [_TemporaryFailure] for
+  /// problems worth one more try, and an [AppFailure] for everything else.
+  Future<_JsonResponse> _send(Uri uri, [Future<void>? cancel]) async {
     final http.Response response;
     try {
+      final request = http.AbortableRequest('GET', uri, abortTrigger: cancel)
+        ..headers.addAll({
+          'User-Agent': userAgent,
+          'Accept': 'application/json',
+        });
       response = await _http
-          .get(
-            uri,
-            headers: {'User-Agent': userAgent, 'Accept': 'application/json'},
-          )
+          .send(request)
+          .then(http.Response.fromStream)
           .timeout(requestTimeout);
+    } on http.RequestAbortedException {
+      // Must come before ClientException (its parent class): not "offline".
+      throw const SearchCancelled();
     } on TimeoutException {
       throw const _TemporaryFailure(RequestTimeout());
     } on SocketException {
@@ -255,15 +284,22 @@ class OpenFoodFactsClient {
     }
   }
 
-  /// Waits until [minSearchInterval] has passed since the last search.
+  /// Waits until [minSearchInterval] has passed since the last search that
+  /// was sent.
   Future<void> _waitForSearchSlot() async {
     final last = _lastSearchAt;
     if (last != null) {
       final waited = _clock.now().difference(last);
       if (waited < minSearchInterval) await _delay(minSearchInterval - waited);
     }
-    _lastSearchAt = _clock.now();
   }
+}
+
+/// Thrown by [OpenFoodFactsClient.search] when its `cancel` future completed
+/// before the answer arrived. Not an [AppFailure]: nobody shows it, the
+/// screen already asks for another search.
+class SearchCancelled implements Exception {
+  const SearchCancelled();
 }
 
 typedef _JsonResponse = ({int statusCode, Map<String, Object?> body});

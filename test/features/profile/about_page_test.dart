@@ -92,7 +92,12 @@ void main() {
     );
     expect(find.text('Data sources'), findsOneWidget);
     expect(
-      find.textContaining('Basic foods with average values come from'),
+      find.textContaining('Most foods with average values come from'),
+      findsOneWidget,
+    );
+    // Typical values made from Open Food Facts products are ODbL, too.
+    expect(
+      find.textContaining('the median of many products sold in Germany'),
       findsOneWidget,
     );
     expect(find.textContaining('talk to someone you trust'), findsOneWidget);

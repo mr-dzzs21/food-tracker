@@ -378,6 +378,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String foodPortionLabel(String portion, String amount) {
+    return '$portion ($amount)';
+  }
+
+  @override
   String productLastAmountChip(String amount) {
     return 'Last time: $amount';
   }
@@ -439,6 +444,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productAverageChip => 'Average values';
+
+  @override
+  String productOffAverages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Average of $count products from Open Food Facts.',
+      one: 'Average of 1 product from Open Food Facts.',
+    );
+    return '$_temp0 Individual products can differ.';
+  }
 
   @override
   String get productCreateOwn => 'Add it yourself';
@@ -511,10 +527,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchLocalTitle => 'On your device';
 
   @override
-  String get searchBasicFoodsTitle => 'Basic foods';
+  String get searchFoodsTitle => 'Foods';
 
   @override
-  String get searchOnlineTitle => 'Online (Germany)';
+  String get searchFoodsAttribution =>
+      'Average values: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut (CC BY 4.0), and Open Food Facts (ODbL)';
+
+  @override
+  String get searchMoreFoods => 'More foods (BLS)';
+
+  @override
+  String get searchFewerFoods => 'Hide more foods';
+
+  @override
+  String get searchOnlineTitle => 'Brand products (Germany)';
 
   @override
   String get searchNoOnlineResults => 'No results at Open Food Facts.';
@@ -525,11 +551,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchLoadMore => 'Load more';
-
-  @override
-  String searchNutriScore(String grade) {
-    return 'Nutri-Score: $grade';
-  }
 
   @override
   String foodKcalPer100g(String kcal) {
@@ -577,13 +598,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFoodOwnEmpty => 'No own foods yet. Create one with “Own food”.';
-
-  @override
-  String get addFoodNoLocalMatches =>
-      'Nothing found among the basic foods or on your device.';
-
-  @override
-  String get addFoodSearchOnline => 'Search online';
 
   @override
   String get foodFormNewTitle => 'New food';
@@ -1064,10 +1078,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutBlsText =>
-      'Basic foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format.';
+      'Most foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format; common foods got short names and typical portions for the search.';
 
   @override
   String get aboutBlsLicence => 'Licence CC BY 4.0';
+
+  @override
+  String get aboutOffAveragesText =>
+      'For some simple foods that the BLS does not contain (for example “Skyr Vanille”), the app shows typical values: the median of many products sold in Germany from Open Food Facts. These values are also available under the Open Database License (ODbL).';
 
   @override
   String get aboutNotesTitle => 'Good to know';

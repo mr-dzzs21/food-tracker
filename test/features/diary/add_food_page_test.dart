@@ -11,6 +11,7 @@ import 'package:food_tracker/features/diary/add_food_page.dart';
 import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
+import 'package:food_tracker/features/products/simple_foods.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -37,7 +38,51 @@ const basicFoods = [
     nameEn: 'Apple raw',
     nutrients: Nutrients(kcal: 58),
   ),
+  BasicFood(
+    code: 'M710100',
+    nameDe: 'Skyr, Frischkäse < 10 % Fett i. Tr.',
+    nameEn: 'Skyr, fresh cheese < 10 % fat in dry matter',
+    nutrients: Nutrients(kcal: 64, protein: 10.4),
+  ),
 ];
+
+/// Simple foods for the search; the real files are not loaded in tests.
+const simpleFoods = [
+  SimpleFood(
+    order: 1,
+    key: 'skyr-natur',
+    nameDe: 'Skyr natur',
+    nameEn: 'Skyr, plain',
+    synonymsDe: ['Skyr pur'],
+    nutrients: Nutrients(kcal: 64, fat: 0.2, protein: 10.4),
+    portionGrams: 150,
+    portionDe: '1 Portion',
+    portionEn: '1 serving',
+    blsCode: 'M710100',
+  ),
+  SimpleFood(
+    order: 2,
+    key: 'skyr-vanille',
+    nameDe: 'Skyr Vanille',
+    nameEn: 'Skyr, vanilla',
+    nutrients: Nutrients(kcal: 75, fat: 0.2, protein: 9.2),
+    portionGrams: 150,
+    portionDe: '1 Portion',
+    portionEn: '1 serving',
+    offProductCount: 23,
+  ),
+  SimpleFood(
+    order: 3,
+    key: 'reis-gekocht',
+    nameDe: 'Reis gekocht',
+    nameEn: 'Rice, cooked',
+    nutrients: Nutrients(kcal: 117),
+    blsCode: 'C352032',
+  ),
+];
+
+const blsSource =
+    'Daten: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut (CC BY 4.0)';
 
 void main() {
   late AppDatabase db;
@@ -77,6 +122,7 @@ void main() {
     WidgetTester tester, {
     Locale locale = const Locale('de'),
     List<BasicFood> basicFoods = const [],
+    List<SimpleFood> simpleFoods = const [],
   }) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1;
@@ -91,6 +137,7 @@ void main() {
       client: client,
       locale: locale,
       basicFoods: basicFoods,
+      simpleFoods: simpleFoods,
       extraOverrides: [offClientWithoutDelays(client)],
     );
     final router = ProviderScope.containerOf(
@@ -104,12 +151,16 @@ void main() {
   Finder inPage(String text) =>
       find.descendant(of: find.byType(AddFoodPage), matching: find.text(text));
 
+  /// Types [text] and waits until everything is shown, the brand products
+  /// too (they are loaded 700 ms after the last key press).
   Future<void> typeSearch(WidgetTester tester, String text) async {
     await tester.enterText(find.byType(TextField), text);
-    // The local filter waits a moment after the last key press.
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
   }
+
+  double top(WidgetTester tester, String text) =>
+      tester.getTopLeft(inPage(text)).dy;
 
   testWidgets('title, segments and their lists', (tester) async {
     await insertFood('Apfel', usedAt: testNow);
@@ -234,50 +285,80 @@ void main() {
     expect(entry.day, today);
   });
 
-  testWidgets('typing filters the foods on the device (no online search)', (
-    tester,
-  ) async {
+  testWidgets('typing shows the matches on the device at once; the brand '
+      'products follow when the user stops typing', (tester) async {
     await insertFood('Müsli Classic', usedAt: testNow);
     await insertFood('Apfel', usedAt: testNow);
     await openAddFood(tester);
 
-    await typeSearch(tester, 'mü');
+    await tester.enterText(find.byType(TextField), 'mü');
+    // The lists on the device wait only 250 ms.
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
 
     expect(find.text('Auf deinem Gerät'), findsOneWidget);
     expect(find.text('Müsli Classic'), findsOneWidget);
     expect(find.text('Apfel'), findsNothing);
     expect(find.text('Zuletzt'), findsNothing); // segments are hidden
+    // The brand section is coming, but nothing was sent yet.
+    expect(inPage('Markenprodukte (Deutschland)'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(requests, isEmpty);
 
-    // Nothing found: a hint, and the online search is one tap away.
-    await typeSearch(tester, 'Haferflocken');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+
+    expect(requests, hasLength(1));
     expect(
-      find.text(
-        'Nichts bei den Grundnahrungsmitteln und auf deinem Gerät gefunden.',
-      ),
-      findsOneWidget,
+      requests.single.url.queryParameters['q'],
+      'mü countries:"en:germany"',
     );
-    expect(find.text('Auf deinem Gerät'), findsNothing);
-    expect(inPage('Online suchen'), findsOneWidget);
-    expect(requests, isEmpty);
+    expect(find.text('Zarte Haferflocken'), findsOneWidget);
 
     // Clearing the field brings the segments back.
     await typeSearch(tester, '');
     expect(find.text('Apfel'), findsOneWidget);
+    expect(inPage('Markenprodukte (Deutschland)'), findsNothing);
+    expect(requests, hasLength(1));
   });
 
-  testWidgets('submitting searches online and shows the results inline', (
+  testWidgets('the online search runs once, 700 ms after the last key press', (
     tester,
   ) async {
+    await openAddFood(tester);
+
+    for (final text in ['s', 'sk', 'sky', 'skyr']) {
+      await tester.enterText(find.byType(TextField), text);
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    await tester.pump(const Duration(milliseconds: 499));
+    expect(requests, isEmpty);
+
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(requests, hasLength(1));
+    expect(
+      requests.single.url.queryParameters['q'],
+      'skyr countries:"en:germany"',
+    );
+    // One letter is not searched online.
+    await typeSearch(tester, 's');
+    expect(requests, hasLength(1));
+    expect(inPage('Markenprodukte (Deutschland)'), findsNothing);
+  });
+
+  testWidgets('submitting searches online at once and shows the results '
+      'inline', (tester) async {
     final router = await openAddFood(tester);
 
-    await typeSearch(tester, 'Haferflocken');
+    await tester.enterText(find.byType(TextField), 'Haferflocken');
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
-    expect(find.text('Online (Deutschland)'), findsOneWidget);
+    expect(inPage('Markenprodukte (Deutschland)'), findsOneWidget);
     expect(find.text('Zarte Haferflocken'), findsOneWidget);
-    expect(inPage('Online suchen'), findsNothing);
+    // The waiting search was dropped: one request, not two.
     expect(requests, hasLength(1));
 
     await tester.tap(find.text('Zarte Haferflocken'));
@@ -288,29 +369,129 @@ void main() {
     );
   });
 
-  testWidgets('basic foods show while typing, first; "Online suchen" adds '
-      'the online results last', (tester) async {
-    await insertFood('Haferflocken Omas Art', source: FoodSource.user);
-    await openAddFood(tester, basicFoods: basicFoods);
+  testWidgets('sections: foods, then the device, then brand products', (
+    tester,
+  ) async {
+    await insertFood('Skyr mit Honig', source: FoodSource.user);
+    await openAddFood(tester, simpleFoods: simpleFoods, basicFoods: basicFoods);
 
-    await typeSearch(tester, 'haferflocken');
+    await typeSearch(tester, 'skyr');
 
-    double top(String text) => tester.getTopLeft(inPage(text)).dy;
-    expect(inPage('Grundnahrungsmittel'), findsOneWidget);
-    expect(inPage('Hafer Flocken'), findsOneWidget);
-    expect(inPage('Apfel roh'), findsNothing);
-    expect(top('Grundnahrungsmittel'), lessThan(top('Hafer Flocken')));
-    expect(top('Hafer Flocken'), lessThan(top('Auf deinem Gerät')));
-    expect(top('Auf deinem Gerät'), lessThan(top('Haferflocken Omas Art')));
-    expect(requests, isEmpty); // still nothing sent while typing
+    expect(top(tester, 'Lebensmittel'), lessThan(top(tester, 'Skyr natur')));
+    expect(top(tester, 'Skyr natur'), lessThan(top(tester, 'Skyr Vanille')));
+    expect(
+      top(tester, 'Skyr Vanille'),
+      lessThan(top(tester, 'Auf deinem Gerät')),
+    );
+    expect(
+      top(tester, 'Auf deinem Gerät'),
+      lessThan(top(tester, 'Skyr mit Honig')),
+    );
+    expect(
+      top(tester, 'Skyr mit Honig'),
+      lessThan(top(tester, 'Markenprodukte (Deutschland)')),
+    );
+    expect(
+      top(tester, 'Markenprodukte (Deutschland)'),
+      lessThan(top(tester, 'Zarte Haferflocken')),
+    );
+    expect(inPage('Reis gekocht'), findsNothing); // does not match
+    // Short rows: portion below the name, kcal per 100 g on the right.
+    expect(inPage('1 Portion (150 g)'), findsNWidgets(2));
+    expect(inPage('64 kcal'), findsOneWidget);
+    expect(
+      inPage(
+        'Durchschnittswerte: Bundeslebensmittelschlüssel 4.0, Max '
+        'Rubner-Institut (CC BY 4.0), und Open Food Facts (ODbL)',
+      ),
+      findsOneWidget,
+    );
+    // Brand products: brand below the name (from the fixture).
+    expect(inPage('Spielberger Mühle'), findsOneWidget);
+    expect(inPage('355 kcal'), findsOneWidget);
+  });
 
-    await tester.tap(inPage('Online suchen'));
+  testWidgets('the technical BLS list waits behind "Weitere Lebensmittel '
+      '(BLS)"; without a simple food it shows at once', (tester) async {
+    await openAddFood(tester, simpleFoods: simpleFoods, basicFoods: basicFoods);
+    const blsSkyr = 'Skyr, Frischkäse < 10 % Fett i. Tr.';
+
+    await typeSearch(tester, 'skyr');
+    expect(inPage('Skyr natur'), findsOneWidget);
+    expect(inPage(blsSkyr), findsNothing);
+    expect(inPage(blsSource), findsNothing);
+
+    await tester.tap(inPage('Weitere Lebensmittel (BLS)'));
+    await tester.pumpAndSettle();
+    expect(inPage(blsSkyr), findsOneWidget);
+    expect(inPage(blsSource), findsOneWidget);
+    expect(top(tester, 'Skyr Vanille'), lessThan(top(tester, blsSkyr)));
+
+    await tester.tap(inPage('Weitere Lebensmittel ausblenden'));
+    await tester.pumpAndSettle();
+    expect(inPage(blsSkyr), findsNothing);
+
+    // No simple food for "apfel": the BLS foods are the foods.
+    await typeSearch(tester, 'apfel');
+    expect(inPage('Lebensmittel'), findsOneWidget);
+    expect(inPage('Apfel roh'), findsOneWidget);
+    expect(inPage('Weitere Lebensmittel (BLS)'), findsNothing);
+    expect(inPage(blsSource), findsOneWidget);
+  });
+
+  testWidgets('a simple food opens with its portion and is added like any '
+      'other food', (tester) async {
+    final router = await openAddFood(tester, simpleFoods: simpleFoods);
+
+    await typeSearch(tester, 'skyr');
+    await tester.tap(inPage('Skyr natur'));
     await tester.pumpAndSettle();
 
-    expect(requests, hasLength(1));
-    expect(top('Haferflocken Omas Art'), lessThan(top('Online (Deutschland)')));
-    expect(top('Online (Deutschland)'), lessThan(top('Zarte Haferflocken')));
-    expect(inPage('Grundnahrungsmittel'), findsOneWidget);
+    final food = (await db.select(db.foods).get()).single;
+    expect(food.source, FoodSource.bls);
+    expect(food.externalId, 'M710100');
+    expect(food.name, 'Skyr natur');
+    expect(
+      router.state.uri.toString(),
+      Routes.food(food.id, day: today, mealId: breakfastId),
+    );
+    // The product page: averages, the typical portion chosen (a
+    // non-breaking space keeps "150 g" together in the pill).
+    expect(find.text('Durchschnittswerte'), findsOneWidget);
+    expect(find.text('1 Portion (150\u00A0g)'), findsOneWidget);
+
+    await tester.tap(find.byType(CtaButton));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.toString(), Routes.today);
+    final entry = (await db.select(db.diaryEntries).get()).single;
+    expect(entry.foodId, food.id);
+    expect(entry.name, 'Skyr natur');
+    expect(entry.amount, 150);
+    expect(entry.kcal, 64);
+  });
+
+  testWidgets('an Open Food Facts average names how many products it comes '
+      'from', (tester) async {
+    await openAddFood(tester, simpleFoods: simpleFoods);
+
+    await typeSearch(tester, 'skyr vanille');
+    await tester.tap(inPage('Skyr Vanille'));
+    await tester.pumpAndSettle();
+
+    final food = (await db.select(db.foods).get()).single;
+    expect(food.source, FoodSource.offAverage);
+    expect(food.externalId, 'skyr-vanille');
+    expect(find.text('Durchschnittswerte'), findsOneWidget);
+    // The tall test screen shows the whole product page, footer included.
+    expect(
+      find.text(
+        'Durchschnitt aus 23 Produkten von Open Food Facts. Einzelne '
+        'Produkte können abweichen.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Daten: Open Food Facts (ODbL)'), findsOneWidget);
   });
 
   testWidgets('a basic food is added like any other food', (tester) async {
@@ -365,7 +546,13 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = 2.0;
     addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await pumpFoodTrackerApp(tester, db: db, basicFoods: basicFoods);
+    await pumpFoodTrackerApp(
+      tester,
+      db: db,
+      basicFoods: basicFoods,
+      simpleFoods: simpleFoods,
+      extraOverrides: [offClientWithoutDelays(offlineClient())],
+    );
     final router = ProviderScope.containerOf(
       tester.element(find.byType(FoodTrackerApp)),
     ).read(routerProvider);
@@ -375,20 +562,18 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(inPage('Favoriten'), findsOneWidget);
 
-    // The search sections and "Online suchen" fit, too.
-    await typeSearch(tester, 'haferflocken');
+    // The search sections fit, too (offline: the brand part says so).
+    await typeSearch(tester, 'skyr');
     expect(tester.takeException(), isNull);
-    expect(inPage('Hafer Flocken'), findsOneWidget);
+    expect(inPage('Skyr natur'), findsOneWidget);
     await tester.scrollUntilVisible(
-      inPage('Online suchen'),
+      inPage('Nochmal versuchen'),
       200,
       scrollable: find
-          .ancestor(
-            of: inPage('Hafer Flocken'),
-            matching: find.byType(Scrollable),
-          )
+          .ancestor(of: inPage('Skyr natur'), matching: find.byType(Scrollable))
           .first,
     );
+    expect(inPage('Markenprodukte (Deutschland)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

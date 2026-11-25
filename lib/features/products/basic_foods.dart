@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import 'nutrients.dart';
+import 'search_text.dart';
 
 // Basic foods ("Grundnahrungsmittel") with average values: the
 // Bundeslebensmittelschlüssel (BLS) 4.0 of the Max Rubner-Institut, bundled
@@ -191,7 +192,7 @@ class BasicFoodIndex {
     required String languageCode,
     int limit = defaultLimit,
   }) {
-    final queryWords = [for (final token in _tokenize(query)) token.text];
+    final queryWords = [for (final token in searchTokens(query)) token.text];
     if (queryWords.isEmpty) return const [];
 
     prepare(languageCode);
@@ -237,7 +238,7 @@ const _mainPartBonus = 4;
 /// A food prepared for searching in one language.
 class _Entry {
   _Entry(this.food, String languageCode) : name = food.nameFor(languageCode) {
-    tokens = _tokenize(name);
+    tokens = searchTokens(name);
     headLength = name.split(RegExp(r',(?!\d)|\(')).first.trim().length;
     // "Hafer Flocken" → "haferflocken": the BLS sometimes writes as two
     // words what everybody types as one.
@@ -254,8 +255,8 @@ class _Entry {
 
   final BasicFood food;
   final String name;
-  late final List<_Token> tokens;
-  late final List<_Token> pairs;
+  late final List<SearchToken> tokens;
+  late final List<SearchToken> pairs;
 
   /// Length of the name up to the first comma or bracket.
   late final int headLength;
@@ -294,69 +295,4 @@ class _Entry {
     }
     return best;
   }
-}
-
-/// One searchable word part. [isHead] is false for the parts before a hyphen
-/// ("apfel" in "Apfel-Streuselkuchen"), which only describe the last part.
-typedef _Token = ({String text, bool inMainPart, bool isHead});
-
-/// Words that start the description after the main part of a name.
-const _linkingWords = {
-  'mit', 'ohne', 'in', 'im', 'aus', 'und', 'auf', 'fur', 'zum', 'zur', //
-  'with', 'without', 'from', 'and', 'on', 'for', 'made',
-};
-
-/// The words of [text] for searching: lower case, umlauts as plain letters,
-/// split at spaces, `/` (alternatives like "Weizenbrot/Weißbrot") and `-`.
-List<_Token> _tokenize(String text) {
-  final tokens = <_Token>[];
-  var inMainPart = true;
-  for (final word in _fold(text).split(RegExp(r'\s+'))) {
-    if (word.startsWith('(') || _linkingWords.contains(word)) {
-      inMainPart = false;
-    }
-    for (final alternative in word.split('/')) {
-      final parts = alternative.split('-');
-      for (final (index, part) in parts.indexed) {
-        for (final text in part.split(RegExp(r'[^a-z0-9]+'))) {
-          if (text.isEmpty) continue;
-          tokens.add((
-            text: text,
-            inMainPart: inMainPart,
-            isHead: index == parts.length - 1,
-          ));
-        }
-      }
-    }
-    // "Reis poliert, roh": the main part ends with the comma.
-    if (word.endsWith(',') || word.endsWith(')')) inMainPart = false;
-  }
-  return tokens;
-}
-
-const _folded = {
-  'ä': 'a',
-  'ö': 'o',
-  'ü': 'u',
-  'ß': 'ss',
-  'é': 'e',
-  'è': 'e',
-  'ê': 'e',
-  'à': 'a',
-  'á': 'a',
-  'â': 'a',
-  'ç': 'c',
-  'ñ': 'n',
-  'ô': 'o',
-  'î': 'i',
-  'ï': 'i',
-};
-
-String _fold(String text) {
-  final lower = text.toLowerCase();
-  final buffer = StringBuffer();
-  for (final char in lower.split('')) {
-    buffer.write(_folded[char] ?? char);
-  }
-  return buffer.toString();
 }

@@ -680,6 +680,12 @@ abstract class AppLocalizations {
   /// **'1 serving ({amount})'**
   String productServingChip(String amount);
 
+  /// A typical portion with its amount, e.g. "1 banana (120 g)"
+  ///
+  /// In en, this message translates to:
+  /// **'{portion} ({amount})'**
+  String foodPortionLabel(String portion, String amount);
+
   /// Chip with the amount used the last time this food was logged
   ///
   /// In en, this message translates to:
@@ -764,11 +770,17 @@ abstract class AppLocalizations {
   /// **'Average values for this kind of food. Individual products can differ.'**
   String get productBlsAverages;
 
-  /// Info chip on the product page of a basic food (BLS)
+  /// Info chip on the product page of a basic food (BLS) or a simple food with typical values
   ///
   /// In en, this message translates to:
   /// **'Average values'**
   String get productAverageChip;
+
+  /// Source note on the product page of a simple food whose values are the median of Open Food Facts products
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Average of 1 product from Open Food Facts.} other{Average of {count} products from Open Food Facts.}} Individual products can differ.'**
+  String productOffAverages(int count);
 
   /// Button when Open Food Facts does not know a barcode
   ///
@@ -896,16 +908,34 @@ abstract class AppLocalizations {
   /// **'On your device'**
   String get searchLocalTitle;
 
-  /// Section with basic foods with average values (German nutrient database BLS), shown first
+  /// First search section: simple everyday foods with average values (Skyr, rice, …)
   ///
   /// In en, this message translates to:
-  /// **'Basic foods'**
-  String get searchBasicFoodsTitle;
+  /// **'Foods'**
+  String get searchFoodsTitle;
 
-  /// Section with Open Food Facts search results (only products sold in Germany)
+  /// Source line under the simple foods (required by the licences); keep the German database name
   ///
   /// In en, this message translates to:
-  /// **'Online (Germany)'**
+  /// **'Average values: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut (CC BY 4.0), and Open Food Facts (ODbL)'**
+  String get searchFoodsAttribution;
+
+  /// Button that shows the long technical list of the German nutrient database BLS below the simple foods
+  ///
+  /// In en, this message translates to:
+  /// **'More foods (BLS)'**
+  String get searchMoreFoods;
+
+  /// Button that hides the BLS list again
+  ///
+  /// In en, this message translates to:
+  /// **'Hide more foods'**
+  String get searchFewerFoods;
+
+  /// Section with Open Food Facts search results (only products sold in Germany), loaded when the user stops typing
+  ///
+  /// In en, this message translates to:
+  /// **'Brand products (Germany)'**
   String get searchOnlineTitle;
 
   /// No description provided for @searchNoOnlineResults.
@@ -925,12 +955,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load more'**
   String get searchLoadMore;
-
-  /// Short Nutri-Score text in result lists (plain text, no logo)
-  ///
-  /// In en, this message translates to:
-  /// **'Nutri-Score: {grade}'**
-  String searchNutriScore(String grade);
 
   /// No description provided for @foodKcalPer100g.
   ///
@@ -1009,18 +1033,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No own foods yet. Create one with “Own food”.'**
   String get addFoodOwnEmpty;
-
-  /// No description provided for @addFoodNoLocalMatches.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing found among the basic foods or on your device.'**
-  String get addFoodNoLocalMatches;
-
-  /// Button below the search results: searches Open Food Facts (products sold in Germany)
-  ///
-  /// In en, this message translates to:
-  /// **'Search online'**
-  String get addFoodSearchOnline;
 
   /// No description provided for @foodFormNewTitle.
   ///
@@ -1853,7 +1865,7 @@ abstract class AppLocalizations {
   /// Full BLS attribution: citation with DOI, licence and what was changed (required by CC BY 4.0)
   ///
   /// In en, this message translates to:
-  /// **'Basic foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format.'**
+  /// **'Most foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format; common foods got short names and typical portions for the search.'**
   String get aboutBlsText;
 
   /// No description provided for @aboutBlsLicence.
@@ -1861,6 +1873,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Licence CC BY 4.0'**
   String get aboutBlsLicence;
+
+  /// No description provided for @aboutOffAveragesText.
+  ///
+  /// In en, this message translates to:
+  /// **'For some simple foods that the BLS does not contain (for example “Skyr Vanille”), the app shows typical values: the median of many products sold in Germany from Open Food Facts. These values are also available under the Open Database License (ODbL).'**
+  String get aboutOffAveragesText;
 
   /// No description provided for @aboutNotesTitle.
   ///

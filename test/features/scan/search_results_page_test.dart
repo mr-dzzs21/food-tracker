@@ -9,6 +9,7 @@ import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
+import 'package:food_tracker/features/products/simple_foods.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -33,6 +34,21 @@ final _page2 = jsonEncode({
   'page': 2,
   'page_count': 2,
 });
+
+/// Simple foods for the search; the real files are not loaded in tests.
+const _simpleFoods = [
+  SimpleFood(
+    order: 1,
+    key: 'haferflocken',
+    nameDe: 'Haferflocken',
+    nameEn: 'Oat flakes',
+    nutrients: Nutrients(kcal: 348),
+    portionGrams: 40,
+    portionDe: '4 EL',
+    portionEn: '4 tbsp',
+    blsCode: 'C133000',
+  ),
+];
 
 const _empty = '{"hits": [], "count": 0, "page": 1, "page_count": 0}';
 
@@ -79,6 +95,7 @@ void main() {
     String query, {
     Locale locale = const Locale('de'),
     List<BasicFood> basicFoods = const [],
+    List<SimpleFood> simpleFoods = const [],
   }) async {
     tester.view.physicalSize = const Size(800, 3000);
     tester.view.devicePixelRatio = 1;
@@ -93,6 +110,7 @@ void main() {
       client: client,
       locale: locale,
       basicFoods: basicFoods,
+      simpleFoods: simpleFoods,
       extraOverrides: [offClientWithoutDelays(client)],
     );
     final router = ProviderScope.containerOf(
@@ -103,23 +121,21 @@ void main() {
     return router;
   }
 
-  testWidgets('shows online results with brand, kcal and Nutri-Score text', (
-    tester,
-  ) async {
+  testWidgets('shows brand products with brand and kcal', (tester) async {
     await openSearch(tester, 'Haferflocken');
 
     expect(find.text('Suche: Haferflocken'), findsOneWidget);
-    expect(find.text('Online (Deutschland)'), findsOneWidget);
+    expect(find.text('Markenprodukte (Deutschland)'), findsOneWidget);
     expect(find.text('Zarte Haferflocken'), findsOneWidget);
-    // kcal from the Nutri-Score data (1486.4 kJ), brand without "xx:".
-    expect(
-      find.text('Spielberger Mühle\n355 kcal pro 100 g · Nutri-Score: A'),
-      findsOneWidget,
-    );
+    // Brand without "xx:" below the name; kcal from the Nutri-Score data
+    // (1486.4 kJ) on the right. No Nutri-Score in the short rows.
+    expect(find.text('Spielberger Mühle'), findsOneWidget);
+    expect(find.text('355 kcal'), findsOneWidget);
+    expect(find.textContaining('Nutri-Score'), findsNothing);
     expect(find.text('Daten: Open Food Facts (ODbL)'), findsOneWidget);
     expect(find.text('Mehr laden'), findsOneWidget); // page 1 of 132
-    // No basic foods given: no empty "Grundnahrungsmittel" section.
-    expect(find.text('Grundnahrungsmittel'), findsNothing);
+    // No simple or basic foods given: no empty "Lebensmittel" section.
+    expect(find.text('Lebensmittel'), findsNothing);
 
     // One request, sent with our User-Agent, for the submitted text only,
     // limited to products sold in Germany.
@@ -150,13 +166,12 @@ void main() {
     expect(find.text('Haferflocken mit Nüssen'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('Haferflocken mit Nüssen')).dy,
-      lessThan(tester.getTopLeft(find.text('Online (Deutschland)')).dy),
+      lessThan(tester.getTopLeft(find.text('Markenprodukte (Deutschland)')).dy),
     );
   });
 
-  testWidgets('sections: basic foods, then the device, then online', (
-    tester,
-  ) async {
+  testWidgets('without a simple food, the BLS foods are the foods: then the '
+      'device, then the brand products', (tester) async {
     await db
         .into(db.foods)
         .insert(
@@ -171,11 +186,15 @@ void main() {
 
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
     expect(find.text('Hafer Flocken'), findsOneWidget);
-    expect(find.text('348 kcal pro 100 g'), findsOneWidget);
+    expect(find.text('348 kcal'), findsOneWidget);
     expect(find.text('Weizenfladenbrot'), findsNothing); // does not match
-    expect(top('Grundnahrungsmittel'), lessThan(top('Hafer Flocken')));
+    expect(find.text('Weitere Lebensmittel (BLS)'), findsNothing);
+    expect(top('Lebensmittel'), lessThan(top('Hafer Flocken')));
     expect(top('Hafer Flocken'), lessThan(top('Auf deinem Gerät')));
-    expect(top('Auf deinem Gerät'), lessThan(top('Online (Deutschland)')));
+    expect(
+      top('Auf deinem Gerät'),
+      lessThan(top('Markenprodukte (Deutschland)')),
+    );
     // The source line the BLS licence asks for.
     expect(
       find.text(
@@ -184,6 +203,36 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('simple foods come first; tapping one opens it with its '
+      'portion', (tester) async {
+    final router = await openSearch(
+      tester,
+      'haferflocken',
+      simpleFoods: _simpleFoods,
+      basicFoods: _basicFoods,
+    );
+
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    expect(top('Lebensmittel'), lessThan(top('Haferflocken')));
+    expect(top('Haferflocken'), lessThan(top('Markenprodukte (Deutschland)')));
+    expect(find.text('4 EL (40 g)'), findsOneWidget);
+    // The technical BLS name waits behind the button.
+    expect(find.text('Hafer Flocken'), findsNothing);
+    expect(find.text('Weitere Lebensmittel (BLS)'), findsOneWidget);
+
+    await tester.tap(find.text('Haferflocken'));
+    await tester.pumpAndSettle();
+
+    final food = (await db.select(db.foods).get()).single;
+    expect(food.source, FoodSource.bls);
+    expect(food.externalId, 'C133000');
+    expect(food.name, 'Haferflocken');
+    expect(food.servingSize, 40);
+    expect(food.servingLabel, '4 EL');
+    expect(router.state.uri.toString(), Routes.food(food.id));
+    expect(find.text('4 EL (40\u00A0g)'), findsOneWidget);
   });
 
   testWidgets('tapping a basic food stores it and opens its product page', (
@@ -295,11 +344,10 @@ void main() {
     await openSearch(tester, 'Haferflocken', locale: const Locale('en'));
 
     expect(find.text('Search: Haferflocken'), findsOneWidget);
-    expect(find.text('Online (Germany)'), findsOneWidget);
-    expect(
-      find.text('Spielberger Mühle\n355 kcal per 100 g · Nutri-Score: A'),
-      findsOneWidget,
-    );
+    expect(find.text('Brand products (Germany)'), findsOneWidget);
+    expect(find.text('Spielberger Mühle'), findsOneWidget);
+    expect(find.text('355 kcal'), findsOneWidget);
+    expect(find.text('per 100 g'), findsWidgets);
     expect(find.text('Load more'), findsOneWidget);
   });
 }

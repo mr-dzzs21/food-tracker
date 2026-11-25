@@ -14,9 +14,11 @@ import 'gtin.dart';
 import 'nutrients.dart';
 import 'off_client.dart';
 import 'off_product_mapper.dart';
+import 'simple_foods.dart';
 
 /// All access to foods: products from Open Food Facts (cached on the device),
-/// basic foods from the BLS (stored once opened) and the user's own foods.
+/// simple foods and basic foods (bundled, stored once opened) and the user's
+/// own foods.
 /// The UI never touches the `Foods` table directly.
 class ProductRepository {
   ProductRepository(this._db, this._client, this._clock);
@@ -64,13 +66,20 @@ class ProductRepository {
     return _requireKcal(await _saveOffProduct(product), code);
   }
 
-  /// Text search at Open Food Facts (online only; call it on submit).
+  /// Text search at Open Food Facts (online only; see
+  /// [OpenFoodFactsClient.search], also for [cancel]).
   Future<OffSearchPage> search(
     String query, {
     int page = 1,
     String languageCode = 'de',
+    Future<void>? cancel,
   }) {
-    return _client.search(query, page: page, languageCode: languageCode);
+    return _client.search(
+      query,
+      page: page,
+      languageCode: languageCode,
+      cancel: cancel,
+    );
   }
 
   bool _isStale(Food food) {
@@ -178,8 +187,8 @@ class ProductRepository {
   /// Own and cached foods whose name or brand contains every word of
   /// [query], ignoring upper/lower case. Favourites come first.
   ///
-  /// Basic foods (BLS) are left out: the search shows them in their own
-  /// section ("Grundnahrungsmittel"), which finds them better.
+  /// Simple foods and basic foods (BLS) are left out: the search shows them
+  /// in their own section ("Lebensmittel"), which finds them better.
   ///
   /// Filtered in Dart instead of with SQL `LIKE`, because SQLite's `LIKE`
   /// ignores case only for A–Z, not for umlauts ("Müsli" vs "müsli"). The
@@ -200,7 +209,10 @@ class ProductRepository {
             .get();
     return foods
         .where((food) {
-          if (food.source == FoodSource.bls) return false;
+          if (food.source == FoodSource.bls ||
+              food.source == FoodSource.offAverage) {
+            return false;
+          }
           final text = '${food.name} ${food.brand ?? ''}'.toLowerCase();
           return words.every(text.contains);
         })
@@ -356,12 +368,54 @@ class ProductRepository {
       // …); see health_rating.dart.
       categories: Value(food.category),
     );
+    return _upsertBundledFood(FoodSource.bls, food.code, data);
+  }
+
+  /// Stores a simple food ("Skyr natur") on the device (or updates it) and
+  /// returns its id – like [saveBasicFood], with the short name and the
+  /// typical portion in the UI language ([languageCode]).
+  ///
+  /// Foods with BLS values share the row of that BLS food (source bls, the
+  /// BLS code); the Open Food Facts medians are stored as
+  /// [FoodSource.offAverage] with the key of the list.
+  Future<int> saveSimpleFood(SimpleFood food, {required String languageCode}) {
+    final nutrients = food.nutrients;
+    final portion = food.portionGrams;
+    final data = FoodsCompanion(
+      source: Value(food.source),
+      externalId: Value(food.externalId),
+      name: Value(food.nameFor(languageCode)),
+      isLiquid: Value(food.isLiquid),
+      servingSize: Value(portion),
+      servingLabel: Value(
+        portion == null ? null : food.portionFor(languageCode),
+      ),
+      kcal: Value(nutrients.kcal),
+      fat: Value(nutrients.fat),
+      saturatedFat: Value(nutrients.saturatedFat),
+      carbs: Value(nutrients.carbs),
+      sugars: Value(nutrients.sugars),
+      fibre: Value(nutrients.fibre),
+      protein: Value(nutrients.protein),
+      salt: Value(nutrients.salt),
+      categories: Value(food.category),
+    );
+    return _upsertBundledFood(food.source, food.externalId, data);
+  }
+
+  /// Inserts or updates the food bundled with the app that is stored as
+  /// ([source], [externalId]); favourite and recents stay as they are.
+  Future<int> _upsertBundledFood(
+    FoodSource source,
+    String externalId,
+    FoodsCompanion data,
+  ) {
     return _db.transaction(() async {
       final existing =
           await (_db.select(_db.foods)..where(
                 (f) =>
-                    f.source.equalsValue(FoodSource.bls) &
-                    f.externalId.equals(food.code),
+                    f.source.equalsValue(source) &
+                    f.externalId.equals(externalId),
               ))
               .getSingleOrNull();
       if (existing == null) {
@@ -430,11 +484,22 @@ final barcodeLookupProvider = FutureProvider.autoDispose
 typedef ProductSearch = ({String query, int page, String languageCode});
 
 /// One page of Open Food Facts search results.
+///
+/// When no screen shows these results any more (the user typed on, so the
+/// screen asks for another text), the search is cancelled: not sent if it
+/// still waits for its turn, aborted if it runs.
 final productSearchProvider = FutureProvider.autoDispose
     .family<OffSearchPage, ProductSearch>((ref, key) {
+      final cancel = Completer<void>();
+      ref.onDispose(cancel.complete);
       return ref
           .watch(productRepositoryProvider)
-          .search(key.query, page: key.page, languageCode: key.languageCode);
+          .search(
+            key.query,
+            page: key.page,
+            languageCode: key.languageCode,
+            cancel: cancel.future,
+          );
     });
 
 /// Own and cached foods matching a text (no internet needed).
