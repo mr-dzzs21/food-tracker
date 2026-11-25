@@ -8,4 +8,9 @@ enum FoodSource {
 
   /// Created by the user ("Eigenes Lebensmittel").
   user,
+
+  /// A basic food from the Bundeslebensmittelschlüssel (BLS), the German
+  /// nutrient database bundled with the app. Stored when the user opens it,
+  /// so favourites, recents and the diary work as for any other food.
+  bls,
 }

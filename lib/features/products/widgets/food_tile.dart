@@ -6,6 +6,7 @@ import '../../../core/widgets/card_list.dart';
 import '../../../core/widgets/icon_square.dart';
 import '../../../data/database.dart';
 import '../../../l10n/app_localizations.dart';
+import '../basic_foods.dart';
 import '../off_product_mapper.dart';
 
 /// One food in a list (recents, favourites, own foods, search results):
@@ -42,6 +43,21 @@ class FoodTile extends StatelessWidget {
          isFavourite: food.isFavourite,
          onTap: onTap,
          trailing: trailing,
+       );
+
+  /// A basic food (BLS) in a search, named in the UI language.
+  FoodTile.basicFood(
+    BasicFood food, {
+    Key? key,
+    required String languageCode,
+    required VoidCallback onTap,
+  }) : this(
+         key: key,
+         name: food.nameFor(languageCode),
+         brand: null,
+         kcal: food.nutrients.kcal,
+         isLiquid: food.isLiquid,
+         onTap: onTap,
        );
 
   /// A hit of the Open Food Facts search.

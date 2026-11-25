@@ -476,6 +476,72 @@ void main() {
     });
   });
 
+  group('basic foods (BLS)', () {
+    RatingResult rateBls(
+      Nutrients nutrients, {
+      required bool isLiquid,
+      List<String> categories = const [],
+    }) => rateProduct(
+      nutrients: nutrients,
+      categories: categories,
+      source: FoodSource.bls,
+      isLiquid: isLiquid,
+    );
+
+    test('no category: food limits, not "unknown type"', () {
+      final result = rateBls(const Nutrients(sugars: 4), isLiquid: false);
+      expect((result as Rated).basis, RatingBasis.food);
+      expect(result.levels[RatedNutrient.sugars], low);
+    });
+
+    test('drinks use the drink limits', () {
+      // Orange juice: 8.6 g sugars per 100 ml.
+      final result = rateBls(const Nutrients(sugars: 8.6), isLiquid: true);
+      expect((result as Rated).basis, RatingBasis.drink);
+      expect(result.levels[RatedNutrient.sugars], medium);
+    });
+
+    test('kinds without a traffic light carry their category', () {
+      for (final category in [
+        'en:waters',
+        'en:coffees',
+        'en:teas',
+        'en:herbal-teas',
+        'en:alcoholic-beverages',
+        'en:spices',
+        'en:salts',
+        'en:sugar-substitutes',
+        'en:dried-products-to-be-rehydrated',
+      ]) {
+        final result = rateBls(
+          const Nutrients(salt: 99),
+          isLiquid: false,
+          categories: [category],
+        );
+        expect(
+          result,
+          isA<NotRated>()
+              .having((r) => r.reason, 'reason', NotRatedReason.excludedType)
+              .having((r) => r.category, 'category', category),
+        );
+      }
+    });
+
+    test('rateFood reads a stored BLS row', () {
+      final food = Food(
+        id: 1,
+        source: FoodSource.bls,
+        externalId: 'B782100',
+        name: 'Weizenfladenbrot',
+        isLiquid: false,
+        isFavourite: false,
+        createdAt: DateTime(2026, 11, 14),
+        salt: 1.26,
+      );
+      expect((rateFood(food) as Rated).levels[RatedNutrient.salt], medium);
+    });
+  });
+
   group('plus points', () {
     test('fibre exactly 6 g is high; the value is kept for the text', () {
       final points = plusPointsFor(const Nutrients(kcal: 400, fibre: 6.0));

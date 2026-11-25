@@ -11,6 +11,7 @@ import '../../core/widgets/eating_disorder_help.dart';
 import '../../core/widgets/icon_square.dart';
 import '../../core/widgets/page_header.dart';
 import '../../l10n/app_localizations.dart';
+import '../products/basic_foods.dart';
 
 /// About the app: version, licences, data source, disclaimers, help.
 class AboutPage extends ConsumerWidget {
@@ -72,7 +73,8 @@ class AboutPage extends ConsumerWidget {
               ),
             ],
           ),
-          // Required by the Open Food Facts licence (ODbL / CC BY-SA).
+          // Required by the licences: Open Food Facts (ODbL / CC BY-SA) and
+          // the BLS (CC BY 4.0: source, licence and what was changed).
           _Section(
             title: l10n.aboutDataSourceTitle,
             children: [
@@ -82,6 +84,18 @@ class AboutPage extends ConsumerWidget {
                 label: l10n.aboutOpenOff,
                 onPressed: () =>
                     openLink(context, Uri.https('world.openfoodfacts.org')),
+              ),
+              const SizedBox(height: Spacing.m),
+              Text(l10n.aboutBlsText),
+              _LinkButton(
+                icon: Icons.open_in_new_rounded,
+                label: l10n.blsOpenWebsite,
+                onPressed: () => openLink(context, blsWebsite),
+              ),
+              _LinkButton(
+                icon: Icons.description_rounded,
+                label: l10n.aboutBlsLicence,
+                onPressed: () => openLink(context, ccByLicence),
               ),
             ],
           ),

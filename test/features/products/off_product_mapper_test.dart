@@ -220,22 +220,120 @@ void main() {
   });
 
   group('search results', () {
-    test('recorded page: brands are a list there', () {
+    test('recorded page (2026-11): brand tags, kcal from nutriscore_data', () {
       final page = parseOffSearchPage(
         fixtureJson('search_haferflocken.json'),
         languageCode: 'de',
       );
-      expect(page.products, hasLength(3));
-      expect(page.count, 416);
+      expect(page.products, hasLength(4));
+      expect(page.count, 525);
       expect(page.page, 1);
-      expect(page.pageCount, 139);
+      expect(page.pageCount, 132);
       expect(page.hasMore, isTrue);
-      final first = page.products.first;
-      expect(first.barcode, '20003166');
-      expect(first.name, 'Haferflocken');
-      expect(first.brand, 'Crownfield');
-      expect(first.nutrients.kcal, 372);
-      expect(page.products[1].brand, 'dmBio, dm Bio');
+
+      final [kleinblatt, spielberger, biobio, kClassic] = page.products;
+      expect(spielberger.barcode, '4022381304184');
+      expect(spielberger.name, 'Kleinblatt Haferflocken Vollkorn');
+      // "xx:Spielberger Mühle": the language part of the tag is not shown.
+      expect(spielberger.brand, 'Spielberger Mühle');
+      // No nutriments any more: 1486.4 kJ from the Nutri-Score data.
+      expect(spielberger.nutrients.kcal, closeTo(355.3, 0.05));
+      expect(spielberger.nutrients.fat, isNull);
+      expect(spielberger.isLiquid, isFalse);
+      expect(kClassic.brand, 'k-classic');
+      expect(kClassic.nutrients.kcal, closeTo(372.8, 0.05)); // 1560 kJ
+      // Only "energy_from_saturated_fat" (fats/nuts formula): not the total.
+      expect(kleinblatt.nutrients.kcal, isNull);
+      // No nutriscore_data at all.
+      expect(biobio.nutrients.kcal, isNull);
+    });
+
+    group('kcal of a search hit', () {
+      Map<String, Object?> hit(
+        Object? components, {
+        Map<String, Object?>? nutriments,
+        int isBeverage = 0,
+      }) => {
+        'code': '4000000000001',
+        'nutriments': ?nutriments,
+        'nutriscore_data': {
+          'is_beverage': isBeverage,
+          'components': {'negative': components},
+        },
+      };
+      double? kcalOf(Map<String, Object?> json) =>
+          parseOffProduct(json, languageCode: 'de').nutrients.kcal;
+
+      test('energy in kJ is converted (Nutella: 2252 kJ ≈ 538 kcal)', () {
+        expect(
+          kcalOf(
+            hit([
+              {'id': 'energy', 'value': 2252, 'unit': 'kJ'},
+            ]),
+          ),
+          closeTo(538.2, 0.05),
+        );
+      });
+
+      test('energy in kcal is taken as it is', () {
+        expect(
+          kcalOf(
+            hit([
+              {'id': 'energy', 'value': 42, 'unit': 'kcal'},
+            ]),
+          ),
+          42,
+        );
+      });
+
+      test('missing, unknown unit or impossible energy → unknown', () {
+        expect(kcalOf(hit(null)), isNull);
+        expect(kcalOf(hit(<Object?>[])), isNull);
+        expect(
+          kcalOf(
+            hit([
+              {'id': 'energy', 'value': null, 'unit': 'kJ'},
+            ]),
+          ),
+          isNull,
+        );
+        expect(
+          kcalOf(
+            hit([
+              {'id': 'energy', 'value': 300, 'unit': 'g'},
+            ]),
+          ),
+          isNull,
+        );
+        // 9999 kJ ≈ 2390 kcal per 100 g: more than pure fat.
+        expect(
+          kcalOf(
+            hit([
+              {'id': 'energy', 'value': 9999, 'unit': 'kJ'},
+            ]),
+          ),
+          isNull,
+        );
+      });
+
+      test('nutriments win when they are there', () {
+        expect(
+          kcalOf(
+            hit(
+              [
+                {'id': 'energy', 'value': 2252, 'unit': 'kJ'},
+              ],
+              nutriments: {'energy-kcal_100g': 539},
+            ),
+          ),
+          539,
+        );
+      });
+
+      test('is_beverage marks a drink (kcal per 100 ml in the list)', () {
+        final json = hit(const [], isBeverage: 1);
+        expect(parseOffProduct(json, languageCode: 'de').isLiquid, isTrue);
+      });
     });
 
     test('hits without a barcode are skipped; last page has no more', () {

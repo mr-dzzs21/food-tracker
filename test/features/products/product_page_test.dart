@@ -10,6 +10,7 @@ import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/core/widgets/pill_choices.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
+import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/features/products/product_repository.dart';
@@ -375,6 +376,79 @@ void main() {
     await tester.tap(find.byTooltip('Bearbeiten'));
     await tester.pumpAndSettle();
     expect(find.text('Lebensmittel bearbeiten'), findsOneWidget);
+  });
+
+  testWidgets('basic food (BLS): average values, BLS source, no OFF footer', (
+    tester,
+  ) async {
+    final container = ProviderContainer.test(overrides: testOverrides(db: db));
+    final repository = container.read(productRepositoryProvider);
+    final id = await repository.saveBasicFood(
+      const BasicFood(
+        code: 'B782100',
+        nameDe: 'Weizenfladenbrot',
+        nameEn: 'Wheat flatbread',
+        nutrients: Nutrients(kcal: 248, fat: 2.3, sugars: 0.3, salt: 1.26),
+      ),
+      languageCode: 'de',
+    );
+    await open(tester, Routes.food(id));
+
+    expect(find.text('Weizenfladenbrot'), findsOneWidget);
+    expect(find.text('pro 100 g'), findsWidgets); // chip and table
+    expect(find.text('Durchschnittswerte'), findsOneWidget);
+    expect(find.textContaining('Nutri-Score'), findsNothing);
+    // Rated with the food limits (salt 1.26 g: medium).
+    expect(find.byType(RatingSection), findsOneWidget);
+    expect(find.text('mittel'), findsOneWidget);
+    expect(find.byTooltip('Bearbeiten'), findsNothing);
+    expect(find.text('Daten: Open Food Facts (ODbL)'), findsNothing);
+    expect(
+      find.text(
+        'Daten: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut '
+        '(CC BY 4.0)',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        'Durchschnittswerte für dieses Lebensmittel. Einzelne Produkte können '
+        'abweichen.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('blsdb.de öffnen'), findsOneWidget);
+
+    // Favourite works as for every other food.
+    await tester.tap(find.byTooltip('Zu Favoriten hinzufügen'));
+    await tester.pumpAndSettle();
+    expect((await db.select(db.foods).get()).single.isFavourite, isTrue);
+  });
+
+  testWidgets('basic food drink of a kind without traffic light', (
+    tester,
+  ) async {
+    final container = ProviderContainer.test(overrides: testOverrides(db: db));
+    final id = await container
+        .read(productRepositoryProvider)
+        .saveBasicFood(
+          const BasicFood(
+            code: 'N110000',
+            nameDe: 'Trinkwasser',
+            nameEn: 'Drinking water',
+            nutrients: Nutrients(kcal: 0, salt: 0.01),
+            isLiquid: true,
+            category: 'en:waters',
+          ),
+          languageCode: 'de',
+        );
+    await open(tester, Routes.food(id));
+
+    expect(find.text('pro 100 ml'), findsWidgets);
+    expect(
+      find.textContaining('Für diese Produktart gibt es keine Ampel'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a deleted food shows a message', (tester) async {

@@ -42,6 +42,17 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _externalIdMeta = const VerificationMeta(
+    'externalId',
+  );
+  @override
+  late final GeneratedColumn<String> externalId = GeneratedColumn<String>(
+    'external_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -303,6 +314,7 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     id,
     source,
     barcode,
+    externalId,
     name,
     brand,
     quantityLabel,
@@ -347,6 +359,12 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
       context.handle(
         _barcodeMeta,
         barcode.isAcceptableOrUnknown(data['barcode']!, _barcodeMeta),
+      );
+    }
+    if (data.containsKey('external_id')) {
+      context.handle(
+        _externalIdMeta,
+        externalId.isAcceptableOrUnknown(data['external_id']!, _externalIdMeta),
       );
     }
     if (data.containsKey('name')) {
@@ -544,6 +562,10 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         DriftSqlType.string,
         data['${effectivePrefix}barcode'],
       ),
+      externalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -658,6 +680,11 @@ class Food extends DataClass implements Insertable<Food> {
 
   /// Normalised barcode (GTIN). NULL for own foods without a barcode.
   final String? barcode;
+
+  /// The food's key in its source, for example the BLS code "B782100".
+  /// NULL for Open Food Facts products (their key is [barcode]) and own
+  /// foods. Added in schema version 2.
+  final String? externalId;
   final String name;
   final String? brand;
 
@@ -707,6 +734,7 @@ class Food extends DataClass implements Insertable<Food> {
     required this.id,
     required this.source,
     this.barcode,
+    this.externalId,
     required this.name,
     this.brand,
     this.quantityLabel,
@@ -741,6 +769,9 @@ class Food extends DataClass implements Insertable<Food> {
     }
     if (!nullToAbsent || barcode != null) {
       map['barcode'] = Variable<String>(barcode);
+    }
+    if (!nullToAbsent || externalId != null) {
+      map['external_id'] = Variable<String>(externalId);
     }
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || brand != null) {
@@ -816,6 +847,9 @@ class Food extends DataClass implements Insertable<Food> {
       barcode: barcode == null && nullToAbsent
           ? const Value.absent()
           : Value(barcode),
+      externalId: externalId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(externalId),
       name: Value(name),
       brand: brand == null && nullToAbsent
           ? const Value.absent()
@@ -888,6 +922,7 @@ class Food extends DataClass implements Insertable<Food> {
         serializer.fromJson<int>(json['source']),
       ),
       barcode: serializer.fromJson<String?>(json['barcode']),
+      externalId: serializer.fromJson<String?>(json['externalId']),
       name: serializer.fromJson<String>(json['name']),
       brand: serializer.fromJson<String?>(json['brand']),
       quantityLabel: serializer.fromJson<String?>(json['quantityLabel']),
@@ -923,6 +958,7 @@ class Food extends DataClass implements Insertable<Food> {
         $FoodsTable.$convertersource.toJson(source),
       ),
       'barcode': serializer.toJson<String?>(barcode),
+      'externalId': serializer.toJson<String?>(externalId),
       'name': serializer.toJson<String>(name),
       'brand': serializer.toJson<String?>(brand),
       'quantityLabel': serializer.toJson<String?>(quantityLabel),
@@ -954,6 +990,7 @@ class Food extends DataClass implements Insertable<Food> {
     int? id,
     FoodSource? source,
     Value<String?> barcode = const Value.absent(),
+    Value<String?> externalId = const Value.absent(),
     String? name,
     Value<String?> brand = const Value.absent(),
     Value<String?> quantityLabel = const Value.absent(),
@@ -982,6 +1019,7 @@ class Food extends DataClass implements Insertable<Food> {
     id: id ?? this.id,
     source: source ?? this.source,
     barcode: barcode.present ? barcode.value : this.barcode,
+    externalId: externalId.present ? externalId.value : this.externalId,
     name: name ?? this.name,
     brand: brand.present ? brand.value : this.brand,
     quantityLabel: quantityLabel.present
@@ -1014,6 +1052,9 @@ class Food extends DataClass implements Insertable<Food> {
       id: data.id.present ? data.id.value : this.id,
       source: data.source.present ? data.source.value : this.source,
       barcode: data.barcode.present ? data.barcode.value : this.barcode,
+      externalId: data.externalId.present
+          ? data.externalId.value
+          : this.externalId,
       name: data.name.present ? data.name.value : this.name,
       brand: data.brand.present ? data.brand.value : this.brand,
       quantityLabel: data.quantityLabel.present
@@ -1067,6 +1108,7 @@ class Food extends DataClass implements Insertable<Food> {
           ..write('id: $id, ')
           ..write('source: $source, ')
           ..write('barcode: $barcode, ')
+          ..write('externalId: $externalId, ')
           ..write('name: $name, ')
           ..write('brand: $brand, ')
           ..write('quantityLabel: $quantityLabel, ')
@@ -1100,6 +1142,7 @@ class Food extends DataClass implements Insertable<Food> {
     id,
     source,
     barcode,
+    externalId,
     name,
     brand,
     quantityLabel,
@@ -1132,6 +1175,7 @@ class Food extends DataClass implements Insertable<Food> {
           other.id == this.id &&
           other.source == this.source &&
           other.barcode == this.barcode &&
+          other.externalId == this.externalId &&
           other.name == this.name &&
           other.brand == this.brand &&
           other.quantityLabel == this.quantityLabel &&
@@ -1162,6 +1206,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
   final Value<int> id;
   final Value<FoodSource> source;
   final Value<String?> barcode;
+  final Value<String?> externalId;
   final Value<String> name;
   final Value<String?> brand;
   final Value<String?> quantityLabel;
@@ -1190,6 +1235,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.id = const Value.absent(),
     this.source = const Value.absent(),
     this.barcode = const Value.absent(),
+    this.externalId = const Value.absent(),
     this.name = const Value.absent(),
     this.brand = const Value.absent(),
     this.quantityLabel = const Value.absent(),
@@ -1219,6 +1265,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.id = const Value.absent(),
     required FoodSource source,
     this.barcode = const Value.absent(),
+    this.externalId = const Value.absent(),
     required String name,
     this.brand = const Value.absent(),
     this.quantityLabel = const Value.absent(),
@@ -1250,6 +1297,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Expression<int>? id,
     Expression<int>? source,
     Expression<String>? barcode,
+    Expression<String>? externalId,
     Expression<String>? name,
     Expression<String>? brand,
     Expression<String>? quantityLabel,
@@ -1279,6 +1327,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       if (id != null) 'id': id,
       if (source != null) 'source': source,
       if (barcode != null) 'barcode': barcode,
+      if (externalId != null) 'external_id': externalId,
       if (name != null) 'name': name,
       if (brand != null) 'brand': brand,
       if (quantityLabel != null) 'quantity_label': quantityLabel,
@@ -1310,6 +1359,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Value<int>? id,
     Value<FoodSource>? source,
     Value<String?>? barcode,
+    Value<String?>? externalId,
     Value<String>? name,
     Value<String?>? brand,
     Value<String?>? quantityLabel,
@@ -1339,6 +1389,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       id: id ?? this.id,
       source: source ?? this.source,
       barcode: barcode ?? this.barcode,
+      externalId: externalId ?? this.externalId,
       name: name ?? this.name,
       brand: brand ?? this.brand,
       quantityLabel: quantityLabel ?? this.quantityLabel,
@@ -1379,6 +1430,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     }
     if (barcode.present) {
       map['barcode'] = Variable<String>(barcode.value);
+    }
+    if (externalId.present) {
+      map['external_id'] = Variable<String>(externalId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1461,6 +1515,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
           ..write('id: $id, ')
           ..write('source: $source, ')
           ..write('barcode: $barcode, ')
+          ..write('externalId: $externalId, ')
           ..write('name: $name, ')
           ..write('brand: $brand, ')
           ..write('quantityLabel: $quantityLabel, ')
@@ -3617,6 +3672,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MealSlotsTable mealSlots = $MealSlotsTable(this);
   late final $DiaryEntriesTable diaryEntries = $DiaryEntriesTable(this);
   late final $UserGoalTable userGoal = $UserGoalTable(this);
+  late final Index foodsSourceExternalId = Index(
+    'foods_source_external_id',
+    'CREATE UNIQUE INDEX foods_source_external_id ON foods (source, external_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3626,6 +3685,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mealSlots,
     diaryEntries,
     userGoal,
+    foodsSourceExternalId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3643,6 +3703,7 @@ typedef $$FoodsTableCreateCompanionBuilder = FoodsCompanion Function({
   Value<int> id,
   required FoodSource source,
   Value<String?> barcode,
+  Value<String?> externalId,
   required String name,
   Value<String?> brand,
   Value<String?> quantityLabel,
@@ -3672,6 +3733,7 @@ typedef $$FoodsTableUpdateCompanionBuilder = FoodsCompanion Function({
   Value<int> id,
   Value<FoodSource> source,
   Value<String?> barcode,
+  Value<String?> externalId,
   Value<String> name,
   Value<String?> brand,
   Value<String?> quantityLabel,
@@ -3742,6 +3804,11 @@ class $$FoodsTableFilterComposer extends Composer<_$AppDatabase, $FoodsTable> {
 
   ColumnFilters<String> get barcode => $composableBuilder(
     column: $table.barcode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalId => $composableBuilder(
+    column: $table.externalId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3915,6 +3982,11 @@ class $$FoodsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -4053,6 +4125,11 @@ class $$FoodsTableAnnotationComposer
 
   GeneratedColumn<String> get barcode =>
       $composableBuilder(column: $table.barcode, builder: (column) => column);
+
+  GeneratedColumn<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -4203,6 +4280,7 @@ class $$FoodsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<FoodSource> source = const Value.absent(),
                 Value<String?> barcode = const Value.absent(),
+                Value<String?> externalId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> brand = const Value.absent(),
                 Value<String?> quantityLabel = const Value.absent(),
@@ -4231,6 +4309,7 @@ class $$FoodsTableTableManager
                 id: id,
                 source: source,
                 barcode: barcode,
+                externalId: externalId,
                 name: name,
                 brand: brand,
                 quantityLabel: quantityLabel,
@@ -4261,6 +4340,7 @@ class $$FoodsTableTableManager
                 Value<int> id = const Value.absent(),
                 required FoodSource source,
                 Value<String?> barcode = const Value.absent(),
+                Value<String?> externalId = const Value.absent(),
                 required String name,
                 Value<String?> brand = const Value.absent(),
                 Value<String?> quantityLabel = const Value.absent(),
@@ -4289,6 +4369,7 @@ class $$FoodsTableTableManager
                 id: id,
                 source: source,
                 barcode: barcode,
+                externalId: externalId,
                 name: name,
                 brand: brand,
                 quantityLabel: quantityLabel,

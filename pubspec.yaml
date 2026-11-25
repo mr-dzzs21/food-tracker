@@ -84,9 +84,11 @@ flutter:
   generate: true
 
   # The licence of the bundled font; shown on the licence page (see
-  # lib/core/licenses.dart).
+  # lib/core/licenses.dart). The basic foods (BLS, CC BY 4.0): made by
+  # tool/bls/convert_bls.py, source and licence in assets/data/README.md.
   assets:
     - assets/fonts/Manrope-OFL.txt
+    - assets/data/bls_4_0.tsv
 
   # Manrope (SIL Open Font License 1.1), the app's own font. Static files, one
   # per weight, so no variable-font support is needed.

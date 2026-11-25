@@ -449,6 +449,16 @@
   "productAttribution": "Data: Open Food Facts (ODbL)",
   "productCorrectHint": "Wrong data? You can correct it on Open Food Facts.",
   "productOpenOff": "View on Open Food Facts",
+  "blsAttribution": "Data: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut (CC BY 4.0)",
+  "@blsAttribution": {
+    "description": "Attribution required by the BLS licence (CC BY 4.0); keep the German database name and the institute"
+  },
+  "blsOpenWebsite": "Open blsdb.de",
+  "productBlsAverages": "Average values for this kind of food. Individual products can differ.",
+  "productAverageChip": "Average values",
+  "@productAverageChip": {
+    "description": "Info chip on the product page of a basic food (BLS)"
+  },
   "productCreateOwn": "Add it yourself",
   "@productCreateOwn": {
     "description": "Button when Open Food Facts does not know a barcode"
@@ -517,9 +527,13 @@
   "@searchLocalTitle": {
     "description": "Section with matching foods already stored on the phone"
   },
-  "searchOnlineTitle": "Online results",
+  "searchBasicFoodsTitle": "Basic foods",
+  "@searchBasicFoodsTitle": {
+    "description": "Section with basic foods with average values (German nutrient database BLS), shown first"
+  },
+  "searchOnlineTitle": "Online (Germany)",
   "@searchOnlineTitle": {
-    "description": "Section with Open Food Facts search results"
+    "description": "Section with Open Food Facts search results (only products sold in Germany)"
   },
   "searchNoOnlineResults": "No results at Open Food Facts.",
   "searchNoResultsHint": "Check the spelling or add the food yourself.",
@@ -577,7 +591,11 @@
   "addFoodRecentEmpty": "Nothing here yet. Foods you add to your diary appear here.",
   "addFoodFavouritesEmpty": "No favourites yet. Tap the star on a product page.",
   "addFoodOwnEmpty": "No own foods yet. Create one with “Own food”.",
-  "addFoodNoLocalMatches": "Nothing found on your device. Tap “Search” on the keyboard to search online.",
+  "addFoodNoLocalMatches": "Nothing found among the basic foods or on your device.",
+  "addFoodSearchOnline": "Search online",
+  "@addFoodSearchOnline": {
+    "description": "Button below the search results: searches Open Food Facts (products sold in Germany)"
+  },
   "foodFormNewTitle": "New food",
   "foodFormEditTitle": "Edit food",
   "foodFormRequired": "{label} *",
@@ -906,12 +924,17 @@
   "aboutOpenSource": "Open source (MIT)",
   "aboutOpenSourceText": "The source code is public. You may read it, improve it and share it.",
   "aboutSourceCode": "Source code on GitHub",
-  "aboutDataSourceTitle": "Data source",
+  "aboutDataSourceTitle": "Data sources",
   "aboutDataSourceText": "Product data comes from Open Food Facts (openfoodfacts.org) and is available under the Open Database License (ODbL); individual contents under the Database Contents License (DbCL), product photos under Creative Commons BY-SA. The data is maintained by volunteers and may be incomplete or wrong – when in doubt, check the package.",
   "@aboutDataSourceText": {
     "description": "Full Open Food Facts attribution (required by the licence)"
   },
   "aboutOpenOff": "Open openfoodfacts.org",
+  "aboutBlsText": "Basic foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format.",
+  "@aboutBlsText": {
+    "description": "Full BLS attribution: citation with DOI, licence and what was changed (required by CC BY 4.0)"
+  },
+  "aboutBlsLicence": "Licence CC BY 4.0",
   "aboutNotesTitle": "Good to know",
   "aboutPrivacyTitle": "Privacy",
   "aboutPrivacyText": "All data stays on your device. The app has no account, no ads and no tracking. Only product searches are sent to Open Food Facts.",

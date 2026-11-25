@@ -11,21 +11,35 @@ part 'database.g.dart';
 //
 // Each class below is one table. After changing a table, run
 //   dart run build_runner build
-// to regenerate `database.g.dart`, and raise `schemaVersion` with a migration
-// once the app has been released.
+// to regenerate `database.g.dart`. The app is already installed on phones, so
+// every change also needs a higher `schemaVersion` and a step in `onUpgrade`
+// (see `migration` below and test/data/migration_test.dart).
 //
 // All nutrient columns hold values PER 100 g (or per 100 ml for drinks).
 // NULL means "unknown" – it is never treated as 0.
 
-/// Foods the app knows: products cached from Open Food Facts and the user's
-/// own foods. One table, so search, favourites and "recently used" work the
-/// same for both.
+/// Foods the app knows: products cached from Open Food Facts, basic foods
+/// from the BLS and the user's own foods. One table, so search, favourites
+/// and "recently used" work the same for all of them.
+///
+/// The unique index keeps one row per BLS food (rows without an [externalId]
+/// do not count: SQLite treats NULLs as different).
+@TableIndex(
+  name: 'foods_source_external_id',
+  columns: {#source, #externalId},
+  unique: true,
+)
 class Foods extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get source => intEnum<FoodSource>()();
 
   /// Normalised barcode (GTIN). NULL for own foods without a barcode.
   TextColumn get barcode => text().nullable().unique()();
+
+  /// The food's key in its source, for example the BLS code "B782100".
+  /// NULL for Open Food Facts products (their key is [barcode]) and own
+  /// foods. Added in schema version 2.
+  TextColumn get externalId => text().nullable()();
   TextColumn get name => text()();
   TextColumn get brand => text().nullable()();
 
@@ -175,14 +189,25 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'food_tracker'));
 
+  /// 1: first release. 2: basic foods from the BLS (`Foods.externalId` and
+  /// its unique index).
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
       await insertDefaultMealSlots();
+    },
+    // Runs once when an installed app with an older database starts after an
+    // update. Each step brings the database one version further, so phones
+    // that skipped an update are migrated too.
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(foods, foods.externalId);
+        await m.createIndex(foodsSourceExternalId);
+      }
     },
     beforeOpen: (details) async {
       // SQLite ignores foreign keys unless they are switched on.

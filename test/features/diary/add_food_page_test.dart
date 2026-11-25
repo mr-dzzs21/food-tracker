@@ -8,7 +8,9 @@ import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/core/widgets/pill_choices.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/add_food_page.dart';
+import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
+import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -20,6 +22,22 @@ import '../../helpers/pump_app.dart';
 import '../../helpers/scan_helpers.dart';
 
 const today = '2026-11-14';
+
+/// Basic foods (BLS) for the search; the real file is not loaded in tests.
+const basicFoods = [
+  BasicFood(
+    code: 'C133000',
+    nameDe: 'Hafer Flocken',
+    nameEn: 'Oat flakes',
+    nutrients: Nutrients(kcal: 348, fat: 6.7),
+  ),
+  BasicFood(
+    code: 'F110100',
+    nameDe: 'Apfel roh',
+    nameEn: 'Apple raw',
+    nutrients: Nutrients(kcal: 58),
+  ),
+];
 
 void main() {
   late AppDatabase db;
@@ -58,6 +76,7 @@ void main() {
   Future<GoRouter> openAddFood(
     WidgetTester tester, {
     Locale locale = const Locale('de'),
+    List<BasicFood> basicFoods = const [],
   }) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1;
@@ -71,6 +90,7 @@ void main() {
       db: db,
       client: client,
       locale: locale,
+      basicFoods: basicFoods,
       extraOverrides: [offClientWithoutDelays(client)],
     );
     final router = ProviderScope.containerOf(
@@ -229,15 +249,16 @@ void main() {
     expect(find.text('Zuletzt'), findsNothing); // segments are hidden
     expect(requests, isEmpty);
 
-    // Nothing on the device: hint to the online search.
+    // Nothing found: a hint, and the online search is one tap away.
     await typeSearch(tester, 'Haferflocken');
     expect(
       find.text(
-        'Auf deinem Gerät nichts gefunden. Tippe auf der Tastatur auf '
-        '„Suchen“, um online zu suchen.',
+        'Nichts bei den Grundnahrungsmitteln und auf deinem Gerät gefunden.',
       ),
       findsOneWidget,
     );
+    expect(find.text('Auf deinem Gerät'), findsNothing);
+    expect(inPage('Online suchen'), findsOneWidget);
     expect(requests, isEmpty);
 
     // Clearing the field brings the segments back.
@@ -254,16 +275,69 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
-    expect(find.text('Online-Ergebnisse'), findsOneWidget);
-    expect(find.text('Kernige Haferflocken'), findsOneWidget);
+    expect(find.text('Online (Deutschland)'), findsOneWidget);
+    expect(find.text('Zarte Haferflocken'), findsOneWidget);
+    expect(inPage('Online suchen'), findsNothing);
     expect(requests, hasLength(1));
 
-    await tester.tap(find.text('Kernige Haferflocken'));
+    await tester.tap(find.text('Zarte Haferflocken'));
     await tester.pumpAndSettle();
     expect(
       router.state.uri.toString(),
-      Routes.product('20283360', day: today, mealId: breakfastId),
+      Routes.product('4260070610493', day: today, mealId: breakfastId),
     );
+  });
+
+  testWidgets('basic foods show while typing, first; "Online suchen" adds '
+      'the online results last', (tester) async {
+    await insertFood('Haferflocken Omas Art', source: FoodSource.user);
+    await openAddFood(tester, basicFoods: basicFoods);
+
+    await typeSearch(tester, 'haferflocken');
+
+    double top(String text) => tester.getTopLeft(inPage(text)).dy;
+    expect(inPage('Grundnahrungsmittel'), findsOneWidget);
+    expect(inPage('Hafer Flocken'), findsOneWidget);
+    expect(inPage('Apfel roh'), findsNothing);
+    expect(top('Grundnahrungsmittel'), lessThan(top('Hafer Flocken')));
+    expect(top('Hafer Flocken'), lessThan(top('Auf deinem Gerät')));
+    expect(top('Auf deinem Gerät'), lessThan(top('Haferflocken Omas Art')));
+    expect(requests, isEmpty); // still nothing sent while typing
+
+    await tester.tap(inPage('Online suchen'));
+    await tester.pumpAndSettle();
+
+    expect(requests, hasLength(1));
+    expect(top('Haferflocken Omas Art'), lessThan(top('Online (Deutschland)')));
+    expect(top('Online (Deutschland)'), lessThan(top('Zarte Haferflocken')));
+    expect(inPage('Grundnahrungsmittel'), findsOneWidget);
+  });
+
+  testWidgets('a basic food is added like any other food', (tester) async {
+    final router = await openAddFood(tester, basicFoods: basicFoods);
+
+    await typeSearch(tester, 'apfel');
+    await tester.tap(inPage('Apfel roh'));
+    await tester.pumpAndSettle();
+
+    final food = (await db.select(db.foods).get()).single;
+    expect(food.source, FoodSource.bls);
+    expect(food.externalId, 'F110100');
+    expect(
+      router.state.uri.toString(),
+      Routes.food(food.id, day: today, mealId: breakfastId),
+    );
+
+    await tester.tap(find.byType(CtaButton));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.toString(), Routes.today);
+    final entry = (await db.select(db.diaryEntries).get()).single;
+    expect(entry.foodId, food.id);
+    expect(entry.name, 'Apfel roh');
+    expect(entry.kcal, 58);
+    // It is a normal food now: "Zuletzt" lists it.
+    expect((await db.select(db.foods).getSingle()).lastUsedAt, testNow);
   });
 
   testWidgets('"Eigenes Lebensmittel" opens the form for this meal', (
@@ -291,7 +365,7 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = 2.0;
     addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await pumpFoodTrackerApp(tester, db: db);
+    await pumpFoodTrackerApp(tester, db: db, basicFoods: basicFoods);
     final router = ProviderScope.containerOf(
       tester.element(find.byType(FoodTrackerApp)),
     ).read(routerProvider);
@@ -300,6 +374,22 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(inPage('Favoriten'), findsOneWidget);
+
+    // The search sections and "Online suchen" fit, too.
+    await typeSearch(tester, 'haferflocken');
+    expect(tester.takeException(), isNull);
+    expect(inPage('Hafer Flocken'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      inPage('Online suchen'),
+      200,
+      scrollable: find
+          .ancestor(
+            of: inPage('Hafer Flocken'),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('English texts', (tester) async {

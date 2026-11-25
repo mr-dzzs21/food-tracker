@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/app.dart';
 import 'package:food_tracker/data/database.dart';
+import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
+import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -34,6 +36,22 @@ final _page2 = jsonEncode({
 
 const _empty = '{"hits": [], "count": 0, "page": 1, "page_count": 0}';
 
+/// Basic foods (BLS) for the search; the real file is not loaded in tests.
+const _basicFoods = [
+  BasicFood(
+    code: 'C133000',
+    nameDe: 'Hafer Flocken',
+    nameEn: 'Oat flakes',
+    nutrients: Nutrients(kcal: 348),
+  ),
+  BasicFood(
+    code: 'B782100',
+    nameDe: 'Weizenfladenbrot',
+    nameEn: 'Wheat flatbread',
+    nutrients: Nutrients(kcal: 248),
+  ),
+];
+
 void main() {
   late AppDatabase db;
   late List<http.Request> requests;
@@ -60,6 +78,7 @@ void main() {
     WidgetTester tester,
     String query, {
     Locale locale = const Locale('de'),
+    List<BasicFood> basicFoods = const [],
   }) async {
     tester.view.physicalSize = const Size(800, 3000);
     tester.view.devicePixelRatio = 1;
@@ -73,6 +92,7 @@ void main() {
       db: db,
       client: client,
       locale: locale,
+      basicFoods: basicFoods,
       extraOverrides: [offClientWithoutDelays(client)],
     );
     final router = ProviderScope.containerOf(
@@ -89,20 +109,26 @@ void main() {
     await openSearch(tester, 'Haferflocken');
 
     expect(find.text('Suche: Haferflocken'), findsOneWidget);
-    expect(find.text('Online-Ergebnisse'), findsOneWidget);
-    expect(find.text('Haferflocken'), findsOneWidget);
-    expect(find.text('Kernige Haferflocken'), findsOneWidget);
+    expect(find.text('Online (Deutschland)'), findsOneWidget);
+    expect(find.text('Zarte Haferflocken'), findsOneWidget);
+    // kcal from the Nutri-Score data (1486.4 kJ), brand without "xx:".
     expect(
-      find.text('Crownfield\n372 kcal pro 100 g · Nutri-Score: A'),
+      find.text('Spielberger Mühle\n355 kcal pro 100 g · Nutri-Score: A'),
       findsOneWidget,
     );
     expect(find.text('Daten: Open Food Facts (ODbL)'), findsOneWidget);
-    expect(find.text('Mehr laden'), findsOneWidget); // page 1 of 139
+    expect(find.text('Mehr laden'), findsOneWidget); // page 1 of 132
+    // No basic foods given: no empty "Grundnahrungsmittel" section.
+    expect(find.text('Grundnahrungsmittel'), findsNothing);
 
-    // One request, sent with our User-Agent, for the submitted text only.
+    // One request, sent with our User-Agent, for the submitted text only,
+    // limited to products sold in Germany.
     expect(searches(), hasLength(1));
     final request = searches().single;
-    expect(request.url.queryParameters['q'], 'Haferflocken');
+    expect(
+      request.url.queryParameters['q'],
+      'Haferflocken countries:"en:germany"',
+    );
     expect(request.url.queryParameters['page'], '1');
     expect(request.headers['User-Agent'], startsWith('FoodTracker/'));
   });
@@ -124,17 +150,68 @@ void main() {
     expect(find.text('Haferflocken mit Nüssen'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('Haferflocken mit Nüssen')).dy,
-      lessThan(tester.getTopLeft(find.text('Online-Ergebnisse')).dy),
+      lessThan(tester.getTopLeft(find.text('Online (Deutschland)')).dy),
     );
+  });
+
+  testWidgets('sections: basic foods, then the device, then online', (
+    tester,
+  ) async {
+    await db
+        .into(db.foods)
+        .insert(
+          FoodsCompanion.insert(
+            source: FoodSource.user,
+            name: 'Haferflocken Omas Art',
+            kcal: const Value(380),
+            createdAt: testNow,
+          ),
+        );
+    await openSearch(tester, 'haferflocken', basicFoods: _basicFoods);
+
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    expect(find.text('Hafer Flocken'), findsOneWidget);
+    expect(find.text('348 kcal pro 100 g'), findsOneWidget);
+    expect(find.text('Weizenfladenbrot'), findsNothing); // does not match
+    expect(top('Grundnahrungsmittel'), lessThan(top('Hafer Flocken')));
+    expect(top('Hafer Flocken'), lessThan(top('Auf deinem Gerät')));
+    expect(top('Auf deinem Gerät'), lessThan(top('Online (Deutschland)')));
+    // The source line the BLS licence asks for.
+    expect(
+      find.text(
+        'Daten: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut '
+        '(CC BY 4.0)',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('tapping a basic food stores it and opens its product page', (
+    tester,
+  ) async {
+    final router = await openSearch(
+      tester,
+      'Fladenbrot',
+      basicFoods: _basicFoods,
+    );
+
+    await tester.tap(find.text('Weizenfladenbrot'));
+    await tester.pumpAndSettle();
+
+    final food = (await db.select(db.foods).get()).single;
+    expect(food.source, FoodSource.bls);
+    expect(food.externalId, 'B782100');
+    expect(router.state.uri.toString(), Routes.food(food.id));
+    expect(find.text('Durchschnittswerte'), findsOneWidget);
   });
 
   testWidgets('tapping a hit opens its product page', (tester) async {
     final router = await openSearch(tester, 'Haferflocken');
 
-    await tester.tap(find.text('Kernige Haferflocken'));
+    await tester.tap(find.text('Zarte Haferflocken'));
     await tester.pumpAndSettle();
 
-    expect(router.state.uri.toString(), Routes.product('20283360'));
+    expect(router.state.uri.toString(), Routes.product('4260070610493'));
   });
 
   testWidgets('no results: friendly empty state', (tester) async {
@@ -160,14 +237,14 @@ void main() {
     await openSearch(tester, 'Haferflocken');
 
     expect(find.textContaining('Du bist offline.'), findsOneWidget);
-    expect(find.text('Kernige Haferflocken'), findsNothing);
+    expect(find.text('Zarte Haferflocken'), findsNothing);
 
     online = true;
     await tester.tap(find.text('Nochmal versuchen'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Du bist offline.'), findsNothing);
-    expect(find.text('Kernige Haferflocken'), findsOneWidget);
+    expect(find.text('Zarte Haferflocken'), findsOneWidget);
   });
 
   testWidgets('"Mehr laden" adds the next page and keeps the first', (
@@ -178,7 +255,7 @@ void main() {
     await tester.tap(find.text('Mehr laden'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Kernige Haferflocken'), findsOneWidget);
+    expect(find.text('Zarte Haferflocken'), findsOneWidget);
     expect(find.text('Haferdrink'), findsOneWidget);
     // Page 2 of 2: nothing more to load.
     expect(find.text('Mehr laden'), findsNothing);
@@ -218,9 +295,9 @@ void main() {
     await openSearch(tester, 'Haferflocken', locale: const Locale('en'));
 
     expect(find.text('Search: Haferflocken'), findsOneWidget);
-    expect(find.text('Online results'), findsOneWidget);
+    expect(find.text('Online (Germany)'), findsOneWidget);
     expect(
-      find.text('Crownfield\n372 kcal per 100 g · Nutri-Score: A'),
+      find.text('Spielberger Mühle\n355 kcal per 100 g · Nutri-Score: A'),
       findsOneWidget,
     );
     expect(find.text('Load more'), findsOneWidget);

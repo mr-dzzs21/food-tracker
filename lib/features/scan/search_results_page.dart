@@ -10,13 +10,13 @@ import '../../core/widgets/status_view.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router.dart';
 import '../products/product_repository.dart';
+import '../products/widgets/basic_food_results.dart';
 import '../products/widgets/food_tile.dart';
 import '../products/widgets/online_search_results.dart';
 
-/// Open Food Facts text search results for [query].
-///
-/// Foods already on the device come first (they work offline and include
-/// own foods), then the online results with "Mehr laden".
+/// Search results for [query], best first: basic foods with average values
+/// (BLS, on the device), foods already on the device (own and cached
+/// products), then Open Food Facts results for Germany with "Mehr laden".
 class SearchResultsPage extends ConsumerWidget {
   const SearchResultsPage({super.key, required this.query});
 
@@ -43,6 +43,10 @@ class SearchResultsPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Spacing.xxl),
         children: [
+          BasicFoodResults(
+            query: query,
+            onOpen: (id) => context.push(Routes.food(id)),
+          ),
           // Shown only when there is something, the online part below has
           // its own empty and error states.
           if (local.isNotEmpty) ...[

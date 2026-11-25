@@ -49,9 +49,17 @@ class OpenFoodFactsClient {
       'nutriscore_version,nova_group,categories_tags,lang,completeness,'
       'states_tags,product_type';
 
+  /// Since 2026-11 the search service no longer returns `nutriments`;
+  /// `nutriscore_data` still holds the energy (kcal for the result list).
   static const searchFields =
       'code,product_name,brands,quantity,image_front_small_url,'
-      'nutriscore_grade,nutriments,completeness';
+      'nutriscore_grade,nutriscore_data,completeness';
+
+  /// Text searches only find products sold in Germany (owner decision: the
+  /// list was full of foreign brands). Barcode lookups stay worldwide – the
+  /// user holds the product in their hand. The field is `countries` (the
+  /// search service rejects `countries_tags`).
+  static const searchCountryFilter = 'countries:"en:germany"';
 
   static const productHost = 'world.openfoodfacts.org';
   static const searchHost = 'search.openfoodfacts.org';
@@ -131,19 +139,26 @@ class OpenFoodFactsClient {
   /// search, never while typing (OFF rules).
   ///
   /// [page] starts at 1. An empty [query] gives an empty result without a
-  /// request.
+  /// request. Only products sold in Germany are found
+  /// ([searchCountryFilter]).
   Future<OffSearchPage> search(
     String query, {
     int page = 1,
     int pageSize = 20,
     String languageCode = 'de',
   }) async {
-    final text = query.trim();
-    if (text.isEmpty) return OffSearchPage.empty;
+    // Quotes and colons mean something in the search syntax ("field:value")
+    // and would break the country filter, so they become spaces.
+    final words = query
+        .replaceAll(RegExp('[":]'), ' ')
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+    if (words.isEmpty) return OffSearchPage.empty;
 
     await _waitForSearchSlot();
     final uri = Uri.https(searchHost, '/search', {
-      'q': text,
+      // Words and filter are combined with AND.
+      'q': '$words $searchCountryFilter',
       // Names in the UI language are preferred.
       'langs': languageCode == 'en' ? 'en,de' : 'de,en',
       'page_size': '$pageSize',

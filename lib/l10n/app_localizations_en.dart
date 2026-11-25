@@ -427,6 +427,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productOpenOff => 'View on Open Food Facts';
 
   @override
+  String get blsAttribution =>
+      'Data: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut (CC BY 4.0)';
+
+  @override
+  String get blsOpenWebsite => 'Open blsdb.de';
+
+  @override
+  String get productBlsAverages =>
+      'Average values for this kind of food. Individual products can differ.';
+
+  @override
+  String get productAverageChip => 'Average values';
+
+  @override
   String get productCreateOwn => 'Add it yourself';
 
   @override
@@ -497,7 +511,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchLocalTitle => 'On your device';
 
   @override
-  String get searchOnlineTitle => 'Online results';
+  String get searchBasicFoodsTitle => 'Basic foods';
+
+  @override
+  String get searchOnlineTitle => 'Online (Germany)';
 
   @override
   String get searchNoOnlineResults => 'No results at Open Food Facts.';
@@ -563,7 +580,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFoodNoLocalMatches =>
-      'Nothing found on your device. Tap “Search” on the keyboard to search online.';
+      'Nothing found among the basic foods or on your device.';
+
+  @override
+  String get addFoodSearchOnline => 'Search online';
 
   @override
   String get foodFormNewTitle => 'New food';
@@ -1033,7 +1053,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutSourceCode => 'Source code on GitHub';
 
   @override
-  String get aboutDataSourceTitle => 'Data source';
+  String get aboutDataSourceTitle => 'Data sources';
 
   @override
   String get aboutDataSourceText =>
@@ -1041,6 +1061,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutOpenOff => 'Open openfoodfacts.org';
+
+  @override
+  String get aboutBlsText =>
+      'Basic foods with average values come from the Bundeslebensmittelschlüssel (BLS), the German nutrient database of the Max Rubner-Institut. Source: Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: 10.25826/Data20251217-134202-0. Licence: CC BY 4.0. For the app, selected nutrients were taken over, rounded and converted into a different file format.';
+
+  @override
+  String get aboutBlsLicence => 'Licence CC BY 4.0';
 
   @override
   String get aboutNotesTitle => 'Good to know';

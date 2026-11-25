@@ -11,6 +11,8 @@ import 'package:food_tracker/core/clock.dart';
 import 'package:food_tracker/core/theme/app_theme.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/data/settings_repository.dart';
+import 'package:food_tracker/features/products/basic_foods.dart';
+import 'package:food_tracker/features/products/basic_foods_repository.dart';
 import 'package:food_tracker/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -43,14 +45,22 @@ void useInMemoryPreferences() {
 }
 
 /// The standard overrides for widget and provider tests.
+///
+/// [basicFoods] are the BLS foods the search finds (none by default): the
+/// real file is not loaded in tests, because that runs in a background
+/// isolate that widget tests do not wait for.
 List<Override> testOverrides({
   required AppDatabase db,
   http.Client? client,
   DateTime? now,
+  List<BasicFood> basicFoods = const [],
 }) {
   useInMemoryPreferences();
   return [
     databaseProvider.overrideWithValue(db),
+    basicFoodsLoaderProvider.overrideWithValue(
+      () async => BasicFoodIndex(basicFoods),
+    ),
     httpClientProvider.overrideWithValue(client ?? offlineClient()),
     clockProvider.overrideWithValue(Clock.fixed(now ?? testNow)),
     sharedPreferencesProvider.overrideWithValue(SharedPreferencesAsync()),
@@ -66,9 +76,15 @@ Future<void> pumpFoodTrackerApp(
   DateTime? now,
   Locale locale = const Locale('de'),
   ThemeMode? themeMode,
+  List<BasicFood> basicFoods = const [],
   List<Override> extraOverrides = const [],
 }) async {
-  final overrides = testOverrides(db: db, client: client, now: now);
+  final overrides = testOverrides(
+    db: db,
+    client: client,
+    now: now,
+    basicFoods: basicFoods,
+  );
   // The app reads its language (and theme) from the settings, so store them
   // there.
   final preferences = SharedPreferencesAsync();
@@ -96,13 +112,19 @@ Future<void> pumpWidgetInApp(
   DateTime? now,
   Locale locale = const Locale('de'),
   Brightness brightness = Brightness.light,
+  List<BasicFood> basicFoods = const [],
   List<Override> extraOverrides = const [],
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       retry: (_, _) => null,
       overrides: [
-        ...testOverrides(db: db, client: client, now: now),
+        ...testOverrides(
+          db: db,
+          client: client,
+          now: now,
+          basicFoods: basicFoods,
+        ),
         ...extraOverrides,
       ],
       child: MaterialApp(

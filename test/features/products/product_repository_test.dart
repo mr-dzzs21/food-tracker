@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_tracker/core/errors.dart';
 import 'package:food_tracker/data/database.dart';
+import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
+import 'package:food_tracker/features/products/health_rating.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/features/products/off_client.dart';
 import 'package:food_tracker/features/products/product_repository.dart';
@@ -201,7 +203,7 @@ void main() {
     respond = (_) async =>
         jsonResponse(fixtureText('search_haferflocken.json'));
     final page = await repo.search('haferflocken', page: 3);
-    expect(page.products, hasLength(3));
+    expect(page.products, hasLength(4));
     expect(requests.single.url.queryParameters['page'], '3');
   });
 
@@ -234,6 +236,101 @@ void main() {
         [for (final f in result) f.name],
         ['Z Joghurt', 'A Joghurt', 'b Joghurt'],
       );
+    });
+  });
+
+  group('basic foods (BLS)', () {
+    const flatbread = BasicFood(
+      code: 'B782100',
+      nameDe: 'Weizenfladenbrot',
+      nameEn: 'Wheat flatbread',
+      // The values of the bundled file.
+      nutrients: Nutrients(
+        kcal: 248,
+        fat: 2.3,
+        saturatedFat: 0.2,
+        carbs: 47,
+        sugars: 0.3,
+        fibre: 3.3,
+        protein: 8.2,
+        salt: 1.26,
+      ),
+    );
+    const water = BasicFood(
+      code: 'N110000',
+      nameDe: 'Trinkwasser',
+      nameEn: 'Drinking water',
+      nutrients: Nutrients(kcal: 0),
+      isLiquid: true,
+      category: 'en:waters',
+    );
+
+    test('opening one stores it as a normal food', () async {
+      final id = await repo.saveBasicFood(flatbread, languageCode: 'de');
+
+      final food = (await repo.getFood(id))!;
+      expect(food.source, FoodSource.bls);
+      expect(food.externalId, 'B782100');
+      expect(food.name, 'Weizenfladenbrot');
+      expect(food.brand, isNull);
+      expect(food.barcode, isNull);
+      expect(food.isLiquid, isFalse);
+      expect(food.nutrients, flatbread.nutrients);
+      expect(food.categories, isNull);
+      expect(food.createdAt, testNow);
+      // No Open Food Facts categories: food thresholds, not "unknown type".
+      expect(rateFood(food), isA<Rated>());
+    });
+
+    test('opening it again updates the same row and keeps the star', () async {
+      final id = await repo.saveBasicFood(flatbread, languageCode: 'de');
+      await repo.toggleFavourite(id);
+      await repo.markUsed(id);
+
+      final again = await repo.saveBasicFood(flatbread, languageCode: 'en');
+
+      expect(again, id);
+      expect(await db.select(db.foods).get(), hasLength(1));
+      final food = (await repo.getFood(id))!;
+      expect(food.name, 'Wheat flatbread'); // the current UI language
+      expect(food.isFavourite, isTrue);
+      expect(food.lastUsedAt, testNow);
+    });
+
+    test('a drink of a kind without traffic light keeps both hints', () async {
+      final id = await repo.saveBasicFood(water, languageCode: 'de');
+      final food = (await repo.getFood(id))!;
+      expect(food.isLiquid, isTrue);
+      expect(food.categories, 'en:waters');
+      expect(
+        rateFood(food),
+        isA<NotRated>().having(
+          (r) => r.reason,
+          'reason',
+          NotRatedReason.excludedType,
+        ),
+      );
+    });
+
+    test(
+      'the local search leaves them out (they have their own section)',
+      () async {
+        await repo.saveBasicFood(flatbread, languageCode: 'de');
+        await insertOwnFood('Fladenbrot vom Bäcker');
+        expect(
+          [for (final f in await repo.searchLocal('fladenbrot')) f.name],
+          ['Fladenbrot vom Bäcker'],
+        );
+      },
+    );
+
+    test('they are deleted with all other data', () async {
+      await repo.saveBasicFood(flatbread, languageCode: 'de');
+      await db.deleteAllData();
+      expect(await db.select(db.foods).get(), isEmpty);
+      // … and can be opened again afterwards.
+      await repo.saveBasicFood(flatbread, languageCode: 'de');
+      expect(await db.select(db.foods).get(), hasLength(1));
     });
   });
 

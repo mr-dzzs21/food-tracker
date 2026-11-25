@@ -188,8 +188,10 @@ const _toBeRehydrated = 'en:dried-products-to-be-rehydrated';
 /// - Open Food Facts products ([source] `openFoodFacts`) use their
 ///   [categories]: drink thresholds for `en:beverages`, food thresholds
 ///   otherwise; no categories → [NotRated] (unknown type).
-/// - Own foods have no categories: food thresholds, or drink thresholds when
-///   [isLiquid].
+/// - Own foods and basic foods (BLS) have no Open Food Facts categories:
+///   food thresholds, or drink thresholds when [isLiquid]. A basic food of a
+///   kind without a traffic light (water, coffee, spices, alcohol, …) carries
+///   the matching category tag (tool/bls/README.md) and is not rated.
 RatingResult rateProduct({
   required Nutrients nutrients,
   required List<String> categories,
@@ -197,14 +199,19 @@ RatingResult rateProduct({
   required bool isLiquid,
 }) {
   final RatingBasis basis;
-  if (source == FoodSource.user) {
-    basis = isLiquid ? RatingBasis.drink : RatingBasis.food;
-  } else {
-    final notRated = _notRatedReason(categories);
-    if (notRated != null) return notRated;
-    basis = categories.contains('en:beverages')
-        ? RatingBasis.drink
-        : RatingBasis.food;
+  switch (source) {
+    case FoodSource.openFoodFacts:
+      final notRated = _notRatedReason(categories);
+      if (notRated != null) return notRated;
+      basis = categories.contains('en:beverages')
+          ? RatingBasis.drink
+          : RatingBasis.food;
+    case FoodSource.user || FoodSource.bls:
+      if (categories.isNotEmpty) {
+        final notRated = _notRatedReason(categories);
+        if (notRated != null) return notRated;
+      }
+      basis = isLiquid ? RatingBasis.drink : RatingBasis.food;
   }
 
   final bounds = basis == RatingBasis.drink ? drinkBounds : foodBounds;

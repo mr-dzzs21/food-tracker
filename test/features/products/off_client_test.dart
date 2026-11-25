@@ -268,16 +268,47 @@ void main() {
       );
       final page = await h.client.search(' Haferflocken & Milch ', page: 2);
 
-      expect(page.products, hasLength(3));
+      expect(page.products, hasLength(4));
       final url = h.requests.single.url;
       expect(url.host, 'search.openfoodfacts.org');
       expect(url.path, '/search');
-      expect(url.queryParameters['q'], 'Haferflocken & Milch');
+      // Only products sold in Germany (combined with AND by the server).
+      expect(
+        url.queryParameters['q'],
+        'Haferflocken & Milch countries:"en:germany"',
+      );
       expect(url.queryParameters['langs'], 'de,en');
       expect(url.queryParameters['page'], '2');
       expect(url.queryParameters['page_size'], '20');
       expect(url.queryParameters['fields'], OpenFoodFactsClient.searchFields);
       expect(h.requests.single.headers['User-Agent'], userAgent);
+    });
+
+    test('asks for nutriscore_data (energy), no longer for nutriments', () {
+      final fields = OpenFoodFactsClient.searchFields.split(',');
+      expect(fields, contains('nutriscore_data'));
+      expect(fields, isNot(contains('nutriments')));
+    });
+
+    test(
+      'quotes and colons in the text cannot break the country filter',
+      () async {
+        final h = Harness(
+          (_) async => jsonResponse(fixtureText('search_haferflocken.json')),
+        );
+        await h.client.search('"Bio" hafer:flocken');
+        expect(
+          h.requests.single.url.queryParameters['q'],
+          'Bio hafer flocken countries:"en:germany"',
+        );
+      },
+    );
+
+    test('a text of only quotes sends nothing', () async {
+      final h = Harness((_) async => jsonResponse('{}'));
+      final page = await h.client.search(' "" ');
+      expect(page.products, isEmpty);
+      expect(h.requests, isEmpty);
     });
 
     test('English UI prefers English names', () async {

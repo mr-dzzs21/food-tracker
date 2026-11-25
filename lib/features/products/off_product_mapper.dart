@@ -116,10 +116,13 @@ OffProduct parseOffProduct(
 }) {
   final categories = _readTextList(json['categories_tags']);
   final code = _readText(json['code']) ?? requestedCode ?? '';
+  final nutriScoreData = _readMap(json['nutriscore_data']);
   final isLiquid =
       categories.contains('en:beverages') ||
       _readText(json['product_quantity_unit'])?.toLowerCase() == 'ml' ||
-      _readText(json['serving_quantity_unit'])?.toLowerCase() == 'ml';
+      _readText(json['serving_quantity_unit'])?.toLowerCase() == 'ml' ||
+      // Search hits only have this hint (1 = drink).
+      _readNum(nutriScoreData['is_beverage']) == 1;
   final servingSize = _readNum(json['serving_quantity']);
 
   return OffProduct(
@@ -130,7 +133,11 @@ OffProduct parseOffProduct(
     isLiquid: isLiquid,
     servingSize: (servingSize != null && servingSize > 0) ? servingSize : null,
     servingLabel: _readText(json['serving_size']),
-    nutrients: _readNutrients(json['nutriments'], categories),
+    nutrients: _readNutrients(
+      json['nutriments'],
+      categories,
+      nutriScoreData: nutriScoreData,
+    ),
     nutriScore: _readNutriScore(json['nutriscore_grade']),
     novaGroup: _readNovaGroup(json['nova_group']),
     categories: categories,
@@ -167,6 +174,9 @@ OffSearchPage parseOffSearchPage(
 // Small readers. OFF usually sends numbers as JSON numbers, but some APIs send
 // them as text ("0.9"), so every number is read defensively.
 
+Map<String, Object?> _readMap(Object? value) =>
+    value is Map<String, Object?> ? value : const {};
+
 double? _readNum(Object? value) => switch (value) {
   final num n => n.toDouble(),
   final String s => double.tryParse(s.trim().replaceAll(',', '.')),
@@ -186,14 +196,22 @@ List<String> _readTextList(Object? value) => [
     for (final item in value) ?_readText(item),
 ];
 
-/// The product API sends brands as one text, the search API as a list.
+/// The product API sends brands as one text, the search API as a list of
+/// tags like "xx:Spielberger Mühle" or "xx:k-classic" (since 2026-11; "xx:"
+/// = no language). The prefix is not shown.
 String? _readBrands(Object? value) {
   if (value is List) {
-    final brands = _readTextList(value);
+    final brands = [
+      for (final brand in _readTextList(value))
+        ?_readText(brand.replaceFirst(_tagLanguage, '')),
+    ];
     return brands.isEmpty ? null : brands.join(', ');
   }
   return _readText(value);
 }
+
+/// The language part of an OFF tag: "xx:", "en:", "de:".
+final _tagLanguage = RegExp(r'^[a-z]{2}:');
 
 /// Name fallback order from the brief (R3). OFF overwrites `product_name`
 /// with the name in the product's *main* language, so the name in the UI
@@ -230,14 +248,23 @@ const _saltPerSodium = 2.5;
 /// "plain water has 0 kcal" rule must not apply to them.
 const _waterExceptions = ['en:flavored-waters', 'en:vitamin-waters'];
 
-Nutrients _readNutrients(Object? value, List<String> categories) {
-  final n = value is Map<String, Object?> ? value : const <String, Object?>{};
+/// Reads `nutriments`. [nutriScoreData] is only used for the calories of
+/// search hits: since 2026-11 the search service no longer sends
+/// `nutriments`, but still the energy the Nutri-Score was computed from.
+Nutrients _readNutrients(
+  Object? value,
+  List<String> categories, {
+  Map<String, Object?> nutriScoreData = const {},
+}) {
+  final n = _readMap(value);
   double? grams(String key) => _gramsOrNull(_readNum(n['${key}_100g']));
 
-  // Calories: the label value, else converted from kJ.
+  // Calories: the label value, else converted from kJ, else from the
+  // Nutri-Score data.
   var kcal =
       _kcalOrNull(_readNum(n['energy-kcal_100g'])) ??
-      _kcalOrNull(_divide(_readNum(n['energy-kj_100g']), _kjPerKcal));
+      _kcalOrNull(_divide(_readNum(n['energy-kj_100g']), _kjPerKcal)) ??
+      _kcalFromNutriScoreData(nutriScoreData);
   // Plain water often has no energy value at all, but surely 0 kcal.
   final isPlainWater =
       categories.contains('en:waters') &&
@@ -256,6 +283,29 @@ Nutrients _readNutrients(Object? value, List<String> categories) {
         grams('salt') ??
         _gramsOrNull(_multiply(_readNum(n['sodium_100g']), _saltPerSodium)),
   );
+}
+
+/// The energy component of `nutriscore_data` (per 100 g/ml) in kcal, or
+/// `null` when it is missing or impossible. Example of the JSON:
+/// `{"components": {"negative": [{"id": "energy", "value": 2252, "unit": "kJ"}]}}`.
+/// Fats, oils, nuts and seeds have "energy_from_saturated_fat" instead –
+/// that is not the total energy, so those stay unknown.
+double? _kcalFromNutriScoreData(Map<String, Object?> data) {
+  final components = _readMap(data['components'])['negative'];
+  if (components is! List) return null;
+  for (final component in components) {
+    if (component is! Map<String, Object?> || component['id'] != 'energy') {
+      continue;
+    }
+    final value = _readNum(component['value']);
+    final unit = _readText(component['unit'])?.toLowerCase();
+    return _kcalOrNull(switch (unit) {
+      'kj' => _divide(value, _kjPerKcal),
+      'kcal' => value,
+      _ => null,
+    });
+  }
+  return null;
 }
 
 double? _divide(double? value, double by) => value == null ? null : value / by;

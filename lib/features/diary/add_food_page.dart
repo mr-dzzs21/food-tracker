@@ -16,13 +16,19 @@ import '../../core/widgets/status_view.dart';
 import '../../data/database.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router.dart';
+import '../products/basic_foods_repository.dart';
 import '../products/product_repository.dart';
+import '../products/widgets/basic_food_results.dart';
 import '../products/widgets/food_tile.dart';
 import '../products/widgets/online_search_results.dart';
 import 'day_label.dart';
 import 'diary_repository.dart';
 
 /// Adds food to one meal of one day: search, recents, favourites, own foods.
+///
+/// The search shows basic foods (BLS) and foods on the device while the user
+/// types, and searches Open Food Facts only on submit (keyboard, the arrow in
+/// the field or "Online suchen").
 ///
 /// Every way ends on the product page with [day] and [mealId]. After
 /// "Hinzufügen" there, this page closes too, so the user is back on "Heute".
@@ -89,6 +95,7 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
   /// Opens a product page for this meal; closes this page when the food was
   /// added there.
   Future<void> _open(String location) async {
+    if (!mounted) return;
     final added = await context.push<bool>(location);
     if (added == true && mounted) context.pop();
   }
@@ -215,27 +222,65 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
     ];
   }
 
-  /// Matches on the device (while typing) and online results (on submit).
+  /// Three parts, best first: basic foods (BLS) and foods on the device
+  /// while typing, online results (Open Food Facts, Germany) after a submit.
+  /// The first two show only when they have matches.
   List<Widget> _searchResults(
     AppLocalizations l10n,
     ValueChanged<Food> openFood,
   ) {
     final onlineQuery = _onlineQuery;
+    final basicFoods = ref.watch(
+      basicFoodSearchProvider((query: _filter, languageCode: l10n.localeName)),
+    );
     final local = ref.watch(localFoodSearchProvider(_filter));
-    // After an online search, an empty "on your device" part is just noise.
-    final hideLocal = onlineQuery != null && (local.value?.isEmpty ?? false);
+    final localFoods = local.value ?? const <Food>[];
+    final nothingFound =
+        basicFoods.isEmpty && local.hasValue && localFoods.isEmpty;
     return [
-      if (!hideLocal) ...[
+      BasicFoodResults(
+        query: _filter,
+        onOpen: (id) => unawaited(
+          _open(Routes.food(id, day: widget.day, mealId: widget.mealId)),
+        ),
+      ),
+      if (localFoods.isNotEmpty || local.hasError) ...[
         SectionHeader(l10n.searchLocalTitle),
         _FoodList(
           foods: local,
           emptyIcon: Icons.search_off_rounded,
-          // Points the user to the online search.
           emptyText: l10n.addFoodNoLocalMatches,
           onTap: openFood,
         ),
       ],
-      if (onlineQuery != null) ...[
+      if (onlineQuery == null) ...[
+        if (nothingFound)
+          StatusView(
+            icon: Icons.search_off_rounded,
+            title: l10n.addFoodNoLocalMatches,
+            compact: true,
+          ),
+        // Brand products are only online; the search there runs on demand
+        // (Open Food Facts allows only a few searches per minute).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.l,
+            Spacing.l,
+            Spacing.l,
+            0,
+          ),
+          child: Center(
+            child: TonalButton(
+              onPressed: () {
+                final query = _search.text.trim();
+                if (query.isNotEmpty) _onSubmitted(query);
+              },
+              icon: Icons.travel_explore_rounded,
+              label: l10n.addFoodSearchOnline,
+            ),
+          ),
+        ),
+      ] else ...[
         SectionHeader(l10n.searchOnlineTitle),
         OnlineSearchResults(
           query: onlineQuery,

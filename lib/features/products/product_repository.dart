@@ -8,14 +8,16 @@ import '../../core/app_info.dart';
 import '../../core/clock.dart';
 import '../../core/errors.dart';
 import '../../data/database.dart';
+import 'basic_foods.dart';
 import 'food_source.dart';
 import 'gtin.dart';
 import 'nutrients.dart';
 import 'off_client.dart';
 import 'off_product_mapper.dart';
 
-/// All access to foods: products from Open Food Facts (cached on the device)
-/// and the user's own foods. The UI never touches the `Foods` table directly.
+/// All access to foods: products from Open Food Facts (cached on the device),
+/// basic foods from the BLS (stored once opened) and the user's own foods.
+/// The UI never touches the `Foods` table directly.
 class ProductRepository {
   ProductRepository(this._db, this._client, this._clock);
 
@@ -176,6 +178,9 @@ class ProductRepository {
   /// Own and cached foods whose name or brand contains every word of
   /// [query], ignoring upper/lower case. Favourites come first.
   ///
+  /// Basic foods (BLS) are left out: the search shows them in their own
+  /// section ("Grundnahrungsmittel"), which finds them better.
+  ///
   /// Filtered in Dart instead of with SQL `LIKE`, because SQLite's `LIKE`
   /// ignores case only for A–Z, not for umlauts ("Müsli" vs "müsli"). The
   /// table only holds foods this user has seen, so this stays fast.
@@ -195,6 +200,7 @@ class ProductRepository {
             .get();
     return foods
         .where((food) {
+          if (food.source == FoodSource.bls) return false;
           final text = '${food.name} ${food.brand ?? ''}'.toLowerCase();
           return words.every(text.contains);
         })
@@ -320,6 +326,53 @@ class ProductRepository {
       return _db
           .into(_db.foods)
           .insert(data.copyWith(createdAt: Value(_clock.now())));
+    });
+  }
+
+  /// Stores a basic food from the BLS on the device (or updates it) and
+  /// returns its id, so the product page, favourites, "Zuletzt gegessen" and
+  /// the diary work exactly as for any other food.
+  ///
+  /// Called when the user opens the food. The name is taken in the UI
+  /// language ([languageCode]); the values are written again each time, so
+  /// a newer BLS version in an app update reaches stored foods, too.
+  /// Favourite and "recently used/viewed" stay as they are.
+  Future<int> saveBasicFood(BasicFood food, {required String languageCode}) {
+    final nutrients = food.nutrients;
+    final data = FoodsCompanion(
+      source: const Value(FoodSource.bls),
+      externalId: Value(food.code),
+      name: Value(food.nameFor(languageCode)),
+      isLiquid: Value(food.isLiquid),
+      kcal: Value(nutrients.kcal),
+      fat: Value(nutrients.fat),
+      saturatedFat: Value(nutrients.saturatedFat),
+      carbs: Value(nutrients.carbs),
+      sugars: Value(nutrients.sugars),
+      fibre: Value(nutrients.fibre),
+      protein: Value(nutrients.protein),
+      salt: Value(nutrients.salt),
+      // Only set for kinds of food without a traffic light (water, spices,
+      // …); see health_rating.dart.
+      categories: Value(food.category),
+    );
+    return _db.transaction(() async {
+      final existing =
+          await (_db.select(_db.foods)..where(
+                (f) =>
+                    f.source.equalsValue(FoodSource.bls) &
+                    f.externalId.equals(food.code),
+              ))
+              .getSingleOrNull();
+      if (existing == null) {
+        return _db
+            .into(_db.foods)
+            .insert(data.copyWith(createdAt: Value(_clock.now())));
+      }
+      await (_db.update(
+        _db.foods,
+      )..where((f) => f.id.equals(existing.id))).write(data);
+      return existing.id;
     });
   }
 

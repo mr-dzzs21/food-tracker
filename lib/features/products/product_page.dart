@@ -24,6 +24,7 @@ import '../../router.dart';
 import '../diary/day_label.dart';
 import '../diary/diary_repository.dart';
 import '../diary/widgets/amount_field.dart';
+import 'basic_foods.dart';
 import 'food_source.dart';
 import 'nutrient_format.dart';
 import 'nutrients.dart';
@@ -376,6 +377,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     final amount = parseEntryAmount(_amount.text);
     final barcode = food.barcode;
     final fromOff = food.source == FoodSource.openFoodFacts && barcode != null;
+    final fromBls = food.source == FoodSource.bls;
     final canAdd = amount != null && slot != null && !_adding;
 
     return Scaffold(
@@ -481,6 +483,20 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
                     onPressed: () => _openOnOff(barcode),
                     icon: const Icon(Icons.open_in_new_rounded),
                     label: Text(l10n.productOpenOff),
+                  ),
+                  const SizedBox(height: Spacing.s),
+                ],
+                // Required by the BLS licence (CC BY 4.0): name the source.
+                if (fromBls) ...[
+                  Text(l10n.blsAttribution, style: theme.textTheme.bodySmall),
+                  Text(
+                    l10n.productBlsAverages,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  TextButton.icon(
+                    onPressed: () => openLink(context, blsWebsite),
+                    icon: const Icon(Icons.open_in_new_rounded),
+                    label: Text(l10n.blsOpenWebsite),
                   ),
                   const SizedBox(height: Spacing.s),
                 ],
@@ -634,6 +650,9 @@ class _ProductHeader extends ConsumerWidget {
                 // decision, Nutri-Score trademark rules).
                 if (nutriScore != null && 'ABCDE'.contains(nutriScore))
                   _InfoChip(l10n.productNutriScore(nutriScore)),
+                // Basic foods (BLS) have no brand: say what the values are.
+                if (food.source == FoodSource.bls)
+                  _InfoChip(l10n.productAverageChip),
               ],
             ),
           ),

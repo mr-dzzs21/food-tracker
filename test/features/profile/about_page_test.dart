@@ -48,6 +48,19 @@ void main() {
       ),
       findsOneWidget,
     );
+    // BLS (CC BY 4.0): citation with DOI, licence and what was changed.
+    expect(find.text('Datenquellen'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), '
+        'Version 4.0 — Deutsche Nährstoffdatenbank. Karlsruhe. DOI: '
+        '10.25826/Data20251217-134202-0. Lizenz: CC BY 4.0.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('gerundet'), findsOneWidget);
+    expect(find.text('blsdb.de öffnen'), findsOneWidget);
+    expect(find.text('Lizenz CC BY 4.0'), findsOneWidget);
     expect(find.textContaining('keine medizinische Beratung'), findsOneWidget);
     expect(find.textContaining('Schätzungen für gesunde Erwachsene'), findsOne);
     expect(
@@ -75,6 +88,11 @@ void main() {
     expect(find.text('About the app'), findsOneWidget);
     expect(
       find.textContaining('Product data comes from Open Food Facts'),
+      findsOneWidget,
+    );
+    expect(find.text('Data sources'), findsOneWidget);
+    expect(
+      find.textContaining('Basic foods with average values come from'),
       findsOneWidget,
     );
     expect(find.textContaining('talk to someone you trust'), findsOneWidget);
