@@ -14,6 +14,7 @@ import 'package:food_tracker/features/products/basic_foods.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
 import 'package:food_tracker/features/products/product_repository.dart';
+import 'package:food_tracker/features/products/simple_foods.dart';
 import 'package:food_tracker/features/products/widgets/rating_section.dart';
 import 'package:food_tracker/router.dart';
 import 'package:go_router/go_router.dart';
@@ -423,6 +424,48 @@ void main() {
     await tester.tap(find.byTooltip('Zu Favoriten hinzufügen'));
     await tester.pumpAndSettle();
     expect((await db.select(db.foods).get()).single.isFavourite, isTrue);
+  });
+
+  testWidgets('simple food with BLS values: BLS source, average chip, its '
+      'portion, own name', (tester) async {
+    final container = ProviderContainer.test(overrides: testOverrides(db: db));
+    final id = await container
+        .read(productRepositoryProvider)
+        .saveSimpleFood(
+          const SimpleFood(
+            key: 'kefir',
+            nameDe: 'Kefir',
+            nameEn: 'Kefir',
+            nutrients: Nutrients(kcal: 50, fat: 1.5, carbs: 4, protein: 3.4),
+            isLiquid: true,
+            portionGrams: 200,
+            portionDe: '1 Glas',
+            portionEn: '1 glass',
+            blsCode: 'M130200',
+          ),
+          languageCode: 'de',
+        );
+    expect(
+      (await db.select(db.foods).get()).single.source,
+      FoodSource.simpleBls,
+    );
+    await open(tester, Routes.food(id));
+
+    expect(find.text('Kefir'), findsOneWidget);
+    expect(find.text('pro 100 ml'), findsWidgets);
+    expect(find.text('Durchschnittswerte'), findsOneWidget);
+    // Number and unit are joined by a non-breaking space.
+    expect(find.text('1 Glas (200\u00a0ml)'), findsOneWidget);
+    expect(
+      find.text(
+        'Daten: Bundeslebensmittelschlüssel 4.0, Max Rubner-Institut '
+        '(CC BY 4.0)',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('blsdb.de öffnen'), findsOneWidget);
+    expect(find.text('Daten: Open Food Facts (ODbL)'), findsNothing);
+    expect(find.byTooltip('Bearbeiten'), findsNothing);
   });
 
   testWidgets('basic food drink of a kind without traffic light', (

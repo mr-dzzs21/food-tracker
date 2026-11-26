@@ -465,8 +465,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final food = (await db.select(db.foods).get()).single;
-    expect(food.source, FoodSource.bls);
-    expect(food.externalId, 'M710100');
+    expect(food.source, FoodSource.simpleBls);
+    expect(food.externalId, 'skyr-natur');
     expect(food.name, 'Skyr natur');
     expect(
       router.state.uri.toString(),

@@ -512,6 +512,7 @@ void main() {
         'en:salts',
         'en:sugar-substitutes',
         'en:dried-products-to-be-rehydrated',
+        'en:baby-foods',
       ]) {
         final result = rateBls(
           const Nutrients(salt: 99),
@@ -584,22 +585,68 @@ void main() {
   });
 
   group('suspicious values (R6)', () {
-    test('brief vector N15: kcal plausibility', () {
+    test('brief vector N15: kcal plausibility (only far above counts)', () {
       const label = Nutrients(fat: 30, carbs: 50, protein: 7, fibre: 3);
-      // computed 504 kcal: 536 is 6.3 % off (fine), 150 is 70 % off.
+      Nutrients withKcal(double kcal) =>
+          Nutrients(kcal: kcal, fat: 30, carbs: 50, protein: 7, fibre: 3);
+      // computed 504 kcal: 536 is 6.3 % off (fine), 650 is 29 % above.
+      expect(hasSuspiciousValues(withKcal(536)), isFalse);
+      expect(hasSuspiciousValues(withKcal(650)), isTrue);
+      // Changed after the review (the brief flagged it): far *below* is not
+      // flagged – polyols like erythritol count as carbohydrates but have
+      // (almost) no energy, so sugar-free products are below the formula.
+      expect(hasSuspiciousValues(withKcal(150)), isFalse);
+      expect(hasSuspiciousValues(label), isFalse); // no kcal → no check
+      // Without the energy check the other rules still apply.
+      expect(hasSuspiciousValues(withKcal(650), checkEnergy: false), isFalse);
       expect(
         hasSuspiciousValues(
-          const Nutrients(kcal: 536, fat: 30, carbs: 50, protein: 7, fibre: 3),
-        ),
-        isFalse,
-      );
-      expect(
-        hasSuspiciousValues(
-          const Nutrients(kcal: 150, fat: 30, carbs: 50, protein: 7, fibre: 3),
+          const Nutrients(kcal: 650, fat: 2, saturatedFat: 3),
+          checkEnergy: false,
         ),
         isTrue,
       );
-      expect(hasSuspiciousValues(label), isFalse); // no kcal → no check
+    });
+
+    test('BLS values and averages: no energy check, other rules stay', () {
+      // Like "Vollmilchschokolade mit alkoholhaltiger Füllung": the alcohol
+      // has energy the formula does not know (computed 486, declared 600).
+      const withAlcohol = Nutrients(
+        kcal: 600,
+        fat: 30,
+        saturatedFat: 18,
+        carbs: 50,
+        sugars: 48,
+        protein: 4,
+      );
+      for (final source in [
+        FoodSource.bls,
+        FoodSource.offAverage,
+        FoodSource.simpleBls,
+      ]) {
+        final rated = rateProduct(
+          nutrients: withAlcohol,
+          categories: const [],
+          source: source,
+          isLiquid: false,
+        ) as Rated;
+        expect(rated.suspicious, isFalse, reason: source.name);
+        final broken = rateProduct(
+          nutrients: const Nutrients(kcal: 100, fat: 2, saturatedFat: 3),
+          categories: const [],
+          source: source,
+          isLiquid: false,
+        ) as Rated;
+        expect(broken.suspicious, isTrue, reason: source.name);
+      }
+      // The same values typed by the user are checked.
+      final own = rateProduct(
+        nutrients: withAlcohol,
+        categories: const [],
+        source: FoodSource.user,
+        isLiquid: false,
+      ) as Rated;
+      expect(own.suspicious, isTrue);
     });
 
     test('saturates above fat, sugars above carbs', () {

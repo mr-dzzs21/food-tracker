@@ -27,7 +27,7 @@ Both are generated – change the list here and build them again. Source, licenc
 
    | Column | Meaning |
    |---|---|
-   | `key` | Stable id, lower case with `-` (`skyr-natur`). Never change it for an existing food: the app stores Open Food Facts averages under it. |
+   | `key` | Stable id, lower case with `-` (`skyr-natur`). Never change it for an existing food: the app stores every simple food under it (favourites, recents). |
    | `name_de`, `name_en` | Short everyday name. No two foods with the same name. |
    | `synonyms_de`, `synonyms_en` | Other words people type, separated by `\|` (`Nudel\|Pasta\|Spaghetti`). Umlauts and upper/lower case do not matter; plural endings (-n, -e, -en, -er, -s) are ignored by the search. |
    | `source` | `bls:<code>` (a code from `assets/data/bls_4_0.tsv`; each code only once) or `off:<key>` (an entry in `AVERAGES` in `off_averages.py`). |

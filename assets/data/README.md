@@ -42,7 +42,8 @@ DOI: [10.25826/Data20251217-134202-0](https://doi.org/10.25826/Data20251217-1342
 
 **Changes made for this app:** in addition to the changes listed for `bls_4_0.tsv`, each row takes the
 8 values of one BLS food (column `bls_code`) unchanged and adds our own short names, search words and
-a typical portion. Some foods are marked as drinks (`liquid`) where the BLS file does not (kefir).
+a typical portion. A food can be marked as a drink (`liquid`) where the BLS file does not (none at the
+moment).
 The app names the BLS as the source under the search results and on the product page.
 
 ### `simple_foods_off.tsv` – typical values from Open Food Facts

@@ -209,10 +209,7 @@ class ProductRepository {
             .get();
     return foods
         .where((food) {
-          if (food.source == FoodSource.bls ||
-              food.source == FoodSource.offAverage) {
-            return false;
-          }
+          if (food.source.isBundled) return false;
           final text = '${food.name} ${food.brand ?? ''}'.toLowerCase();
           return words.every(text.contains);
         })
@@ -375,9 +372,10 @@ class ProductRepository {
   /// returns its id – like [saveBasicFood], with the short name and the
   /// typical portion in the UI language ([languageCode]).
   ///
-  /// Foods with BLS values share the row of that BLS food (source bls, the
-  /// BLS code); the Open Food Facts medians are stored as
-  /// [FoodSource.offAverage] with the key of the list.
+  /// Stored with the key of the list: [FoodSource.simpleBls] for BLS values,
+  /// [FoodSource.offAverage] for the Open Food Facts medians. Never in the
+  /// row of the BLS food with the same values – otherwise name, portion and
+  /// "Zuletzt" amount would change with the list the food was opened from.
   Future<int> saveSimpleFood(SimpleFood food, {required String languageCode}) {
     final nutrients = food.nutrients;
     final portion = food.portionGrams;

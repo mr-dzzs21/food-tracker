@@ -51,9 +51,9 @@ void main() {
       expect(banana.portionFor('en'), '1 banana');
       expect(banana.blsCode, 'F503100');
       expect(banana.offProductCount, isNull);
-      // Stored like the BLS food with the same code.
-      expect(banana.source, FoodSource.bls);
-      expect(banana.externalId, 'F503100');
+      // Stored in its own row (not the BLS food's), by the list key.
+      expect(banana.source, FoodSource.simpleBls);
+      expect(banana.externalId, 'banane');
 
       // Search words are trimmed; unknown fibre is null, never 0.
       expect(skyr.synonymsDe, ['Vanilleskyr', 'Skyr']);

@@ -378,7 +378,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     final amount = parseEntryAmount(_amount.text);
     final barcode = food.barcode;
     final fromOff = food.source == FoodSource.openFoodFacts && barcode != null;
-    final fromBls = food.source == FoodSource.bls;
+    final fromBls = food.source.isFromBls;
     final fromOffAverage = food.source == FoodSource.offAverage;
     final canAdd = amount != null && slot != null && !_adding;
 
@@ -666,9 +666,7 @@ class _ProductHeader extends ConsumerWidget {
                   _InfoChip(l10n.productNutriScore(nutriScore)),
                 // Basic and simple foods have no brand: say what the values
                 // are.
-                if (food.source == FoodSource.bls ||
-                    food.source == FoodSource.offAverage)
-                  _InfoChip(l10n.productAverageChip),
+                if (food.source.isBundled) _InfoChip(l10n.productAverageChip),
               ],
             ),
           ),
@@ -799,10 +797,7 @@ class _AmountChoices extends StatelessWidget {
     final last = lastAmount;
     // Simple foods know what their portion is ("1 Banane (120 g)"); other
     // labels (from Open Food Facts, often just "30 g") are not shown.
-    final servingName = switch (food.source) {
-      FoodSource.bls || FoodSource.offAverage => food.servingLabel,
-      _ => null,
-    };
+    final servingName = food.source.isBundled ? food.servingLabel : null;
     return PillChoices<double>(
       segmented: true,
       choices: [

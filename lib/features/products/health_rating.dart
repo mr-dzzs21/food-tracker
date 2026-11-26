@@ -207,7 +207,10 @@ RatingResult rateProduct({
       basis = categories.contains('en:beverages')
           ? RatingBasis.drink
           : RatingBasis.food;
-    case FoodSource.user || FoodSource.bls || FoodSource.offAverage:
+    case FoodSource.user ||
+        FoodSource.bls ||
+        FoodSource.offAverage ||
+        FoodSource.simpleBls:
       if (categories.isNotEmpty) {
         final notRated = _notRatedReason(categories);
         if (notRated != null) return notRated;
@@ -223,7 +226,10 @@ RatingResult rateProduct({
         rated: levelFor(nutrients[rated.nutrient], bounds[rated]!),
     },
     plusPoints: plusPointsFor(nutrients),
-    suspicious: hasSuspiciousValues(nutrients),
+    // BLS values and averages are measured values, not a typed label: their
+    // energy also counts alcohol, polyols and organic acids, which the simple
+    // kcal formula leaves out.
+    suspicious: hasSuspiciousValues(nutrients, checkEnergy: !source.isBundled),
   );
 }
 
@@ -309,9 +315,11 @@ List<PlusPoint> plusPointsFor(Nutrients nutrients) {
 /// - an impossible value (below 0, over 100 g, over 900 kcal)
 /// - more saturated fat than fat, or more sugars than carbohydrates
 /// - fat + carbs + protein + fibre + salt over 105 g per 100 g
-/// - declared kcal far from 9·fat + 4·carbs + 4·protein + 2·fibre
-///   (more than 20 kcal and more than 20 %)
-bool hasSuspiciousValues(Nutrients nutrients) {
+/// - with [checkEnergy]: declared kcal far *above* 9·fat + 4·carbs +
+///   4·protein + 2·fibre (more than 20 kcal and more than 20 %), for example
+///   kJ typed as kcal. Far below is not flagged: sweeteners like erythritol
+///   count as carbohydrates but have (almost) no energy.
+bool hasSuspiciousValues(Nutrients nutrients, {bool checkEnergy = true}) {
   final gramsNutrients = Nutrient.values.where((n) => n != Nutrient.kcal);
   final impossible =
       gramsNutrients.any(
@@ -347,11 +355,15 @@ bool hasSuspiciousValues(Nutrients nutrients) {
   ].nonNulls.fold<double>(0, (sum, grams) => sum + grams);
   if (_round3(mass) > 105) return true;
 
-  if (kcal != null && fat != null && carbs != null && protein != null) {
+  if (checkEnergy &&
+      kcal != null &&
+      fat != null &&
+      carbs != null &&
+      protein != null) {
     // Missing fibre counts as 0 here.
     final computed = 9 * fat + 4 * carbs + 4 * protein + 2 * (fibre ?? 0);
     final tolerance = max(20.0, computed * 0.2);
-    if (_round3((kcal - computed).abs()) > _round3(tolerance)) return true;
+    if (_round3(kcal - computed) > _round3(tolerance)) return true;
   }
   return false;
 }

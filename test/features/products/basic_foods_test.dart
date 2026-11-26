@@ -133,6 +133,49 @@ void main() {
       expect(food('N420900').category, 'en:coffees');
       expect(food('R111000').category, 'en:salts'); // Speisesalz
     });
+
+    test('drink words anywhere in the head of the name are drinks', () {
+      BasicFood food(String code) => byCode[code]!;
+      for (final code in [
+        'F020600', // Roter Mehrfruchtsaft
+        'F032600', // Smoothie purpur (Früchte)
+        'F034600', // Smoothie grün (Früchte/Gemüse)
+        'M130100', // Kefir aus entrahmter Milch
+        'M130500', // Sahnekefir
+        'M231500', // Sahnekefir mit Fruchtzubereitung
+        'M161000', // Süßmolke
+        'M162000', // Sauermolke
+        'M2H2300', // Milchshake
+        'M2S8300', // Ayran, Joghurtgetränk
+        'X936410', // Bananenmilch mit Milch
+        'M150000', // Buttermilch (was a drink before)
+        'C660000', // Haferdrink (was a drink before)
+      ]) {
+        expect(food(code).isLiquid, isTrue, reason: food(code).nameDe);
+      }
+      // A drink word after "in", "mit", "im" or in brackets is an
+      // ingredient; powders and thick syrups are not drinks.
+      for (final code in [
+        'F134902', // Birne in Fruchtsaft, Konserve
+        'T121902', // Thunfisch im eigenen Saft
+        'B227300', // Roggenbrot mit Buttermilch
+        'C526000', // Polenta (Maisgrieß mit Wasser, …)
+        'M887000', // Süßmolkenpulver
+        'S155000', // Apfeldicksaft
+        'M121300', // Dickmilch/Sauermilch
+        'X3A9000', // Buttermilch-Dressing für Salat
+      ]) {
+        expect(food(code).isLiquid, isFalse, reason: food(code).nameDe);
+      }
+    });
+
+    test('baby foods ("geeignet für Beikost") get no traffic light', () {
+      BasicFood food(String code) => byCode[code]!;
+      for (final code in ['X5B1000', 'X6A2000', 'X9A2030', 'X9A2040']) {
+        expect(food(code).category, 'en:baby-foods', reason: code);
+      }
+      expect(food('V402100').category, isNull); // Baby-Pute (turkey meat)
+    });
   });
 
   group('search ranking', () {

@@ -992,13 +992,13 @@ F012700	Mehrfruchtnektar	Mixed fruit nectar	42	0	0	10.4	10.1	0.2	0.2	0.01	1
 F013700	Mehrfruchtnektar mit Süßungsmitteln	Mixed fruit nectar with artificial sweeteners	22	0	0	5.4	5.1	0.2	0.2	0.01	1	
 F014600	Mehrfruchtsaft angereichert mit Vitaminen (Multivitaminsaft)	Multi-fruit juice fortified with vitamins (multivitamin juice)	48	0.1	0	10.6	10	0.3	0.4	0.01	1	
 F016600	Mehrfruchtsaft angereichert mit Vitaminen und Mineralstoffen	Multi-fruit juice fortified with vitamins and minerals	54	0.1	0	12.3	11.4	0.3	0.3	0.01	1	
-F020600	Roter Mehrfruchtsaft	Red multi-fruit juice	50	0.3	0	9.9	9.2	0.3	0.7	0.01	0	
-F021600	Roter Mehrfruchtsaft angereichert mit Vitaminen (Roter Multivitaminsaft)	Red multi-fruit juice fortified with vitamins (red multivitamin juice)	50	0.3	0	9.9	9.2	0.3	0.7	0.01	0	
+F020600	Roter Mehrfruchtsaft	Red multi-fruit juice	50	0.3	0	9.9	9.2	0.3	0.7	0.01	1	
+F021600	Roter Mehrfruchtsaft angereichert mit Vitaminen (Roter Multivitaminsaft)	Red multi-fruit juice fortified with vitamins (red multivitamin juice)	50	0.3	0	9.9	9.2	0.3	0.7	0.01	1	
 F022700	Mehrfruchtnektar, angereichert mit Vitaminen (Multivitaminnektar)	Mixed fruit nectar, fortified with vitamins (multivitamin nectar)	42	0	0	10.4	10.1	0.2	0.2	0.01	1	
 F023700	Mehrfruchtnektar mit Süßungsmitteln, angereichert mit Vitaminen (Multivitaminnektar)	Mixed fruit nectar with artificial sweeteners, fortified with vitamins (multivitamin nectar)	22	0	0	5.4	5.1	0.2	0.2	0.01	1	
-F032600	Smoothie purpur (Früchte)	Smoothie of purple fruits	57	0.3	0	11	10.3	1.9	0.7	0.01	0	
-F033600	Smoothie gelb (Früchte)	Smoothie of yellow fruits	50	0.2	0	9.7	9.5	1.3	0.7	0.01	0	
-F034600	Smoothie grün (Früchte/Gemüse)	Smoothie of green fruits and vegetables	46	0.3	0.1	8	6.6	2.1	1.3	0.03	0	
+F032600	Smoothie purpur (Früchte)	Smoothie of purple fruits	57	0.3	0	11	10.3	1.9	0.7	0.01	1	
+F033600	Smoothie gelb (Früchte)	Smoothie of yellow fruits	50	0.2	0	9.7	9.5	1.3	0.7	0.01	1	
+F034600	Smoothie grün (Früchte/Gemüse)	Smoothie of green fruits and vegetables	46	0.3	0.1	8	6.6	2.1	1.3	0.03	1	
 F081100	Rhabarber roh	Rhubarb raw	20	0.1	0	1.4	1.1	3.2	0.6	0.01	0	
 F081600	Rhabarbersaft	Rhubarb juice	12	0.1	0	1.1	0.9	0.3	0.5	0.01	1	
 F081902	Rhabarber gezuckert, Konserve, abgetropft	Rhubarb sugared, canned, drained	74	0.1	0	16.8	16.7	1.8	0.3	0.01	0	
@@ -2144,10 +2144,10 @@ M121100	Dickmilch/Sauermilch, entrahmt, max. 0,5 % Fett	Soured milk (thick) skim
 M121200	Dickmilch/Sauermilch, fettarm, mind. 1,5 % bis max. 1,8 % Fett	Soured milk (thick) low-fat, min. 1.5 % to max. 1.8 % fat	52	1.5	0.8	5.2	5.2	0	3.4	0.13	0	
 M121300	Dickmilch/Sauermilch, mind. 3,5 % Fett	Soured milk (thick) min. 3.5 % fat	67	3.5	1.9	4.8	4.8	0	3.3	0.13	0	
 M121500	Sahnedickmilch/Sahnesauermilch, mind. 10 % Fett	Soured milk (thick) min. 10 % fat	123	10	5.3	4.5	4.5	0	3.1	0.13	0	
-M130100	Kefir aus entrahmter Milch, max. 0,5 % Fett	Kefir from skimmed milk, max. 0.5 % fat	37	0.5	0.2	4.3	4.3	0	3.3	0.12	0	
-M130200	Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett	Kefir low-fat, min. 1.5 % to max. 1.8 % fat	46	1.5	0.8	4.2	4.2	0	3.2	0.12	0	
-M130300	Kefir mind. 3,5 % Fett	Kefir min. 3.5 % fat	63	3.5	2.3	4.1	4.1	0	3.2	0.12	0	
-M130500	Sahnekefir mind. 10 % Fett	Kefir min. 10 % fat	120	10	6.8	3.9	3.9	0	3	0.11	0	
+M130100	Kefir aus entrahmter Milch, max. 0,5 % Fett	Kefir from skimmed milk, max. 0.5 % fat	37	0.5	0.2	4.3	4.3	0	3.3	0.12	1	
+M130200	Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett	Kefir low-fat, min. 1.5 % to max. 1.8 % fat	46	1.5	0.8	4.2	4.2	0	3.2	0.12	1	
+M130300	Kefir mind. 3,5 % Fett	Kefir min. 3.5 % fat	63	3.5	2.3	4.1	4.1	0	3.2	0.12	1	
+M130500	Sahnekefir mind. 10 % Fett	Kefir min. 10 % fat	120	10	6.8	3.9	3.9	0	3	0.11	1	
 M141100	Joghurt aus entrahmter Milch, max. 0,5 % Fett	Yogurt from skimmed milk, max. 0.5 % fat	48	0.1	0.1	5.8	5.8	0	5.3	0.14	0	
 M141200	Joghurt fettarm, mind. 1,5 % bis max. 1,8 % Fett	Yogurt low-fat, min. 1.5 % to max. 1.8 % fat	62	1.6	0.9	6	5.8	0	5	0.14	0	
 M141300	Joghurt mild, mind. 3,5 % Fett	Yogurt mild, min. 3.5 % fat	67	3.5	2.3	4.1	4.1	0	4	0.1	0	
@@ -2158,8 +2158,8 @@ M148300	Joghurt mind. 3,5 % Fett, mit Magermilchpulverzusatz	Yogurt min. 3.5 % f
 M148500	Sahnejoghurt mind. 10 % Fett, mit Magermilchpulverzusatz	Yogurt min. 10 % fat, fortified with skimmed milk powder	131	10	5.3	5.5	5.5	0	4	0.15	0	
 M149500	Schafjoghurt	Yogurt made from sheep's milk	90	6.2	3.5	4	4	0	3.9	0.1	0	
 M150000	Buttermilch	Buttermilk	39	0.6	0.4	4.7	4.7	0	3.2	0.09	1	
-M161000	Süßmolke	Sweet whey	25	0.2	0.1	4.7	4.7	0	0.8	0.11	0	
-M162000	Sauermolke	Sour whey	22	0.1	0.1	4.2	4.2	0	0.7	0.12	0	
+M161000	Süßmolke	Sweet whey	25	0.2	0.1	4.7	4.7	0	0.8	0.11	1	
+M162000	Sauermolke	Sour whey	22	0.1	0.1	4.2	4.2	0	0.7	0.12	1	
 M171500	Kaffeesahne mind. 10 % Fett	Coffee cream min. 10 % fat	124	10.5	6.4	4.1	4.1	0	3	0.1	0	
 M172500	Sauerrahm/Saure Sahne, mind. 10 % Fett	Sour cream min. 10 % fat	119	10	5.3	4.1	4.1	0	3.1	0.1	0	
 M172700	Sauerrahm/Schmand, mind. 20 % Fett	Sour cream min. 20 % fat	206	20	10.4	3	3	0	2.8	0.1	0	
@@ -2187,8 +2187,8 @@ M206100	Milchmischgetränk < 1 % Fett, mit Kakao/Schokolade, gesüßt	Milk drink
 M206200	Milchmischgetränk 1,5 % Fett, mit Kakao/Schokolade, gesüßt	Milk drink 1.5 % fat, with cocoa/chocolate, sweetened	63	1.6	1	8.4	8.3	0.4	3.6	0.1	1	
 M206300	Milchmischgetränk 3,5 % Fett, mit Kakao/Schokolade, gesüßt	Milk drink 3.5 % fat, with cocoa/chocolate, sweetened	78	3.5	2.3	7.6	7.6	0.4	3.7	0.1	1	
 M208000	Milchmischgetränk 3,5 % Fett, mit Kaffee, gesüßt	Milk drink 3.5 % fat, with coffee, sweetened	76	3.7	2.2	7.9	7.9	0.1	2.8	0.07	1	
-M231200	Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett, mit Fruchtzubereitung, gesüßt	Kefir low-fat, min. 1.5 % to max. 1.8 % fat, with fruit preparation, sweetened	65	1.3	0.7	9.6	9.6	0.2	2.9	0.11	0	
-M231500	Sahnekefir mind. 10 % Fett, mit Fruchtzubereitung, gesüßt	Kefir min. 10 % fat, with fruit preparation, sweetened	136	7.9	5.3	13.3	12.8	0.1	2.4	0.09	0	
+M231200	Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett, mit Fruchtzubereitung, gesüßt	Kefir low-fat, min. 1.5 % to max. 1.8 % fat, with fruit preparation, sweetened	65	1.3	0.7	9.6	9.6	0.2	2.9	0.11	1	
+M231500	Sahnekefir mind. 10 % Fett, mit Fruchtzubereitung, gesüßt	Kefir min. 10 % fat, with fruit preparation, sweetened	136	7.9	5.3	13.3	12.8	0.1	2.4	0.09	1	
 M241100	Joghurt mild, aus entrahmter Milch, max. 1 % Fett, mit Fruchtzubereitung, gesüßt	Yogurt mild, max. 1 % fat, with fruit preparation, sweetened	75	0.4	0.1	13.3	12.3	0.3	3.5	0.13	0	
 M241200	Joghurt fettarm, mind. 1,5 % bis max. 1,8 % Fett, mit Fruchtzubereitung, gesüßt	Yogurt low-fat, min. 1.5 % to max. 1.8 % fat, with fruit preparation, sweetened	88	1.4	0.7	14.7	13.9	0.2	3.4	0.12	0	
 M241300	Joghurt mild, max. 3,8 % Fett, mit Fruchtzubereitung, gesüßt	Yogurt mild, max. 3.8 % fat, with fruit preparation, sweetened	96	3	1.9	13	12.1	1.2	3	0.1	0	
@@ -2213,8 +2213,8 @@ M2A6100	Milchmischgetränk < 1 % Fett, mit Kakao/Schoko, Zucker und Süßungsmit
 M2A7200	Milchmischgetränk 1,5 % Fett, mit Kaffee, gesüßt	Milk drink 1.5 % fat, with coffee, sweetened	54	1.2	0.7	7.9	7.8	0.2	2.9	0.08	1	
 M2A9200	Joghurt fettarm, mind. 1,5 % bis max. 1,8 % Fett, mit Fruchtzubereitung, Zucker und Süßungsmitteln	Yogurt low-fat, min. 1.5 % to max. 1.8 % fat, with fruit preparation, sugar and artificial sweeteners	59	1.3	0.7	7.2	5.6	0.1	3.7	0.13	0	
 M2D1100	Joghurt aus entrahmter Milch, max. 0,5 % Fett, mit Vanillezubereitung, Zucker und Süßungsmitteln	Yogurt from skimmed milk, max. 0.5 % fat, with vanilla preparation, sugar and artificial sweeteners	46	0.1	0.1	7.1	6.2	0	3.7	0.13	0	
-M2H2300	Milchshake 3,5 % Fett, aromatisiert, gesüßt	Milkshake 3.5 % fat sweetened	78	3.3	2.1	8.5	8.3	0	3.4	0.08	0	
-M2H7300	Milchshake 3,5 % Fett, mit Kakao/Schokolade, gesüßt	Milkshake 3.5 % fat, with cocoa/chocolate, sweetened	78	3.5	2.3	7.6	7.6	0.4	3.7	0.1	0	
+M2H2300	Milchshake 3,5 % Fett, aromatisiert, gesüßt	Milkshake 3.5 % fat sweetened	78	3.3	2.1	8.5	8.3	0	3.4	0.08	1	
+M2H7300	Milchshake 3,5 % Fett, mit Kakao/Schokolade, gesüßt	Milkshake 3.5 % fat, with cocoa/chocolate, sweetened	78	3.5	2.3	7.6	7.6	0.4	3.7	0.1	1	
 M2I3200	Milchmischgetränk 1,5 % Fett, mit Kaffee und Süßungsmitteln	Milk drink 1.5 % fat, with coffee and artificial sweeteners	33	1	0.7	3.6	3.6	0.1	2.4	0.08	1	
 M2I5200	Milchmischgetränk 1,5 % Fett, mit Kaffee, ungesüßt	Milk drink 1.5 % fat, with coffee, unsweetened	36	1.3	0.8	3.2	3.2	0.1	2.9	0.07	1	
 M2J1100	Joghurt aus entrahmter Milch, max. 0,5 % Fett, mit Fruchtzubereitung, Zucker und Süßungsmitteln, angereichert mit Vitaminen	Yogurt from skimmed milk, max. 0.5 % fat, with fruit preparation, sugar and artificial sweeteners, fortified with vitamins	44	0.1	0.1	6.3	5.7	0.1	3.7	0.13	0	
@@ -2234,7 +2234,7 @@ M2R2200	Joghurt fettarm, mind. 1,5 % bis max. 1,8 % Fett, mit Vanillezubereitung
 M2R7300	Joghurt mind. 3,5 % Fett, mit Knuspermüslizubereitung, gesüßt	Yogurt min. 3.5 % fat, with crunchy-muesli mix, sweetened	110	4.8	2.8	11.1	7.2	0.8	4.3	0.14	0	
 M2R8300	Joghurt mind. 3,5 % Fett, mit Vanillezubereitung, gesüßt	Yogurt min. 3.5 % fat, with vanilla preparation, sweetened	94	3.1	2	12.5	11.6	0	3.5	0.09	0	
 M2R9300	Joghurt mind. 3,5 % Fett, mit Nusszubereitung, gesüßt	Yogurt min. 3.5 % fat, with nuts, sweetened	110	3.7	2.1	14.4	13.7	0.3	4	0.09	0	
-M2S8300	Ayran, Joghurtgetränk, gesalzen	Ayran, yogurt drink, salted	39	2	1.3	2.7	2.7	0	2.3	0.64	0	
+M2S8300	Ayran, Joghurtgetränk, gesalzen	Ayran, yogurt drink, salted	39	2	1.3	2.7	2.7	0	2.3	0.64	1	
 M300400	Hartkäse mind. 30 % Fett i. Tr.	Hard cheese min. 30 % fat in dry matter	391	27.4	19.1	0.1	0.1	0	35.6	1.67	0	
 M300600	Hartkäse mind. 45 % Fett i. Tr.	Hard cheese min. 45 % fat in dry matter	374	29.2	20.3	0	0	0	27.5	0.53	0	
 M300700	Hartkäse mind. 50 % Fett i. Tr.	Hard cheese min. 50 % fat in dry matter	399	32.1	22.3	0	0	0	26.9	1.48	0	
@@ -5919,17 +5919,17 @@ X5A9020	Kohlrüben/Steckrüben, gedünstet, mit Speck	Swede stewed, with bacon	2
 X5A9030	Röstzwiebeln	Fried onions	161	9.5	0.7	15.1	7.3	2.3	2.5	0.03	0	
 X5A9040	Rote-Bete-Gemüse gedünstet	Beetroot stewed	59	3.4	0.3	4.9	4.9	1.5	1.3	0.32	0	
 X5A9050	Selleriegemüse gekocht	Celeriac boiled (with lemon juice and salt)	26	0.3	0.1	2.4	1.8	3.7	1.3	0.4	0	
-X5B1000	Gemüse-Kartoffel-Fisch-Brei, mit Karotte und Lachs (ohne Salz, geeignet für Beikost)	Vegetable-potato-fish purree, with carrots and salmon (without salt, suitable as baby food)	100	5.9	0.7	7.6	3.8	1.6	3.3	0.04	0	
-X5B1010	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Hühnerfleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-poultry purree, with carrots and chicken (without salt, suitable as baby food)	110	7	1.2	7.6	3.8	1.6	3.1	0.05	0	
-X5B1020	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Rindfleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-meat purree, with carrots and beef (without salt, suitable as baby food)	92	4.8	0.5	7.6	3.8	1.6	3.5	0.05	0	
-X5B1030	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Schweinefleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-meat purree, with carrots and pork (without salt, suitable as baby food)	92	4.8	0.5	7.6	3.8	1.6	3.6	0.05	0	
-X5B1100	Gemüse-Kartoffel-Brei, mit Fenchel (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with fennel (without salt, suitable as baby food)	81	4.9	0.4	7.1	2.7	2	1.2	0.04	0	
-X5B1110	Gemüse-Kartoffel-Brei, mit Karotte, Kürbis (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with carrot and pumpkin (without salt, suitable as baby food)	86	5	0.4	8.4	4	1.9	0.9	0.02	0	
-X5B1120	Gemüse-Kartoffel-Brei, mit Karotte, Pastinake (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with carrot and parsnip (without salt, suitable as baby food)	92	5	0.4	9.3	3.5	1.6	1.3	0.02	0	
-X5B1130	Gemüse-Kartoffel-Brei, mit Spinat (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with spinach (without salt, suitable as baby food)	77	5	0.4	5.9	1.6	1.2	1.5	0.07	0	
-X5B1140	Gemüse-Kartoffel-Brei, mit Zucchini (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with courgette (without salt, suitable as baby food)	75	5	0.4	6	2.2	0.9	1.1	0.01	0	
-X5B1150	Gemüse-Kartoffel-Getreide-Brei, mit Karotte und Haferflocken (ohne Salz, geeignet für Beikost)	Vegetable-potato-cereal purree, with carrot and oat flakes (without salt, suitable as baby food)	98	4.7	0.4	11.2	5.1	2.1	1.4	0.03	0	
-X5B1160	Gemüse-Süßkartoffel-Brei, mit Karotte, Pastinake (ohne Salz, geeignet für Beikost)	Vegetable-sweet potato purree, with carrot and parsnip (without salt, suitable as baby food)	101	5.2	0.4	11.2	4.7	2	1.3	0.02	0	
+X5B1000	Gemüse-Kartoffel-Fisch-Brei, mit Karotte und Lachs (ohne Salz, geeignet für Beikost)	Vegetable-potato-fish purree, with carrots and salmon (without salt, suitable as baby food)	100	5.9	0.7	7.6	3.8	1.6	3.3	0.04	0	en:baby-foods
+X5B1010	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Hühnerfleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-poultry purree, with carrots and chicken (without salt, suitable as baby food)	110	7	1.2	7.6	3.8	1.6	3.1	0.05	0	en:baby-foods
+X5B1020	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Rindfleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-meat purree, with carrots and beef (without salt, suitable as baby food)	92	4.8	0.5	7.6	3.8	1.6	3.5	0.05	0	en:baby-foods
+X5B1030	Gemüse-Kartoffel-Fleisch-Brei, mit Karotte und Schweinefleisch (ohne Salz, geeignet für Beikost)	Vegetable-potato-meat purree, with carrots and pork (without salt, suitable as baby food)	92	4.8	0.5	7.6	3.8	1.6	3.6	0.05	0	en:baby-foods
+X5B1100	Gemüse-Kartoffel-Brei, mit Fenchel (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with fennel (without salt, suitable as baby food)	81	4.9	0.4	7.1	2.7	2	1.2	0.04	0	en:baby-foods
+X5B1110	Gemüse-Kartoffel-Brei, mit Karotte, Kürbis (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with carrot and pumpkin (without salt, suitable as baby food)	86	5	0.4	8.4	4	1.9	0.9	0.02	0	en:baby-foods
+X5B1120	Gemüse-Kartoffel-Brei, mit Karotte, Pastinake (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with carrot and parsnip (without salt, suitable as baby food)	92	5	0.4	9.3	3.5	1.6	1.3	0.02	0	en:baby-foods
+X5B1130	Gemüse-Kartoffel-Brei, mit Spinat (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with spinach (without salt, suitable as baby food)	77	5	0.4	5.9	1.6	1.2	1.5	0.07	0	en:baby-foods
+X5B1140	Gemüse-Kartoffel-Brei, mit Zucchini (ohne Salz, geeignet für Beikost)	Vegetable-potato purree, with courgette (without salt, suitable as baby food)	75	5	0.4	6	2.2	0.9	1.1	0.01	0	en:baby-foods
+X5B1150	Gemüse-Kartoffel-Getreide-Brei, mit Karotte und Haferflocken (ohne Salz, geeignet für Beikost)	Vegetable-potato-cereal purree, with carrot and oat flakes (without salt, suitable as baby food)	98	4.7	0.4	11.2	5.1	2.1	1.4	0.03	0	en:baby-foods
+X5B1160	Gemüse-Süßkartoffel-Brei, mit Karotte, Pastinake (ohne Salz, geeignet für Beikost)	Vegetable-sweet potato purree, with carrot and parsnip (without salt, suitable as baby food)	101	5.2	0.4	11.2	4.7	2	1.3	0.02	0	en:baby-foods
 X610042	Salzkartoffeln (Kartoffeln mit Salz gekocht)	Potatoes boiled with salt	75	0.1	0	16.1	0.8	1.3	1.8	0.19	0	
 X610143	Rahmkartoffeln/Niedernauer Kartoffeln, gebraten	Cream potatoes "Niedernauer" fried	158	9.1	2.2	13.8	1.8	1.6	4.4	0.35	0	
 X610253	Brühkartoffeln mit Gemüsebrühe und Gemüse	Boiled potatoes with vegetable stock and vegetables	73	1.7	0.1	12.3	1.1	1.2	1.5	0.27	0	
@@ -6009,7 +6009,7 @@ X699412	Folienkartoffeln gebacken	Jacket potatoes baked	90	0.1	0	19.4	1.5	1.5	2.
 X6A1000	Kartoffeln gekocht, mit gebratenem Hähnchenfleisch und Kräutersauce von Bechamelsauce	Potatoes boiled, with fried chicken and herb sauce from Bechamel sauce	97	2.2	1.1	10.2	1	0.8	8.8	0.16	0	
 X6A1010	Kartoffeln mit Schale gekocht	Potatoes boiled with peel	87	0.1	0	18.8	1.5	1.4	2.1	0.12	0	
 X6A1020	Süßkartoffeln und Broccoli gedünstet, mit gekochtem Rindfleisch und Grundsauce hell/weiß	Sweet potatoes and broccoli stewed, with boiled beef and white basic sauce	115	4.7	1.1	8.4	2.2	2	8.8	0.4	0	
-X6A2000	Süßkartoffelpüree (ohne Salz, geeignet für Beikost)	Sweet potato puree (without salt, suitable as baby food)	122	4.8	0.3	17.6	4.5	2.1	1.1	0.01	0	
+X6A2000	Süßkartoffelpüree (ohne Salz, geeignet für Beikost)	Sweet potato puree (without salt, suitable as baby food)	122	4.8	0.3	17.6	4.5	2.1	1.1	0.01	0	en:baby-foods
 X6A3000	Kartoffelsouffle mit Bacon	Potato souffle with bacon	174	10.2	3.5	9.6	1.5	0.8	10.3	1.2	0	
 X6A3010	Kartoffelsouffle mit Broccoli	Potato souffle with broccoli	135	8.2	1.5	7.3	1.7	1.3	7.3	0.54	0	
 X6A3020	Moussaka (Auflauf mit Kartoffeln, Auberginen, Bechamel- und Hackfleischsauce)	Moussaka (gratin with potatoes, aubergines, Bechamel and minced meat sauce)	157	11	4.1	7.5	2.8	1.1	6.1	0.6	0	
@@ -6176,8 +6176,8 @@ X930862	Pfannkuchen/Eierkuchen, gebraten, gefüllt mit gedünstetem Rahmspinat	P
 X931152	Pfannkuchen/Eierkuchen, gebraten, gefüllt mit gedünstetem Mischgemüse	Pancakes fried, filled with stewed mixed vegetables	143	6.7	1	14.8	2.7	2.3	4.6	0.33	0	
 X934412	Flammkuchen Elsässer Art	Tarte flambee Alsatian style	233	11.3	4.4	23	1.8	1.9	8.7	0.8	0	
 X935613	Grießpudding salzig, mit Käse und Petersilie	Semolina pudding, salted, with cheese and parsley	167	7.8	3.6	17	2.8	0.7	6.9	0.35	0	
-X936410	Bananenmilch mit Milch 3,5 % Fett	Banana milk with milk 3.5 % fat	71	2.3	1.4	9.4	8.9	0.5	2.5	0.06	0	
-X937510	Erdbeermilch mit Milch 1,5 % Fett	Strawberry milk with milk 1.5 % fat	54	1.1	0.6	8	7.9	0.7	2.4	0.05	0	
+X936410	Bananenmilch mit Milch 3,5 % Fett	Banana milk with milk 3.5 % fat	71	2.3	1.4	9.4	8.9	0.5	2.5	0.06	1	
+X937510	Erdbeermilch mit Milch 1,5 % Fett	Strawberry milk with milk 1.5 % fat	54	1.1	0.6	8	7.9	0.7	2.4	0.05	1	
 X940112	Mehlschmarren (süddeutsche Mehlspeise) gebraten	"Mehlschmarren" fried (thick flour pancake cut into pieces)	254	11	1.9	29.9	4.1	1.9	7.8	0.14	0	
 X940212	Mehlpüfferchen gebraten	"Mehlpüfferchen" fried (small flour pancakes)	284	10.5	1.6	38.7	12	2.3	7.3	0.45	0	
 X940362	Fränkische Mehlklöße	Franconian flour dumplings	218	3.6	1.1	35.4	1	2.7	9.6	0.98	0	
@@ -6220,8 +6220,8 @@ X9A1060	Hirse-Gemüse-Bratlinge gebraten	Millet-vegetable patties fried	98	3.6	0
 X9A2000	Hirsebrei gesüßt, mit Milch 3,5 % Fett	Millet porridge sweetened, with milk 3.5 % fat	143	4.1	2.3	20.3	7	0.7	5.9	0.11	0	
 X9A2010	Hirsebrei ungesüßt, mit Milch 3,5 % Fett	Millet porridge unsweetened, with milk 3.5 % fat	134	4.2	2.4	17.8	4.2	0.7	6	0.11	0	
 X9A2020	Hirsebrei ungesüßt, mit Mandeldrink	Millet porridge unsweetened, with almond drink	92	1.9	0.2	15.1	0.2	0.8	3.1	0.08	0	
-X9A2030	Getreide-Obst-Brei, mit Apfelmus ungesüßt und Haferflocken (geeignet für Beikost)	Cereal-fruit puree, with unsweetened apple sauce and oat flakes (suitable as baby food)	71	2.3	0.3	10	4.5	2	1.4	0	0	
-X9A2040	Milch-Getreide-Brei, mit Haferflocken und Apfelsaft (geeignet für Beikost)	Milk-cereal puree, with oat flakes and apple juice (suitable as baby food)	98	4	2.2	10.4	5.3	1.1	4.6	0.09	0	
+X9A2030	Getreide-Obst-Brei, mit Apfelmus ungesüßt und Haferflocken (geeignet für Beikost)	Cereal-fruit puree, with unsweetened apple sauce and oat flakes (suitable as baby food)	71	2.3	0.3	10	4.5	2	1.4	0	0	en:baby-foods
+X9A2040	Milch-Getreide-Brei, mit Haferflocken und Apfelsaft (geeignet für Beikost)	Milk-cereal puree, with oat flakes and apple juice (suitable as baby food)	98	4	2.2	10.4	5.3	1.1	4.6	0.09	0	en:baby-foods
 X9A2050	Polenta (Maisbrei mit Wasser, Rapsöl und Salz) gekocht	Polenta (maize porridge prepared with water, rapeseed oil and salt) boiled	114	6	0.5	12.4	0.3	1.9	1.7	0.43	0	
 X9A2060	Porridge gesüßt, mit Milch 3,5 % Fett	Porridge sweetened, with milk 3.5 % fat	141	4.7	2.4	17.4	7.1	2.2	6.1	0.11	0	
 X9A2070	Porridge gesüßt, mit Milch 3,5 % Fett und Kakaopulver	Porridge sweetened, with milk 3.5 % fat and cocoa powder	142	4.8	2.5	17.4	7	2.1	6.2	0.11	0	

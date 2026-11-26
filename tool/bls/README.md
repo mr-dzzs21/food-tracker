@@ -25,7 +25,7 @@ app never needs Python.
    ```
 
    It prints the number of foods, drinks and not-rated foods per category. With the 2025 file: 7,140 foods,
-   360 drinks, 229 without a traffic light.
+   378 drinks, 243 without a traffic light.
 4. Run `flutter test` (the tests read the real file) and look at `git diff assets/data/bls_4_0.tsv`.
 
 The script stops with an error instead of guessing when the file looks different (unknown column, unknown text
@@ -68,10 +68,14 @@ for most drinks the difference is a few percent).
 
 - All foods of the main groups **N** and **P**, except powders (name contains "pulver" without "aus" or
   "zubereitet", e.g. "Instantkaffeepulver"; "Kaffee aus Instantpulver" is a drink).
-- In the other groups, foods whose first word ends with *saft, nektar, drink, getränk, wasser* or starts with
-  *Trink*, and plain milk (*Milch, Vollmilch, H-Milch, Rohmilch, Ziegenmilch, Schafmilch, Buttermilch,
-  Kokosmilch*). German compounds end with the thing itself, so "Orangensaft" is a juice but "Saftschinken" is
-  not. Not drinks: thick syrups (*…dicksaft*), Dickmilch, condensed milk, yoghurt, soups.
+- In the other groups, foods with a word in the **head** of the name (the part before the first comma, bracket
+  or linking word *mit, in, im, aus, auf, ohne, für, nach, von*) that ends with *saft, nektar, drink, getränk,
+  wasser, smoothie, shake, kefir, molke*, starts with *Trink*, is *Ayran*, or is plain or flavoured milk
+  (*Milch, Vollmilch, H-Milch, Rohmilch, Ziegenmilch, Schafmilch, Buttermilch, Kokosmilch, Bananenmilch,
+  Erdbeermilch*). German compounds end with the thing itself, so "Orangensaft" is a juice but "Saftschinken"
+  is not; "Roter Mehrfruchtsaft" and "Sahnekefir" are drinks. Only the head counts, so "Birne in Fruchtsaft",
+  "Thunfisch im eigenen Saft" and "Roggenbrot mit Buttermilch" stay food. Not drinks either: thick syrups
+  (*…dicksaft*), powders, Dickmilch, condensed milk, yoghurt, soups, Buttermilch-Dressing.
 
 **No traffic light (`category`).** The health rating skips these kinds of food, like it does for Open Food Facts
 products (`notRatedCategories` in `lib/features/products/health_rating.dart`). The script writes the matching
@@ -88,6 +92,7 @@ Open Food Facts tag, so the same rule applies:
 | `en:food-additives` | R5 (food acids), R4 except prepared puddings (baking agents, yeast, gelatine, …), glutamate |
 | `en:dried-products-to-be-rehydrated` | R8 (stock cubes/powder) and names with *Instantpulver, Trockenprodukt, Puddingpulver* (not "aus …"/"zubereitet") |
 | `en:sugar-substitutes` | table sweeteners (*Tafelsüße*), sorbitol, xylitol, mannitol |
+| `en:baby-foods` | purées for babies (*geeignet für Beikost*, X groups): the traffic light is made for adults' food |
 
 Everything else is rated with the food thresholds, or the drink thresholds when `liquid` is 1. Known limits:
 fresh herbs (e.g. "Basilikum roh") are rated like vegetables, because the BLS groups do not separate them

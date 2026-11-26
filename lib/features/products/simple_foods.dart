@@ -13,7 +13,7 @@ import 'search_text.dart';
 // see assets/data/README.md):
 //
 // - simple_foods_bls.tsv: values from the BLS (CC BY 4.0), stored as
-//   FoodSource.bls with the BLS code, like the basic foods.
+//   FoodSource.simpleBls with the key of the list.
 // - simple_foods_off.tsv: medians of Open Food Facts products (ODbL) for
 //   foods the BLS does not have, stored as FoodSource.offAverage.
 //
@@ -74,13 +74,14 @@ class SimpleFood {
   /// For Open Food Facts medians: how many products went into them.
   final int? offProductCount;
 
-  /// Where the food is stored on the device: BLS values share the row of
-  /// the BLS food (same code), the others get their own kind.
+  /// How the food is stored on the device. Always its own row (not the row
+  /// of the BLS food with the same values): its name, portion and
+  /// drink/food setting are its own.
   FoodSource get source =>
-      blsCode == null ? FoodSource.offAverage : FoodSource.bls;
+      blsCode == null ? FoodSource.offAverage : FoodSource.simpleBls;
 
-  /// The key of the stored food within its [source].
-  String get externalId => blsCode ?? key;
+  /// The key of the stored food within its [source]: the key of the list.
+  String get externalId => key;
 
   /// The name in the UI language (German unless it is English).
   String nameFor(String languageCode) => languageCode == 'en' ? nameEn : nameDe;

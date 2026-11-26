@@ -50,17 +50,22 @@ NEAR_ZERO = {"TR", "<LOD", "<LOQ", "<LOD or <LOQ"}  # traces / below the limit
 # drinks (N: without alcohol, P: with alcohol). Their powders (instant coffee,
 # coffee substitute) are not drinks.
 DRINK_GROUPS = {"N", "P"}
-# Drinks in other groups (juices are with the fruit, milk with the dairy
-# products). Checked on the first word of the German name, because German
-# compounds end with the thing itself ("Orangen|saft", "Hafer|drink"). Thick
-# syrups ("Apfeldicksaft") stay food; "Dickmilch" is not in the milk list.
-LIQUID_FIRST_WORD = re.compile(
-    r"(saft|nektar|drink|getränk|wasser)$"
-    r"|^trink"
+# Drinks in other groups (juices are with the fruit, milk, kefir and whey with
+# the dairy products, smoothies with the fruit). Checked on every word of the
+# name's head: the part before the first comma, bracket or linking word, so
+# "Roter Mehrfruchtsaft" is a drink but "Birne in Fruchtsaft" and "Brot mit
+# Buttermilch" are not. German compounds end with the thing itself
+# ("Orangen|saft", "Hafer|drink", "Süß|molke"), so the end of a word counts.
+# Thick syrups ("Apfeldicksaft") stay food; "Dickmilch" is not in the milk list.
+LIQUID_WORD = re.compile(
+    r"(saft|nektar|drink|getränk|wasser|smoothie|shake|kefir|molke)$"
+    r"|^trink|^ayran$"
     r"|^(h-)?(voll|mager)?milch$"
-    r"|^(roh|ziegen|schaf|butter|kokos)milch$"
+    r"|^(roh|ziegen|schaf|butter|kokos|bananen|erdbeer)milch$"
 )
-NOT_LIQUID_FIRST_WORD = re.compile(r"dicksaft$|pulver")
+NOT_LIQUID_WORD = re.compile(r"dicksaft$|pulver")
+# Where the head of a name ends: "Kefir aus entrahmter Milch" -> "kefir".
+HEAD_END = re.compile(r"[,(]|\b(?:mit|in|im|aus|auf|ohne|für|nach|von)\b")
 
 # --- No traffic light (column `category`) ------------------------------------
 # The app's health rating skips some kinds of food (lib/features/products/
@@ -84,6 +89,9 @@ ADDITIVE = re.compile(r"glutamat")
 TO_BE_REHYDRATED = re.compile(r"instantpulver|trockenprodukt|puddingpulver")
 PREPARED = re.compile(r"\baus\b|zubereitet")
 SUGAR_SUBSTITUTE = re.compile(r"tafelsüße|^(sorbit|xylit|mannit|erythrit)\b")
+# Purées for babies (X groups, "geeignet für Beikost"): the traffic light is
+# made for adults' food.
+BABY_FOOD = re.compile(r"geeignet für beikost")
 
 
 def clean_name(value):
@@ -121,19 +129,24 @@ def format_number(value, decimals):
     return "0" if text == "-0" else text
 
 
-def first_word(name):
-    """'Rohmilch/Vorzugsmilch, mind. 3,5 % Fett' -> 'rohmilch'."""
-    return re.split(r"[ ,/(]", name.lower(), maxsplit=1)[0]
+def head_words(name):
+    """'Kefir aus entrahmter Milch, max. 0,5 % Fett' -> ['kefir'];
+    'Rohmilch/Vorzugsmilch, mind. 3,5 % Fett' -> ['rohmilch', 'vorzugsmilch']."""
+    head = HEAD_END.split(name.lower(), maxsplit=1)[0]
+    return [word for word in re.split(r"[ /]", head) if word]
 
 
 def is_liquid(code, name_de):
-    """Groups N and P (not their powders), and juices, plant drinks and milk."""
+    """Groups N and P (not their powders), and juices, smoothies, plant
+    drinks, milk, kefir and whey."""
     if code[0] in DRINK_GROUPS:
         name = name_de.lower()
         is_powder = "pulver" in name and not PREPARED.search(name)
         return not is_powder
-    word = first_word(name_de)
-    return bool(LIQUID_FIRST_WORD.search(word)) and not NOT_LIQUID_FIRST_WORD.search(word)
+    return any(
+        LIQUID_WORD.search(word) and not NOT_LIQUID_WORD.search(word)
+        for word in head_words(name_de)
+    )
 
 
 def category(code, name_de, alcohol):
@@ -157,6 +170,8 @@ def category(code, name_de, alcohol):
         return "en:food-additives"  # baking agents, gelatine, yeast, …
     if SUGAR_SUBSTITUTE.search(name):
         return "en:sugar-substitutes"
+    if BABY_FOOD.search(name):
+        return "en:baby-foods"
     return ""
 
 

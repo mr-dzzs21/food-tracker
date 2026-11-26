@@ -226,8 +226,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final food = (await db.select(db.foods).get()).single;
-    expect(food.source, FoodSource.bls);
-    expect(food.externalId, 'C133000');
+    expect(food.source, FoodSource.simpleBls);
+    expect(food.externalId, 'haferflocken');
     expect(food.name, 'Haferflocken');
     expect(food.servingSize, 40);
     expect(food.servingLabel, '4 EL');

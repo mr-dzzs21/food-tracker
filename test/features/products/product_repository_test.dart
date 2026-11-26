@@ -357,31 +357,90 @@ void main() {
       offProductCount: 23,
     );
 
-    test('one with BLS values is stored like that BLS food, with the short '
+    test('one with BLS values gets its own kind and key, with the short '
         'name and the typical portion', () async {
       final id = await repo.saveSimpleFood(banana, languageCode: 'de');
 
       final food = (await repo.getFood(id))!;
-      expect(food.source, FoodSource.bls);
-      expect(food.externalId, 'F503100');
+      expect(food.source, FoodSource.simpleBls);
+      expect(food.externalId, 'banane');
       expect(food.name, 'Banane');
       expect(food.servingSize, 120);
       expect(food.servingLabel, '1 Banane');
       expect(food.nutrients, banana.nutrients);
       expect(rateFood(food), isA<Rated>());
+    });
 
-      // The same row as the BLS food with that code (one row per BLS food).
-      final blsId = await repo.saveBasicFood(
-        const BasicFood(
-          code: 'F503100',
-          nameDe: 'Banane roh',
-          nameEn: 'Banana raw',
-          nutrients: Nutrients(kcal: 79, fat: 0.2, carbs: 18, protein: 1.2),
-        ),
-        languageCode: 'de',
-      );
-      expect(blsId, id);
-      expect(await db.select(db.foods).get(), hasLength(1));
+    test(
+      'it never shares the row of the BLS food with the same values',
+      () async {
+        // Kefir: a drink in the simple list, the BLS name is technical.
+        const kefir = SimpleFood(
+          key: 'kefir',
+          nameDe: 'Kefir',
+          nameEn: 'Kefir',
+          nutrients: Nutrients(kcal: 50, fat: 1.5, carbs: 4, protein: 3.4),
+          isLiquid: true,
+          portionGrams: 200,
+          portionDe: '1 Glas',
+          portionEn: '1 glass',
+          blsCode: 'M130200',
+        );
+        const blsKefir = BasicFood(
+          code: 'M130200',
+          nameDe: 'Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett',
+          nameEn: 'Kefir low fat',
+          nutrients: Nutrients(kcal: 50, fat: 1.5, carbs: 4, protein: 3.4),
+        );
+        final simpleId = await repo.saveSimpleFood(kefir, languageCode: 'de');
+        await repo.toggleFavourite(simpleId);
+        final blsId = await repo.saveBasicFood(blsKefir, languageCode: 'de');
+        // Opening the simple food again does not touch the BLS row.
+        expect(await repo.saveSimpleFood(kefir, languageCode: 'de'), simpleId);
+
+        expect(blsId, isNot(simpleId));
+        final simple = (await repo.getFood(simpleId))!;
+        final bls = (await repo.getFood(blsId))!;
+        expect(simple.name, 'Kefir');
+        expect(simple.isLiquid, isTrue);
+        expect(simple.servingLabel, '1 Glas');
+        expect(simple.isFavourite, isTrue);
+        expect(bls.source, FoodSource.bls);
+        expect(bls.name, 'Kefir fettarm, mind. 1,5 % bis max. 1,8 % Fett');
+        expect(bls.isLiquid, isFalse);
+        expect(bls.servingLabel, isNull);
+        expect(bls.isFavourite, isFalse);
+        // A diary entry of one does not become the "Zuletzt" amount of the
+        // other (lastAmountFor works by food id).
+        expect(await db.select(db.foods).get(), hasLength(2));
+      },
+    );
+
+    test('a simple food stored as a BLS row by an older version stays a '
+        'normal BLS food', () async {
+      // Before FoodSource.simpleBls, "Banane" was stored as (bls, F503100).
+      final oldId = await db
+          .into(db.foods)
+          .insert(
+            FoodsCompanion.insert(
+              source: FoodSource.bls,
+              externalId: const Value('F503100'),
+              name: 'Banane',
+              kcal: const Value(79),
+              servingSize: const Value(120),
+              servingLabel: const Value('1 Banane'),
+              isFavourite: const Value(true),
+              createdAt: testNow,
+            ),
+          );
+
+      final old = (await repo.getFood(oldId))!;
+      expect(rateFood(old), isA<Rated>());
+      // Opening "Banane" now creates its own row; the old one keeps its star.
+      final newId = await repo.saveSimpleFood(banana, languageCode: 'de');
+      expect(newId, isNot(oldId));
+      expect((await repo.getFood(oldId))!.isFavourite, isTrue);
+      expect((await repo.getFood(newId))!.source, FoodSource.simpleBls);
     });
 
     test('an Open Food Facts average gets its own kind and key', () async {
@@ -411,6 +470,16 @@ void main() {
       'the local search leaves them out (they have their own section)',
       () async {
         await repo.saveSimpleFood(skyrVanilla, languageCode: 'de');
+        await repo.saveSimpleFood(
+          const SimpleFood(
+            key: 'skyr-natur',
+            nameDe: 'Skyr natur',
+            nameEn: 'Skyr, plain',
+            nutrients: Nutrients(kcal: 64),
+            blsCode: 'M710100',
+          ),
+          languageCode: 'de',
+        );
         await insertOwnFood('Skyr mit Honig');
         expect(
           [for (final f in await repo.searchLocal('skyr')) f.name],
