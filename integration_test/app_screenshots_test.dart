@@ -230,6 +230,8 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> shot(WidgetTester tester, String name) async {
+    // Shows in the log which screen was reached (helps when a step fails).
+    debugPrint('screenshot: $name');
     await tester.pumpAndSettle();
     // On a real device the database answers asynchronously and tab changes
     // animate: wait a moment so the picture shows the finished screen.
@@ -244,7 +246,12 @@ void main() {
     String locale = 'de',
     String theme = 'light',
   }) async {
-    final overrides = testOverrides(db: db, now: testNow);
+    final overrides = testOverrides(
+      db: db,
+      now: testNow,
+      // Load the real bundled food lists, so the search shows real results.
+      realFoodLists: true,
+    );
     final prefs = SharedPreferencesAsync();
     await prefs.setString('locale', locale);
     await prefs.setString('theme_mode', theme);
@@ -295,6 +302,17 @@ void main() {
 
     app.go(Routes.addFood('2026-11-14', 3));
     await shot(tester, '05-add-food');
+    // The simple food list while typing (offline: no brand products here).
+    await tester.enterText(find.byType(TextField).first, 'skyr');
+    await tester.pump(const Duration(seconds: 2));
+    await shot(tester, '05b-search-skyr');
+    await tester.enterText(find.byType(TextField).first, 'reis');
+    await tester.pump(const Duration(seconds: 2));
+    await shot(tester, '05c-search-reis');
+    // Close the keyboard again: a text field that is still focused when the
+    // test tears the app down crashes Flutter's semantics update on iOS.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
 
     app.go(Routes.scan);
     // Give the camera time to start (or to report that there is none).

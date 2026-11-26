@@ -411,6 +411,23 @@ void main() {
     expect(inPage('355 kcal'), findsOneWidget);
   });
 
+  // Found on the iOS simulator: with semantics on (VoiceOver, integration
+  // tests) typing a search crashed in Flutter's semantics update.
+  testWidgets('typing a search works with the screen reader on', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await openAddFood(tester, simpleFoods: simpleFoods, basicFoods: basicFoods);
+
+    await typeSearch(tester, 'skyr');
+    await typeSearch(tester, 'reis');
+    await typeSearch(tester, 'skyr');
+
+    expect(tester.takeException(), isNull);
+    expect(inPage('Skyr natur'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('the technical BLS list waits behind "Weitere Lebensmittel '
       '(BLS)"; without a simple food it shows at once', (tester) async {
     await openAddFood(tester, simpleFoods: simpleFoods, basicFoods: basicFoods);

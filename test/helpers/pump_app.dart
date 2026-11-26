@@ -52,22 +52,27 @@ void useInMemoryPreferences() {
 /// real file is not loaded in tests, because that runs in a background
 /// isolate that widget tests do not wait for. [simpleFoods] likewise (the
 /// real asset loading also decodes larger files in an isolate).
+/// [realFoodLists] keeps the real bundled lists instead (only for the
+/// integration test on a simulator or device, where the isolate runs).
 List<Override> testOverrides({
   required AppDatabase db,
   http.Client? client,
   DateTime? now,
   List<BasicFood> basicFoods = const [],
   List<SimpleFood> simpleFoods = const [],
+  bool realFoodLists = false,
 }) {
   useInMemoryPreferences();
   return [
     databaseProvider.overrideWithValue(db),
-    basicFoodsLoaderProvider.overrideWithValue(
-      () async => BasicFoodIndex(basicFoods),
-    ),
-    simpleFoodsLoaderProvider.overrideWithValue(
-      () async => SimpleFoodIndex(simpleFoods),
-    ),
+    if (!realFoodLists) ...[
+      basicFoodsLoaderProvider.overrideWithValue(
+        () async => BasicFoodIndex(basicFoods),
+      ),
+      simpleFoodsLoaderProvider.overrideWithValue(
+        () async => SimpleFoodIndex(simpleFoods),
+      ),
+    ],
     httpClientProvider.overrideWithValue(client ?? offlineClient()),
     clockProvider.overrideWithValue(Clock.fixed(now ?? testNow)),
     sharedPreferencesProvider.overrideWithValue(SharedPreferencesAsync()),
