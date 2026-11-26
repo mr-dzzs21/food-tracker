@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_info.dart';
@@ -26,6 +27,10 @@ class ProductRepository {
   /// Cached products older than this are refreshed when they are opened.
   static const cacheMaxAge = Duration(days: 30);
 
+  /// A cached product without calories is asked for again after this time,
+  /// while the user waits: someone may have added them at Open Food Facts.
+  static const incompleteMaxAge = Duration(days: 1);
+
   /// Length of the "Zuletzt gegessen" and "Zuletzt angesehen" lists.
   static const recentLimit = 20;
 
@@ -42,7 +47,13 @@ class ProductRepository {
   /// - Stored less than [cacheMaxAge] ago (or an own food): returned at once.
   /// - Older: returned at once, and refreshed in the background. A failed
   ///   refresh is ignored – old data is better than an error.
+  /// - Stored without calories more than [incompleteMaxAge] ago: downloaded
+  ///   again (the user waits).
   /// - Unknown: downloaded and stored.
+  ///
+  /// A scanned or typed [barcode] is checked like on the package
+  /// ([lookupCodeFor]). With [trusted] – a code from Open Food Facts itself,
+  /// for example a search hit – it is only normalised ([trustedLookupCode]).
   ///
   /// Throws [InvalidBarcode], the failures of [OpenFoodFactsClient.lookup],
   /// and [IncompleteProduct] when the calories are unknown. Such a product is
@@ -50,19 +61,29 @@ class ProductRepository {
   Future<Food> lookupBarcode(
     String barcode, {
     String languageCode = 'de',
+    bool trusted = false,
   }) async {
-    final code = lookupCodeFor(barcode);
+    final code = trusted ? trustedLookupCode(barcode) : lookupCodeFor(barcode);
     if (code == null) throw InvalidBarcode(barcode);
 
     final cached = await _foodByCode(code);
     if (cached != null) {
+      if (_isIncompleteForLong(cached)) {
+        return _downloadAgain(code, languageCode);
+      }
       if (_isStale(cached)) {
         unawaited(_refreshInBackground(code, languageCode));
       }
       return _requireKcal(cached, code);
     }
 
-    final product = await _client.lookup(code, languageCode: languageCode);
+    // The code is checked (or trusted) above, so the client must not apply
+    // the scanner rules a second time.
+    final product = await _client.lookup(
+      code,
+      languageCode: languageCode,
+      trusted: true,
+    );
     return _requireKcal(await _saveOffProduct(product), code);
   }
 
@@ -89,22 +110,55 @@ class ProductRepository {
         _clock.now().difference(fetchedAt) >= cacheMaxAge;
   }
 
+  /// An Open Food Facts product stored without calories, checked more than
+  /// [incompleteMaxAge] ago.
+  bool _isIncompleteForLong(Food food) {
+    if (food.source != FoodSource.openFoodFacts || food.kcal != null) {
+      return false;
+    }
+    final fetchedAt = food.fetchedAt;
+    return fetchedAt == null ||
+        _clock.now().difference(fetchedAt) >= incompleteMaxAge;
+  }
+
   Food _requireKcal(Food food, String code) {
     if (food.kcal == null) throw IncompleteProduct(code);
     return food;
   }
 
+  /// Downloads a product that was stored without calories once more. Still
+  /// without calories or no answer (offline, …): [IncompleteProduct] as
+  /// before, so the user can still fill in the values.
+  Future<Food> _downloadAgain(String code, String languageCode) async {
+    final OffProduct product;
+    try {
+      product = await _client.lookup(
+        code,
+        languageCode: languageCode,
+        trusted: true,
+      );
+    } on AppFailure {
+      throw IncompleteProduct(code);
+    }
+    return _requireKcal(await _saveOffProduct(product), code);
+  }
+
   Future<void> _refreshInBackground(String code, String languageCode) async {
     try {
-      // No automatic retry: nobody is waiting for this request.
+      // No automatic retry: nobody is waiting for this request. The code is
+      // a stored one, so it is not checked again.
       final product = await _client.lookup(
         code,
         languageCode: languageCode,
         retry: false,
+        trusted: true,
       );
       await _saveOffProduct(product);
-    } on AppFailure {
-      // Offline, rate limited, removed from OFF, …: keep the cached data.
+    } on Object catch (error) {
+      // Offline, rate limited, removed from OFF, an unexpected answer …: keep
+      // the cached data. Nobody waits for this future, so nothing may escape
+      // from it (it would be an uncaught error).
+      debugPrint('Background refresh of $code failed: $error');
     }
   }
 
@@ -169,7 +223,14 @@ class ProductRepository {
 
   /// The stored food with this barcode (any spelling, for example with or
   /// without leading zeros), or `null`.
+  ///
+  /// First the code as Open Food Facts stores it (a search hit can have a
+  /// code the scanner rules refuse, see [trustedLookupCode]), then by the
+  /// scanner rules ([lookupCodeFor]).
   Future<Food?> getFoodByBarcode(String barcode) async {
+    final stored = trustedLookupCode(barcode);
+    final food = stored == null ? null : await _foodByCode(stored);
+    if (food != null) return food;
     final code = lookupCodeFor(barcode);
     return code == null ? null : _foodByCode(code);
   }
@@ -276,10 +337,11 @@ class ProductRepository {
   /// Creates (no [id]) or updates an own food and returns its id.
   ///
   /// [nutrients] are per 100 g (or 100 ml when [isLiquid]). A [barcode] is
-  /// checked and normalised ([InvalidBarcode] if wrong). If a product with
-  /// this barcode is already stored (for example an incomplete OFF product
-  /// the user now completes), that row becomes the own food, so favourites
-  /// and recents stay and the barcode is not stored twice.
+  /// checked and normalised ([InvalidBarcode] if wrong) – unless a product
+  /// with this code is already stored (for example an incomplete OFF product
+  /// the user now completes, maybe from a search hit with an unusual code):
+  /// then that row becomes the own food, so favourites and recents stay and
+  /// the barcode is not stored twice.
   Future<int> saveOwnFood({
     int? id,
     required String name,
@@ -292,7 +354,8 @@ class ProductRepository {
   }) async {
     String? code;
     if (barcode != null && barcode.trim().isNotEmpty) {
-      code = lookupCodeFor(barcode);
+      code =
+          (await getFoodByBarcode(barcode))?.barcode ?? lookupCodeFor(barcode);
       if (code == null) throw InvalidBarcode(barcode);
     }
 
@@ -467,15 +530,21 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 });
 
 /// Key for [barcodeLookupProvider]. Use
-/// `AppLocalizations.of(context).localeName` as the language.
-typedef BarcodeLookup = ({String barcode, String languageCode});
+/// `AppLocalizations.of(context).localeName` as the language. [trusted]: the
+/// code comes from Open Food Facts itself (a search hit), see
+/// [ProductRepository.lookupBarcode].
+typedef BarcodeLookup = ({String barcode, String languageCode, bool trusted});
 
 /// A product by barcode (cache first). Errors are [AppFailure]s.
 final barcodeLookupProvider = FutureProvider.autoDispose
     .family<Food, BarcodeLookup>((ref, key) {
       return ref
           .watch(productRepositoryProvider)
-          .lookupBarcode(key.barcode, languageCode: key.languageCode);
+          .lookupBarcode(
+            key.barcode,
+            languageCode: key.languageCode,
+            trusted: key.trusted,
+          );
     });
 
 /// Key for [productSearchProvider]; [page] starts at 1.

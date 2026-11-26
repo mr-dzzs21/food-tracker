@@ -260,6 +260,7 @@ class _AddFoodPageState extends ConsumerState<AddFoodPage> {
             product.barcode,
             day: widget.day,
             mealId: widget.mealId,
+            fromSearch: true,
           ),
         ),
       ),

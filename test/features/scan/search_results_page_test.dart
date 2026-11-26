@@ -260,7 +260,55 @@ void main() {
     await tester.tap(find.text('Zarte Haferflocken'));
     await tester.pumpAndSettle();
 
-    expect(router.state.uri.toString(), Routes.product('4260070610493'));
+    expect(
+      router.state.uri.toString(),
+      Routes.product('4260070610493', fromSearch: true),
+    );
+  });
+
+  testWidgets('a hit whose code the scanner would refuse still opens', (
+    tester,
+  ) async {
+    // Open Food Facts lists products under a code with a wrong check digit
+    // and under 8-digit codes that are not UPC-E codes to expand.
+    respond = (request) async {
+      if (request.url.host == 'search.openfoodfacts.org') {
+        return jsonResponse(
+          jsonEncode({
+            'hits': [
+              {'code': '4003586100314', 'product_name': 'Chips mit Tippfehler'},
+              {'code': '04252614', 'product_name': 'Kurzer Code'},
+            ],
+            'count': 2,
+            'page': 1,
+            'page_count': 1,
+          }),
+        );
+      }
+      final json = fixtureJson('crisps.json');
+      final product = json['product']! as Map<String, Object?>;
+      final code = request.url.pathSegments.last;
+      product['code'] = code;
+      product['product_name_de'] = code == '04252614'
+          ? 'Kurzer Code'
+          : 'Chips mit Tippfehler';
+      return jsonResponse(jsonEncode(json));
+    };
+    final router = await openSearch(tester, 'Chips');
+
+    for (final (name, code) in [
+      ('Chips mit Tippfehler', '4003586100314'),
+      ('Kurzer Code', '04252614'),
+    ]) {
+      await tester.tap(find.text(name));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Barcode sieht ungültig aus'), findsNothing);
+      // The product page with its name and the "add" button.
+      expect(find.text(name), findsOneWidget);
+      expect(requests.last.url.path, '/api/v3.4/product/$code');
+      router.pop();
+      await tester.pumpAndSettle();
+    }
   });
 
   testWidgets('no results: friendly empty state', (tester) async {

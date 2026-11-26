@@ -42,8 +42,17 @@ abstract final class Routes {
   static String search(String query) =>
       Uri(path: '/scan/search', queryParameters: {'q': query}).toString();
 
-  static String product(String barcode, {String? day, int? mealId}) =>
-      _withTarget('/product/$barcode', day, mealId);
+  /// The product page of a barcode. [fromSearch]: the code is from an Open
+  /// Food Facts search hit, so it is not checked like a scanned code
+  /// (`?from=search`, see ProductRepository.lookupBarcode).
+  static String product(
+    String barcode, {
+    String? day,
+    int? mealId,
+    bool fromSearch = false,
+  }) => _withTarget('/product/$barcode', day, mealId, {
+    if (fromSearch) 'from': 'search',
+  });
 
   static String food(int id, {String? day, int? mealId}) =>
       _withTarget('/food/$id', day, mealId);
@@ -57,9 +66,18 @@ abstract final class Routes {
 
   static String editFood(int id) => '/food/$id/edit';
 
-  /// Adds `?day=…&meal=…` when the food should go to a specific meal.
-  static String _withTarget(String path, String? day, int? mealId) =>
-      _withQuery(path, {'day': ?day, if (mealId != null) 'meal': '$mealId'});
+  /// Adds `?day=…&meal=…` when the food should go to a specific meal, and
+  /// [more] parameters.
+  static String _withTarget(
+    String path,
+    String? day,
+    int? mealId, [
+    Map<String, String> more = const {},
+  ]) => _withQuery(path, {
+    'day': ?day,
+    if (mealId != null) 'meal': '$mealId',
+    ...more,
+  });
 
   /// [path] plus the encoded [query]; no lonely `?` when [query] is empty.
   static String _withQuery(String path, Map<String, String> query) =>
@@ -167,6 +185,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           barcode: state.pathParameters['barcode']!,
           day: _dayParam(state),
           mealId: _mealParam(state),
+          fromSearch: state.uri.queryParameters['from'] == 'search',
         ),
       ),
       // '/food/new' must come before '/food/:id', otherwise "new" would be

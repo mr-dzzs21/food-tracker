@@ -28,6 +28,18 @@ String renamedCrisps(String name) {
   return jsonEncode(json);
 }
 
+/// A recorded response for the code the request asks for (OFF answers with
+/// the code it has the product under).
+Future<http.Response> answerWithRequestedCode(
+  http.Request request,
+  String fixture,
+) async {
+  final json = fixtureJson(fixture);
+  (json['product']! as Map<String, Object?>)['code'] =
+      request.url.pathSegments.last;
+  return jsonResponse(jsonEncode(json));
+}
+
 void main() {
   late AppDatabase db;
   late DateTime now;
@@ -168,6 +180,102 @@ void main() {
         throwsA(isA<IncompleteProduct>()),
       );
       expect(requests, hasLength(1));
+    });
+
+    test('product without kcal: asked for again after a day, while the user '
+        'waits', () async {
+      respond = (_) async => jsonResponse(fixtureText('no_energy.json'));
+      await expectLater(
+        repo.lookupBarcode('4260426710013'),
+        throwsA(isA<IncompleteProduct>()),
+      );
+
+      // A day later someone has added the calories at Open Food Facts.
+      now = now.add(const Duration(days: 1));
+      respond = (_) async {
+        final json = fixtureJson('no_energy.json');
+        final product = json['product']! as Map<String, Object?>;
+        (product['nutriments']! as Map<String, Object?>)['energy-kcal_100g'] =
+            67;
+        return jsonResponse(jsonEncode(json));
+      };
+      final food = await repo.lookupBarcode('4260426710013');
+      expect(food.kcal, 67);
+      expect(food.fetchedAt, now);
+      expect(requests, hasLength(2));
+    });
+
+    test('product without kcal, asked again while offline: still '
+        'IncompleteProduct (the form can be filled in)', () async {
+      respond = (_) async => jsonResponse(fixtureText('no_energy.json'));
+      await expectLater(
+        repo.lookupBarcode('4260426710013'),
+        throwsA(isA<IncompleteProduct>()),
+      );
+      now = now.add(const Duration(days: 2));
+      respond = (_) async => throw http.ClientException('offline');
+      await expectLater(
+        repo.lookupBarcode('4260426710013'),
+        throwsA(isA<IncompleteProduct>()),
+      );
+      expect(requests, hasLength(3)); // first lookup + one try with retry
+      expect((await repo.getFoodByBarcode('4260426710013'))!.fat, 3.5);
+    });
+
+    test(
+      'a search hit opens with OFF\'s own code (no scanner rules)',
+      () async {
+        respond = (request) => answerWithRequestedCode(request, 'crisps.json');
+        // Wrong check digit: a scanned code like this is refused …
+        await expectLater(
+          repo.lookupBarcode('4003586100314'),
+          throwsA(isA<InvalidBarcode>()),
+        );
+        // … but a search hit with it is opened.
+        final hit = await repo.lookupBarcode('4003586100314', trusted: true);
+        expect(hit.barcode, '4003586100314');
+        // An 8-digit code of OFF is not expanded like a UPC-E.
+        await repo.lookupBarcode('04252614', trusted: true);
+        expect(
+          [for (final r in requests) r.url.path],
+          ['/api/v3.4/product/4003586100314', '/api/v3.4/product/04252614'],
+        );
+        // Found again on the device by the same code.
+        expect((await repo.getFoodByBarcode('04252614'))!.barcode, '04252614');
+      },
+    );
+
+    test(
+      'completing a search hit with an unusual code keeps its row',
+      () async {
+        respond = (request) =>
+            answerWithRequestedCode(request, 'no_energy.json');
+        await expectLater(
+          repo.lookupBarcode('4003586100314', trusted: true),
+          throwsA(isA<IncompleteProduct>()),
+        );
+        final cached = (await repo.getFoodByBarcode('4003586100314'))!;
+        final id = await repo.saveOwnFood(
+          name: 'Joghurt',
+          barcode: '4003586100314',
+          nutrients: const Nutrients(kcal: 67),
+        );
+        expect(id, cached.id);
+        expect((await repo.getFood(id))!.barcode, '4003586100314');
+      },
+    );
+
+    test('a background refresh never lets an error escape', () async {
+      final old = await repo.lookupBarcode(crispsCode);
+      now = now.add(const Duration(days: 31));
+      // Something that is not an AppFailure (a bug, an odd network error).
+      respond = (_) async => throw StateError('unexpected');
+
+      final cached = await repo.lookupBarcode(crispsCode);
+      await pumpEventQueue();
+
+      expect(cached.id, old.id);
+      expect((await repo.getFood(old.id))!.fetchedAt, testNow);
     });
 
     test('not found and invalid barcodes store nothing', () async {
@@ -667,7 +775,11 @@ void main() {
       );
 
       final lookup = container.listen(
-        barcodeLookupProvider((barcode: crispsCode, languageCode: 'en')).future,
+        barcodeLookupProvider((
+          barcode: crispsCode,
+          languageCode: 'en',
+          trusted: false,
+        )).future,
         (_, _) {},
       );
       final food = await lookup.read();

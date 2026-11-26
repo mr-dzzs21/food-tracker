@@ -131,6 +131,33 @@ void main() {
       expect(h.requests.single.url.path, '/api/v3.4/product/0042100005264');
     });
 
+    test(
+      'a trusted code (search hit) is only normalised, not checked',
+      () async {
+        final h = Harness(
+          (_) async => jsonResponse(fixtureText('crisps.json')),
+        );
+        // Wrong check digit: refused when scanned, but OFF lists it.
+        await h.client.lookup('4003586100314', trusted: true);
+        // Not a UPC-E to expand: OFF's own 8-digit code.
+        await h.client.lookup('04252614', trusted: true);
+        // Leading zeros like OFF.
+        await h.client.lookup('0000042376095', trusted: true);
+        expect(
+          [for (final r in h.requests) r.url.path],
+          [
+            '/api/v3.4/product/4003586100314',
+            '/api/v3.4/product/04252614',
+            '/api/v3.4/product/42376095',
+          ],
+        );
+        await expectLater(
+          h.client.lookup('abc', trusted: true),
+          throwsFailure<InvalidBarcode>(),
+        );
+      },
+    );
+
     test('a valid EAN-8 is sent as it is', () async {
       final h = Harness((_) async => jsonResponse(fixtureText('water.json')));
       final product = await h.client.lookup('42376095');
@@ -255,9 +282,54 @@ void main() {
       await expectLater(h.client.lookup('5449000000996'), maintenance);
       expect(h.requests, hasLength(1));
 
-      // The pause also blocks searches.
-      await expectLater(h.client.search('cola'), maintenance);
+      await expectLater(h.client.lookup('4003586100313'), maintenance);
       expect(h.requests, hasLength(1));
+    });
+
+    test('each server gets its own pause: a 503 of the search service does '
+        'not block barcode lookups', () async {
+      final h = Harness(
+        (request) async => request.url.host == OpenFoodFactsClient.searchHost
+            ? htmlResponse(503)
+            : jsonResponse(fixtureText('crisps.json')),
+      );
+      await expectLater(
+        h.client.search('cola'),
+        throwsFailure<ServerUnavailable>(),
+      );
+      expect(h.requests, hasLength(1));
+
+      // The product API is a different server: still asked.
+      final product = await h.client.lookup('4003586100313');
+      expect(product.name, 'chipsfrisch ungarisch');
+      expect(h.requests, hasLength(2));
+
+      // The search service itself is left alone for a minute.
+      await expectLater(
+        h.client.search('cola'),
+        throwsFailure<ServerUnavailable>(),
+      );
+      expect(h.requests, hasLength(2));
+      h.now = h.now.add(const Duration(seconds: 61));
+      await expectLater(
+        h.client.search('cola'),
+        throwsFailure<ServerUnavailable>(),
+      );
+      expect(h.requests, hasLength(3));
+    });
+
+    test('a TLS error (e.g. HandshakeException) → Offline', () async {
+      final h = Harness(
+        (_) async => throw const HandshakeException('wifi login page'),
+      );
+      await expectLater(
+        h.client.lookup('5449000000996'),
+        throwsFailure<Offline>(),
+      );
+      expect(h.requests, hasLength(2)); // retried once, like "offline"
+
+      final s = Harness((_) async => throw const TlsException('bad cert'));
+      await expectLater(s.client.search('cola'), throwsFailure<Offline>());
     });
   });
 

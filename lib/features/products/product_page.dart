@@ -37,7 +37,8 @@ import 'widgets/rating_section.dart';
 /// "Hinzufügen" to the diary.
 ///
 /// Opened either with a [barcode] (looked up in the cache, then at
-/// Open Food Facts) or with the [foodId] of a food already stored on the
+/// Open Food Facts; [fromSearch] when it comes from a search hit, see
+/// [Routes.product]) or with the [foodId] of a food already stored on the
 /// device. [day] and [mealId] say where "Hinzufügen" puts the food; when they
 /// are null, today and the meal that fits the time of day are used.
 ///
@@ -48,6 +49,7 @@ class ProductPage extends ConsumerWidget {
     required String this.barcode,
     this.day,
     this.mealId,
+    this.fromSearch = false,
   }) : foodId = null;
 
   const ProductPage.food({
@@ -55,18 +57,25 @@ class ProductPage extends ConsumerWidget {
     required int this.foodId,
     this.day,
     this.mealId,
-  }) : barcode = null;
+  }) : barcode = null,
+       fromSearch = false;
 
   final String? barcode;
   final int? foodId;
   final String? day;
   final int? mealId;
+  final bool fromSearch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final barcode = this.barcode;
     if (barcode != null) {
-      return _BarcodeLookup(barcode: barcode, day: day, mealId: mealId);
+      return _BarcodeLookup(
+        barcode: barcode,
+        day: day,
+        mealId: mealId,
+        fromSearch: fromSearch,
+      );
     }
     // The two constructors make sure that either barcode or foodId is set.
     return _StoredFood(foodId: foodId!, day: day, mealId: mealId);
@@ -75,9 +84,15 @@ class ProductPage extends ConsumerWidget {
 
 /// Looks the barcode up (device first, then Open Food Facts).
 class _BarcodeLookup extends ConsumerWidget {
-  const _BarcodeLookup({required this.barcode, this.day, this.mealId});
+  const _BarcodeLookup({
+    required this.barcode,
+    required this.fromSearch,
+    this.day,
+    this.mealId,
+  });
 
   final String barcode;
+  final bool fromSearch;
   final String? day;
   final int? mealId;
 
@@ -86,6 +101,7 @@ class _BarcodeLookup extends ConsumerWidget {
     final key = (
       barcode: barcode,
       languageCode: AppLocalizations.of(context).localeName,
+      trusted: fromSearch,
     );
     final lookup = ref.watch(barcodeLookupProvider(key));
     return switch (lookup) {

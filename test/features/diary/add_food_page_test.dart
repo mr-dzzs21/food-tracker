@@ -365,7 +365,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       router.state.uri.toString(),
-      Routes.product('4260070610493', day: today, mealId: breakfastId),
+      Routes.product(
+        '4260070610493',
+        day: today,
+        mealId: breakfastId,
+        fromSearch: true,
+      ),
     );
   });
 

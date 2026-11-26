@@ -43,7 +43,7 @@ class SearchResultsPage extends StatelessWidget {
             onlineQuery: query,
             onOpenFood: (id) => context.push(Routes.food(id)),
             onOpenProduct: (product) =>
-                context.push(Routes.product(product.barcode)),
+                context.push(Routes.product(product.barcode, fromSearch: true)),
           ),
         ],
       ),

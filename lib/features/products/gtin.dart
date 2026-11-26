@@ -96,3 +96,16 @@ String? lookupCodeFor(String barcode) {
   }
   return null;
 }
+
+/// The code to look up for a barcode that comes from Open Food Facts itself
+/// (a search hit, or a product stored from there): only normalised
+/// ([normalizeLikeOff]), not checked, or `null` if it is not digits only.
+///
+/// The scanner rules of [lookupCodeFor] do not fit such codes: OFF also
+/// lists products under codes with a wrong check digit, and an 8-digit code
+/// there is the product's code, not a UPC-E to expand – the strict rules
+/// would refuse the hit or ask for another product.
+String? trustedLookupCode(String barcode) {
+  final code = barcode.trim();
+  return isDigitsOnly(code) ? normalizeLikeOff(code) : null;
+}

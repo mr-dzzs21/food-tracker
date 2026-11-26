@@ -64,7 +64,8 @@ the test vectors in `test/features/products/health_rating_test.dart`.
 
 The data layer throws `AppFailure` subtypes (`core/errors.dart`: not found, offline, timeout, rate limited
 …); screens turn them into friendly texts with `failureMessage`. The Open Food Facts client retries once on
-timeouts/network errors and pauses all requests for 60 s after a 429 or 503.
+timeouts/network errors and pauses all requests to a server (search or product API) for 60 s after a 429 or
+503 from that server.
 
 ## Tests
 

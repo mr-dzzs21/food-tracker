@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show SocketException;
+import 'dart:io' show SocketException, TlsException;
 import 'dart:math';
 
 import 'package:clock/clock.dart';
@@ -67,8 +67,10 @@ class OpenFoodFactsClient {
   /// Our own choice; OFF names no timeout.
   static const requestTimeout = Duration(seconds: 10);
 
-  /// After "too many requests" (429) or "unavailable" (503) we leave OFF
-  /// alone for a minute, as their rules ask.
+  /// After "too many requests" (429) or "unavailable" (503) we leave that
+  /// OFF server alone for a minute, as their rules ask. Each server (search,
+  /// products) gets its own pause: an overloaded search service must not
+  /// block barcode lookups.
   static const coolDown = Duration(seconds: 60);
 
   /// OFF allows only about 10 searches per minute, so searches are spaced
@@ -84,16 +86,18 @@ class OpenFoodFactsClient {
   final Delay _delay;
   final Random _random;
 
-  DateTime? _blockedUntil;
-  AppFailure? _blockedBecause;
+  /// The pause of each host (see [coolDown]): until when, and why.
+  final _coolDowns = <String, ({DateTime until, AppFailure reason})>{};
   DateTime? _lastSearchAt;
 
   /// Looks up one product by [barcode].
   ///
-  /// The barcode is checked first ([InvalidBarcode] without any request).
-  /// [languageCode] decides which product name is picked. With [retry], a
-  /// temporary problem (timeout, no network, server error) is tried once
-  /// more after 1–2 seconds.
+  /// The barcode is checked first ([InvalidBarcode] without any request);
+  /// with [trusted] (a code from Open Food Facts itself, see
+  /// [trustedLookupCode]) it is only normalised. [languageCode] decides
+  /// which product name is picked. With [retry], a temporary problem
+  /// (timeout, no network, server error) is tried once more after 1–2
+  /// seconds.
   ///
   /// Throws [ProductNotFound], [NotFood], [Offline], [RequestTimeout],
   /// [RateLimited] or [ServerUnavailable].
@@ -101,8 +105,9 @@ class OpenFoodFactsClient {
     String barcode, {
     String languageCode = 'de',
     bool retry = true,
+    bool trusted = false,
   }) async {
-    final code = lookupCodeFor(barcode);
+    final code = trusted ? trustedLookupCode(barcode) : lookupCodeFor(barcode);
     if (code == null) throw InvalidBarcode(barcode);
 
     final uri = Uri.https(
@@ -195,7 +200,7 @@ class OpenFoodFactsClient {
     Future<void>? cancel,
     bool Function()? isCancelled,
   }) async {
-    _throwIfCoolingDown();
+    _throwIfCoolingDown(uri.host);
     try {
       return await _send(uri, cancel);
     } on _TemporaryFailure catch (first) {
@@ -233,6 +238,10 @@ class OpenFoodFactsClient {
       throw const _TemporaryFailure(RequestTimeout());
     } on SocketException {
       throw const _TemporaryFailure(Offline());
+    } on TlsException {
+      // No secure connection (for example HandshakeException behind a Wi-Fi
+      // login page): for the user that is "no internet", like above.
+      throw const _TemporaryFailure(Offline());
     } on http.ClientException {
       throw const _TemporaryFailure(Offline());
     }
@@ -240,11 +249,11 @@ class OpenFoodFactsClient {
     final status = response.statusCode;
     final isJson = (response.headers['content-type'] ?? '').contains('json');
     if (status == 429) {
-      _startCoolDown(const RateLimited());
+      _startCoolDown(uri.host, const RateLimited());
     }
     if (status == 503) {
       // Often an HTML page "temporarily unavailable" (maintenance/overload).
-      _startCoolDown(ServerUnavailable(maintenance: !isJson));
+      _startCoolDown(uri.host, ServerUnavailable(maintenance: !isJson));
     }
     if (!isJson) {
       // An HTML page instead of data: maintenance, overload or a Wi-Fi
@@ -267,20 +276,19 @@ class OpenFoodFactsClient {
     return (statusCode: status, body: body);
   }
 
-  /// Blocks all requests for [coolDown] and throws [reason].
+  /// Blocks all requests to [host] for [coolDown] and throws [reason].
   ///
   /// No retry here on purpose: a retry 1–2 s later would break the
   /// "leave OFF alone for a minute" rule.
-  Never _startCoolDown(AppFailure reason) {
-    _blockedUntil = _clock.now().add(coolDown);
-    _blockedBecause = reason;
+  Never _startCoolDown(String host, AppFailure reason) {
+    _coolDowns[host] = (until: _clock.now().add(coolDown), reason: reason);
     throw reason;
   }
 
-  void _throwIfCoolingDown() {
-    final until = _blockedUntil;
-    if (until != null && _clock.now().isBefore(until)) {
-      throw _blockedBecause ?? const RateLimited();
+  void _throwIfCoolingDown(String host) {
+    final coolDown = _coolDowns[host];
+    if (coolDown != null && _clock.now().isBefore(coolDown.until)) {
+      throw coolDown.reason;
     }
   }
 
