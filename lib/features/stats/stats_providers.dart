@@ -23,10 +23,19 @@ final weekStatsProvider = StreamProvider.autoDispose.family<WeekStats, String>((
 /// always empty).
 class SelectedWeek extends Notifier<String> {
   @override
-  String build() => currentMonday(ref.watch(clockProvider));
+  String build() {
+    // On a new week (the app was in the background over Sunday midnight)
+    // the tab follows – but only when it still shows the old current week.
+    ref.listen(todayProvider, (previous, next) {
+      if (previous != null && state == mondayOf(previous)) {
+        state = mondayOf(next);
+      }
+    });
+    return mondayOf(ref.read(todayProvider));
+  }
 
   /// Whether the shown week is the current one (then there is no "next").
-  bool get isCurrentWeek => state == currentMonday(ref.read(clockProvider));
+  bool get isCurrentWeek => state == mondayOf(ref.read(todayProvider));
 
   void previous() => state = addDays(state, -DateTime.daysPerWeek);
 

@@ -54,10 +54,12 @@ void useInMemoryPreferences() {
 /// real asset loading also decodes larger files in an isolate).
 /// [realFoodLists] keeps the real bundled lists instead (only for the
 /// integration test on a simulator or device, where the isolate runs).
+/// [clock] replaces the fixed clock at [now] (e.g. a clock a test moves on).
 List<Override> testOverrides({
   required AppDatabase db,
   http.Client? client,
   DateTime? now,
+  Clock? clock,
   List<BasicFood> basicFoods = const [],
   List<SimpleFood> simpleFoods = const [],
   bool realFoodLists = false,
@@ -74,7 +76,7 @@ List<Override> testOverrides({
       ),
     ],
     httpClientProvider.overrideWithValue(client ?? offlineClient()),
-    clockProvider.overrideWithValue(Clock.fixed(now ?? testNow)),
+    clockProvider.overrideWithValue(clock ?? Clock.fixed(now ?? testNow)),
     sharedPreferencesProvider.overrideWithValue(SharedPreferencesAsync()),
     appVersionProvider.overrideWithValue('0.1.0-test'),
   ];
@@ -86,6 +88,7 @@ Future<void> pumpFoodTrackerApp(
   required AppDatabase db,
   http.Client? client,
   DateTime? now,
+  Clock? clock,
   Locale locale = const Locale('de'),
   ThemeMode? themeMode,
   List<BasicFood> basicFoods = const [],
@@ -96,6 +99,7 @@ Future<void> pumpFoodTrackerApp(
     db: db,
     client: client,
     now: now,
+    clock: clock,
     basicFoods: basicFoods,
     simpleFoods: simpleFoods,
   );

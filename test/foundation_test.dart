@@ -63,10 +63,47 @@ void main() {
     test('amounts and user input', () {
       expect(formatAmount(60, isLiquid: false, locale: 'de'), '60 g');
       expect(formatAmount(12.5, isLiquid: true, locale: 'de'), '12,5 ml');
-      expect(parseUserNumber(' 4,5 '), 4.5);
-      expect(parseUserNumber('4.5'), 4.5);
-      expect(parseUserNumber(''), isNull);
-      expect(parseUserNumber('abc'), isNull);
+      expect(parseUserNumber(' 4,5 ', 'de'), 4.5);
+      expect(parseUserNumber('4.5', 'de'), 4.5);
+      expect(parseUserNumber('', 'de'), isNull);
+      expect(parseUserNumber('abc', 'de'), isNull);
+    });
+
+    test('thousands separators count only in the language\'s own style', () {
+      // German: "." groups thousands, "," is the decimal comma; a point
+      // without a full group of three is still a decimal point.
+      expect(parseUserNumber('1.000', 'de'), 1000);
+      expect(parseUserNumber('2.000', 'de'), 2000);
+      expect(parseUserNumber('1.234,5', 'de'), 1234.5);
+      expect(parseUserNumber('1.000.000', 'de'), 1000000);
+      expect(parseUserNumber('1,000', 'de'), 1);
+      expect(parseUserNumber('4,5', 'de'), 4.5);
+      expect(parseUserNumber('4.5', 'de'), 4.5);
+      expect(parseUserNumber('12.50', 'de'), 12.5);
+      expect(parseUserNumber('0.500', 'de'), 0.5); // no group starts with 0
+      expect(parseUserNumber('1 000', 'de'), 1000);
+      expect(parseUserNumber('1.00.0', 'de'), isNull);
+      // English: "," groups thousands, "." is the decimal point.
+      expect(parseUserNumber('1,000', 'en'), 1000);
+      expect(parseUserNumber('1,234.5', 'en'), 1234.5);
+      expect(parseUserNumber('1.000', 'en'), 1);
+      expect(parseUserNumber('4,5', 'en'), 4.5);
+      expect(parseUserNumber('4.5', 'en'), 4.5);
+    });
+
+    test('whole numbers: digits, or thousands groups of the language', () {
+      expect(parseUserInt('2000', 'de'), 2000);
+      expect(parseUserInt(' 2.000 ', 'de'), 2000);
+      expect(parseUserInt('12.345', 'de'), 12345);
+      expect(parseUserInt('2,000', 'en'), 2000);
+      // Never read as 2: a decimal or the other language's style.
+      expect(parseUserInt('2,000', 'de'), isNull);
+      expect(parseUserInt('2.000', 'en'), isNull);
+      expect(parseUserInt('2.5', 'de'), isNull);
+      expect(parseUserInt('2,5', 'de'), isNull);
+      expect(parseUserInt('20.00', 'de'), isNull);
+      expect(parseUserInt('', 'de'), isNull);
+      expect(parseUserInt('abc', 'de'), isNull);
     });
   });
 

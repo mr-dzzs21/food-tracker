@@ -60,15 +60,64 @@ String formatAmount(
   return '${_number(amount, 1, locale)} $unit';
 }
 
-/// Parses a number the user typed. Accepts both `4,5` and `4.5`.
+/// Parses a number the user typed in the language [locale] (`de`, `en`).
 /// Returns null for empty or invalid text.
-double? parseUserNumber(String text) {
-  final cleaned = text.trim().replaceAll(' ', '').replaceAll(',', '.');
+///
+/// - Decimal comma or point: `4,5` and `4.5` are both 4.5 (people type
+///   either, whatever the keyboard shows).
+/// - A thousands separator counts only in the language's own style and with
+///   full groups of three digits: `2.000` and `1.234,5` in German, `2,000`
+///   and `1,234.5` in English. So `1.000 ml` is 1000 ml in German – never
+///   1 ml – and `1,000` is 1 (German decimal comma).
+double? parseUserNumber(String text, String locale) {
+  final cleaned = text.replaceAll(_spaces, '');
   if (cleaned.isEmpty) return null;
-  final value = double.tryParse(cleaned);
+  final (:group, :decimal) = _separators(locale);
+  final String plain;
+  if (_groupedNumber(group, decimal).hasMatch(cleaned)) {
+    plain = cleaned.replaceAll(group, '').replaceAll(decimal, '.');
+  } else {
+    plain = cleaned.replaceAll(',', '.');
+  }
+  final value = double.tryParse(plain);
   if (value == null || value.isNaN || value.isInfinite) return null;
   return value;
 }
+
+/// Parses a whole number the user typed in the language [locale], for
+/// example a calorie goal: `2000`, or with the language's thousands
+/// separator `2.000` (German) / `2,000` (English). Everything else (a
+/// decimal, a separator in the wrong place) is null – so `2.000` can never
+/// become 2.
+int? parseUserInt(String text, String locale) {
+  final cleaned = text.replaceAll(_spaces, '');
+  if (RegExp(r'^\d+$').hasMatch(cleaned)) return int.tryParse(cleaned);
+  final (:group, :decimal) = _separators(locale);
+  // Thousands separators, but no decimal part.
+  if (_groupedNumber(group, decimal).hasMatch(cleaned) &&
+      !cleaned.contains(decimal)) {
+    return int.tryParse(cleaned.replaceAll(group, ''));
+  }
+  return null;
+}
+
+/// Spaces (also the non-breaking one) the user may type inside a number.
+final _spaces = RegExp(r'\s');
+
+/// The thousands and decimal separators of [locale]: `.` and `,` in German,
+/// `,` and `.` in English.
+({String group, String decimal}) _separators(String locale) {
+  final symbols = NumberFormat.decimalPattern(locale).symbols;
+  return (group: symbols.GROUP_SEP, decimal: symbols.DECIMAL_SEP);
+}
+
+/// A number with thousands separators in full groups, for example
+/// `12.345,6` (German). The first group does not start with 0, so `0.500`
+/// stays a decimal number (0.5).
+RegExp _groupedNumber(String group, String decimal) => RegExp(
+  '^[1-9]\\d{0,2}(${RegExp.escape(group)}\\d{3})+'
+  '(${RegExp.escape(decimal)}\\d+)?\$',
+);
 
 /// A number to put into a text field: no thousands separator (the user would
 /// read `1.000` back as 1.0), up to [maxDecimals] decimals (default one).

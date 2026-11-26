@@ -83,7 +83,7 @@ class _WeekHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final current = currentMonday(ref.watch(clockProvider));
+    final current = mondayOf(ref.watch(todayProvider));
     final notifier = ref.read(selectedWeekProvider.notifier);
     final isCurrent = monday == current;
     return PageHeader(
@@ -158,7 +158,7 @@ class _StatsContent extends ConsumerWidget {
                     WeekBars(
                       stats: stats,
                       goalKcal: goal,
-                      today: todayKey(ref.watch(clockProvider)),
+                      today: ref.watch(todayProvider),
                     ),
                     if (goal != null) ...[
                       const SizedBox(height: Spacing.m),

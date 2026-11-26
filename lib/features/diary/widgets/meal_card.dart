@@ -59,50 +59,59 @@ class MealCard extends StatelessWidget {
               onTap: onOpen,
               // The texts are read from the label above.
               excludeSemantics: true,
-              child: Row(
-                children: [
-                  IconSquare(
-                    icon: mealIconOf(slot),
-                    background: palette.background,
-                    foreground: palette.icon,
-                    size: 44,
-                    iconSize: 24,
-                    radius: Radii.input,
-                  ),
-                  const SizedBox(width: Spacing.m),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name, style: theme.textTheme.titleSmall),
-                        Text(
-                          entryNames.isEmpty ? entries : entryNames.join(', '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelMedium!.copyWith(
-                            color: colors.inkMuted,
-                            fontWeight: FontWeight.w600,
+              // At least 48 px high, like every tap target (the content
+              // alone is 44 px).
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: kMinInteractiveDimension,
+                ),
+                child: Row(
+                  children: [
+                    IconSquare(
+                      icon: mealIconOf(slot),
+                      background: palette.background,
+                      foreground: palette.icon,
+                      size: 44,
+                      iconSize: 24,
+                      radius: Radii.input,
+                    ),
+                    const SizedBox(width: Spacing.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name, style: theme.textTheme.titleSmall),
+                          Text(
+                            entryNames.isEmpty
+                                ? entries
+                                : entryNames.join(', '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelMedium!.copyWith(
+                              color: colors.inkMuted,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: Spacing.s),
-                  Text(
-                    l10n.unitKcal(kcal),
-                    style: theme.textTheme.bodySmall!.copyWith(
-                      color: colors.ink,
-                      fontWeight: FontWeight.w800,
-                      fontFeatures: tabularFigures,
+                    const SizedBox(width: Spacing.s),
+                    Text(
+                      l10n.unitKcal(kcal),
+                      style: theme.textTheme.bodySmall!.copyWith(
+                        color: colors.ink,
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: tabularFigures,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           RoundIconButton(
             icon: Icons.add_rounded,
-            tooltip: l10n.mealAddTooltip(name),
+            tooltip: l10n.mealAddTooltip(mealSlotTextKey(slot), name),
             onPressed: onAdd,
             size: 34,
             iconSize: 20,

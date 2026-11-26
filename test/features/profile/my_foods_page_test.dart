@@ -104,6 +104,34 @@ void main() {
     expect(await db.select(db.foods).get(), isEmpty);
   });
 
+  testWidgets('deleted from its product page (✎ → 🗑): the product page '
+      'closes, back on the list', (tester) async {
+    await addFood('Linsensuppe');
+    await openMyFoods(tester);
+    await tester.tap(find.text('Linsensuppe'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductPage), findsOneWidget);
+    await tester.tap(find.byTooltip('Bearbeiten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Löschen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Löschen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dieses Lebensmittel gibt es nicht mehr.'), findsNothing);
+    expect(find.byType(ProductPage), findsNothing);
+    expect(
+      ProviderScope.containerOf(tester.element(find.byType(FoodTrackerApp)))
+          .read(routerProvider)
+          .state
+          .uri
+          .toString(),
+      Routes.myFoods,
+    );
+    expect(find.text('„Linsensuppe“ gelöscht'), findsOneWidget);
+    expect(find.text('Noch keine eigenen Lebensmittel'), findsOneWidget);
+  });
+
   testWidgets('English: empty state', (tester) async {
     await openMyFoods(tester, locale: const Locale('en'));
     expect(find.text('My foods'), findsOneWidget);

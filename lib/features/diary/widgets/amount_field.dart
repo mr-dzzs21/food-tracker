@@ -28,7 +28,7 @@ class AmountField extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: controller,
       builder: (context, value, _) {
-        final invalid = parseEntryAmount(value.text) == null;
+        final invalid = parseEntryAmount(value.text, l10n.localeName) == null;
         return TextField(
           controller: controller,
           autofocus: autofocus,

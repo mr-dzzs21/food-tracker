@@ -14,9 +14,9 @@ import '../../products/gtin.dart';
 
 /// Called with a checked, normalised barcode (ready for `Routes.product`).
 ///
-/// The camera stays stopped until the returned future completes, so a page
-/// that opens the product with `await context.push(...)` gets the camera
-/// back automatically when the user returns.
+/// The camera stays stopped until the returned future completes or the
+/// scanner is visible again, so a page that opens the product with
+/// `await context.push(...)` gets the camera back when the user returns.
 typedef ScannedCodeCallback = Future<void> Function(String code);
 
 /// Builds the camera area for a page.
@@ -38,6 +38,62 @@ final scannerViewProvider = Provider<ScannerViewBuilder>(
 /// a product (for example a misread or an in-store code).
 String? normaliseScannedCode(String rawValue) => lookupCodeFor(rawValue.trim());
 
+/// When a scanner may hand a code on: only while its page is visible (not on
+/// a hidden tab, not covered by another page), and one code at a time.
+///
+/// Used by the camera ([BarcodeScannerView]) and by the stand-in of the
+/// widget tests, so the tests check the same rules.
+mixin ScanGate<T extends StatefulWidget> on State<T> {
+  bool _visible = false;
+  bool _handling = false;
+
+  /// Counts the codes handed on, so a late answer for an old code cannot
+  /// end the handling of a newer one.
+  int _handled = 0;
+
+  /// Visible and not busy with a code: the camera should run.
+  bool get isReady => _visible && !_handling;
+
+  /// Called whenever [isReady] may have changed: start or stop the camera.
+  Future<void> syncScanner();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Hidden tabs (StatefulShellRoute.indexedStack) and pages covered by
+    // another page get TickerMode "disabled".
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (visible == _visible) return;
+    _visible = visible;
+    // Back on this page: whatever the last code opened is over. Its future
+    // may never complete – go_router drops it when the product page replaces
+    // itself (pushReplacement, e.g. "Selbst eintragen") – so the camera must
+    // not wait for it.
+    if (visible) _handling = false;
+    unawaited(syncScanner());
+  }
+
+  /// Hands [code] to [onCode] and pauses the scanner until [onCode] is done
+  /// or the page is visible again. Ignored while not [isReady] (a stopped
+  /// camera reads nothing, and one barcode must not open the product twice).
+  Future<void> handleCode(String code, ScannedCodeCallback onCode) async {
+    if (!isReady) return;
+    _handling = true;
+    final number = ++_handled;
+    await syncScanner(); // stop while the product page is open
+    try {
+      await onCode(code);
+    } finally {
+      // Only if this is still the code being handled (the page may have
+      // become visible again meanwhile, see didChangeDependencies).
+      if (mounted && number == _handled && _handling) {
+        _handling = false;
+        await syncScanner(); // back here: start again (if still visible)
+      }
+    }
+  }
+}
+
 /// Camera preview that reads product barcodes (EAN-13/8, UPC-A/E).
 ///
 /// The camera runs only while the page is visible (not hidden behind another
@@ -55,7 +111,7 @@ class BarcodeScannerView extends StatefulWidget {
 }
 
 class _BarcodeScannerViewState extends State<BarcodeScannerView>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, ScanGate {
   final _controller = MobileScannerController(
     autoStart: false, // we decide when the camera runs (see _shouldRun)
     formats: const [
@@ -68,18 +124,14 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
     detectionTimeoutMs: 500, // at most about two detections per second
   );
 
-  bool _visible = false;
   bool _appInForeground = true;
-
-  /// True while [BarcodeScannerView.onCode] runs: further detections are
-  /// ignored, otherwise one barcode would open the product several times.
-  bool _handling = false;
 
   /// The last invalid code, so the same misread does not show a new SnackBar
   /// twice a second.
   String? _lastInvalidCode;
 
-  bool get _shouldRun => _visible && _appInForeground && !_handling;
+  /// Page visible, no code being handled ([ScanGate]) and the app in front.
+  bool get _shouldRun => isReady && _appInForeground;
 
   @override
   void initState() {
@@ -88,16 +140,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Hidden tabs (StatefulShellRoute.indexedStack) and pages covered by
-    // another page get TickerMode "disabled" – then the camera should stop.
-    final visible = TickerMode.valuesOf(context).enabled;
-    if (visible != _visible) {
-      _visible = visible;
-      unawaited(_syncCamera());
-    }
-  }
+  Future<void> syncScanner() => _syncCamera();
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -131,7 +174,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     final raw = capture.barcodes.firstOrNull?.rawValue;
-    if (raw == null || _handling) return;
+    if (raw == null || !isReady) return;
 
     final code = normaliseScannedCode(raw);
     if (code == null) {
@@ -147,16 +190,9 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
       return;
     }
 
-    _handling = true;
     _lastInvalidCode = null;
     unawaited(HapticFeedback.selectionClick());
-    await _syncCamera(); // stop while the product page is open
-    try {
-      await widget.onCode(code);
-    } finally {
-      _handling = false;
-      await _syncCamera(); // back here: start again (if still visible)
-    }
+    await handleCode(code, widget.onCode);
   }
 
   void _retry() => unawaited(_syncCamera());

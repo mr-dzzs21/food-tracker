@@ -272,11 +272,11 @@ abstract class AppLocalizations {
   /// **'Meal'**
   String get mealUnnamed;
 
-  /// Tooltip of the + button of a meal section
+  /// Tooltip of the + button of a meal section. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles: 'Zum Frühstück hinzufügen'), otherwise 'other'.
   ///
   /// In en, this message translates to:
   /// **'Add to {meal}'**
-  String mealAddTooltip(String meal);
+  String mealAddTooltip(String slot, String meal);
 
   /// Title of the selected day when it is today; date like '14. Nov.'
   ///
@@ -698,11 +698,11 @@ abstract class AppLocalizations {
   /// **'Day: {day}'**
   String productDay(String day);
 
-  /// SnackBar after adding a food to the diary
+  /// SnackBar after adding a food to the diary. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles: 'Zum Frühstück hinzugefügt'), otherwise 'other'.
   ///
   /// In en, this message translates to:
   /// **'Added to {meal}'**
-  String productAdded(String meal);
+  String productAdded(String slot, String meal);
 
   /// Sticky button on the product page, e.g. 'Add 30 g to Lunch · 161 kcal'. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles), otherwise 'other'.
   ///

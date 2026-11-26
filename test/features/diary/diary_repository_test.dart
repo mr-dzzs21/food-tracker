@@ -380,17 +380,48 @@ void main() {
       const custom = MealSlot(id: 9, position: 4, isHidden: false);
       expect(mealSlotName(custom, de), 'Mahlzeit');
     });
+
+    test('German articles: "Zum Frühstück", "Zu den Snacks", own names '
+        'with "Zu"', () {
+      final de = lookupAppLocalizations(const Locale('de'));
+      final en = lookupAppLocalizations(const Locale('en'));
+      String added(MealSlot s, AppLocalizations l10n) =>
+          l10n.productAdded(mealSlotTextKey(s), mealSlotName(s, l10n));
+      String add(MealSlot s, AppLocalizations l10n) =>
+          l10n.mealAddTooltip(mealSlotTextKey(s), mealSlotName(s, l10n));
+
+      expect(added(slot('breakfast'), de), 'Zum Frühstück hinzugefügt');
+      expect(added(slot('lunch'), de), 'Zum Mittagessen hinzugefügt');
+      expect(added(slot('dinner'), de), 'Zum Abendessen hinzugefügt');
+      expect(added(slot('snacks'), de), 'Zu den Snacks hinzugefügt');
+      expect(add(slot('breakfast'), de), 'Zum Frühstück hinzufügen');
+      expect(add(slot('snacks'), de), 'Zu den Snacks hinzufügen');
+      final renamed = slot('lunch')
+          .copyWith(customName: const Value('Brotzeit'));
+      expect(mealSlotTextKey(renamed), 'other');
+      expect(added(renamed, de), 'Zu Brotzeit hinzugefügt');
+      expect(add(renamed, de), 'Zu Brotzeit hinzufügen');
+      expect(added(slot('breakfast'), en), 'Added to Breakfast');
+      expect(add(slot('snacks'), en), 'Add to Snacks');
+    });
   });
 
   test('parseEntryAmount accepts comma and point, rejects the rest', () {
-    expect(parseEntryAmount('12,5'), 12.5);
-    expect(parseEntryAmount(' 200 '), 200);
-    expect(parseEntryAmount('0.5'), 0.5);
-    expect(parseEntryAmount('0'), isNull);
-    expect(parseEntryAmount('-3'), isNull);
-    expect(parseEntryAmount('10001'), isNull);
-    expect(parseEntryAmount(''), isNull);
-    expect(parseEntryAmount('viel'), isNull);
+    expect(parseEntryAmount('12,5', 'de'), 12.5);
+    expect(parseEntryAmount(' 200 ', 'de'), 200);
+    expect(parseEntryAmount('0.5', 'de'), 0.5);
+    expect(parseEntryAmount('0', 'de'), isNull);
+    expect(parseEntryAmount('-3', 'de'), isNull);
+    expect(parseEntryAmount('10001', 'de'), isNull);
+    expect(parseEntryAmount('', 'de'), isNull);
+    expect(parseEntryAmount('viel', 'de'), isNull);
+  });
+
+  test('parseEntryAmount: 1.000 ml (de) and 1,000 ml (en) are a litre', () {
+    expect(parseEntryAmount('1.000', 'de'), 1000);
+    expect(parseEntryAmount('1,000', 'en'), 1000);
+    expect(parseEntryAmount('1.500,5', 'de'), 1500.5);
+    expect(parseEntryAmount('10.001', 'de'), isNull); // above the maximum
   });
 
   group('selectedDayProvider', () {
@@ -413,6 +444,42 @@ void main() {
       notifier.next();
       expect(c.read(selectedDayProvider), '2027-01-01');
       notifier.today();
+      expect(c.read(selectedDayProvider), '2026-11-14');
+    });
+
+    test('stays between 1 Jan 2000 and the end of next year', () {
+      final c = container();
+      final notifier = c.read(selectedDayProvider.notifier);
+      notifier.set('2027-12-31');
+      expect(notifier.canGoForward, isFalse);
+      notifier.next();
+      expect(c.read(selectedDayProvider), '2027-12-31');
+      notifier.set('2031-05-01');
+      expect(c.read(selectedDayProvider), '2027-12-31');
+
+      notifier.set('1999-12-31');
+      expect(c.read(selectedDayProvider), firstSelectableDay);
+      expect(notifier.canGoBack, isFalse);
+      notifier.previous();
+      expect(c.read(selectedDayProvider), '2000-01-01');
+      expect(notifier.canGoForward, isTrue);
+    });
+
+    test('a new day (todayProvider.refresh) moves "Heute" on, not a picked '
+        'day', () {
+      var now = DateTime(2026, 11, 14, 23, 50);
+      final c = ProviderContainer.test(
+        overrides: [clockProvider.overrideWithValue(Clock(() => now))],
+      );
+      expect(c.read(selectedDayProvider), '2026-11-14');
+
+      now = DateTime(2026, 11, 15, 7);
+      c.read(todayProvider.notifier).refresh();
+      expect(c.read(selectedDayProvider), '2026-11-15');
+
+      c.read(selectedDayProvider.notifier).previous(); // picked: the 14th
+      now = DateTime(2026, 11, 16, 7);
+      c.read(todayProvider.notifier).refresh();
       expect(c.read(selectedDayProvider), '2026-11-14');
     });
 

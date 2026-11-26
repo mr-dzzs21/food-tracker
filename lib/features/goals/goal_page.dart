@@ -159,13 +159,16 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
   // ---------------------------------------------------------------------------
   // Reading the fields
 
-  int? get _ageValue => int.tryParse(_age.text.trim());
+  /// The language decides how "1.000" or "1,5" is read (see parseUserNumber).
+  String get _locale => AppLocalizations.of(context).localeName;
+
+  int? get _ageValue => parseUserInt(_age.text, _locale);
 
   /// The calculator input, or `null` while a field is empty or invalid.
   CalculatorInput? get _input {
     final age = _ageValue;
-    final height = parseUserNumber(_height.text);
-    final weight = parseUserNumber(_weight.text);
+    final height = parseUserNumber(_height.text, _locale);
+    final weight = parseUserNumber(_weight.text, _locale);
     if (age == null || height == null || weight == null) return null;
     final input = CalculatorInput(
       sex: _sex,
@@ -225,7 +228,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
     // Checked by the validator above.
-    final kcal = parseUserNumber(_manualKcal.text)?.round();
+    final kcal = parseUserInt(_manualKcal.text, _locale);
     if (kcal == null) return;
     final floor = _manualFloor;
     if (kcal < floor) {
@@ -233,7 +236,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
       if (confirmed != true || !mounted) return;
     }
     double? grams(Nutrient nutrient) =>
-        parseUserNumber(_macros[nutrient]!.text);
+        parseUserNumber(_macros[nutrient]!.text, _locale);
     final macros = manualMacros(
       kcal.toDouble(),
       protein: grams(Nutrient.protein),
@@ -287,8 +290,8 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
     }
     messenger.showSnackBar(SnackBar(content: Text(message)));
     if (!mounted) return;
-    // Opened from "Heute" with `go`, the profile page is below; just in case
-    // there is nothing to go back to, open the profile tab.
+    // Back to where the page was opened (Profil, or Heute via
+    // Routes.todayGoal); if there is nothing to go back to, open Profil.
     if (context.canPop()) {
       context.pop();
     } else {
@@ -413,7 +416,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
                 suffix: l10n.goalAgeSuffix,
                 decimal: false,
                 validator: _numberValidator((text) {
-                  final value = int.tryParse(text);
+                  final value = parseUserInt(text, l10n.localeName);
                   return value != null && isValidAge(value);
                 }, l10n.goalAgeInvalid),
                 onChanged: () => setState(() {}),
@@ -424,7 +427,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
                 label: l10n.goalHeightLabel,
                 suffix: 'cm',
                 validator: _numberValidator((text) {
-                  final value = parseUserNumber(text);
+                  final value = parseUserNumber(text, l10n.localeName);
                   return value != null && isValidHeightCm(value);
                 }, l10n.goalHeightInvalid),
                 onChanged: () => setState(() {}),
@@ -435,7 +438,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
                 label: l10n.goalWeightLabel,
                 suffix: 'kg',
                 validator: _numberValidator((text) {
-                  final value = parseUserNumber(text);
+                  final value = parseUserNumber(text, l10n.localeName);
                   return value != null && isValidWeightKg(value);
                 }, l10n.goalWeightInvalid),
                 onChanged: () => setState(() {}),
@@ -504,10 +507,9 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
             suffix: 'kcal',
             decimal: false,
             validator: (text) {
-              final value = parseUserNumber(text ?? '');
-              return value == null ||
-                      value.round() < 1 ||
-                      value > _maxManualKcal
+              // Whole calories only: "2.000" is 2000 in German, never 2.
+              final value = parseUserInt(text ?? '', l10n.localeName);
+              return value == null || value < 1 || value > _maxManualKcal
                   ? l10n.goalManualKcalInvalid(
                       formatKcal(_maxManualKcal.toDouble(), l10n.localeName),
                     )
@@ -530,7 +532,7 @@ class _GoalFormState extends ConsumerState<_GoalForm> {
                 label: nutrientName(nutrient, l10n),
                 suffix: 'g',
                 validator: _numberValidator((text) {
-                  final value = parseUserNumber(text);
+                  final value = parseUserNumber(text, l10n.localeName);
                   return value != null && value >= 0 && value <= _maxMacroGrams;
                 }, l10n.goalMacroInvalid(maxGrams)),
               ),

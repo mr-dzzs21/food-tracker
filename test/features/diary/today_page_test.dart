@@ -1,7 +1,10 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:food_tracker/app.dart';
 import 'package:food_tracker/core/theme/app_theme.dart';
+import 'package:food_tracker/core/widgets/buttons.dart';
 import 'package:food_tracker/data/database.dart';
 import 'package:food_tracker/features/diary/diary_repository.dart';
 import 'package:food_tracker/features/diary/widgets/calorie_ring.dart';
@@ -11,6 +14,7 @@ import 'package:food_tracker/features/diary/widgets/meal_sheet.dart';
 import 'package:food_tracker/features/goals/goals_repository.dart';
 import 'package:food_tracker/features/products/food_source.dart';
 import 'package:food_tracker/features/products/nutrients.dart';
+import 'package:food_tracker/router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -166,11 +170,39 @@ void main() {
     expect(await SharedPreferencesAsync().getBool('goal_card_dismissed'), true);
   });
 
-  testWidgets('"Ziel festlegen" opens the goal page', (tester) async {
+  ProviderContainer containerOf(WidgetTester tester) =>
+      ProviderScope.containerOf(tester.element(find.byType(FoodTrackerApp)));
+
+  String location(WidgetTester tester) =>
+      containerOf(tester).read(routerProvider).state.uri.toString();
+
+  testWidgets('"Ziel festlegen" opens the goal page; back and saving return '
+      'to Heute', (tester) async {
     await pumpTall(tester);
     await tester.tap(find.text('Ziel festlegen'));
     await tester.pumpAndSettle();
     expect(find.text('Tagesziel'), findsOneWidget);
+    expect(location(tester), Routes.todayGoal);
+
+    await tester.tap(find.byTooltip('Zurück'));
+    await tester.pumpAndSettle();
+    expect(location(tester), Routes.today);
+
+    await tester.tap(find.text('Ziel festlegen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Selbst eingeben'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Kalorien pro Tag'),
+      '2000',
+    );
+    await tester.pump();
+    await tester.ensureVisible(find.text('Speichern'));
+    await tester.tap(find.text('Speichern'));
+    await tester.pumpAndSettle();
+
+    expect(location(tester), Routes.today);
+    expect(find.text('Gegessen 0 · Ziel 2.000 kcal'), findsOneWidget);
   });
 
   testWidgets('with goal: kcal left and macros of the goal', (tester) async {
@@ -496,6 +528,110 @@ void main() {
     expect(find.text('Gestern gegessen'), findsNothing);
   });
 
+  testWidgets('‹ › stop at the limits of the date picker, which then opens '
+      'without an error', (tester) async {
+    await pumpTall(tester);
+    final notifier = containerOf(tester).read(selectedDayProvider.notifier);
+    RoundIconButton arrow(IconData icon) =>
+        tester.widget(find.widgetWithIcon(RoundIconButton, icon));
+
+    notifier.set('2027-12-31'); // the last day: end of next year
+    await tester.pumpAndSettle();
+    expect(arrow(Icons.chevron_right_rounded).onPressed, isNull);
+    await tester.tap(find.byTooltip('Nächster Tag'));
+    await tester.pumpAndSettle();
+    expect(find.text('31. Dezember'), findsOneWidget);
+    await tester.tap(find.text('31. Dezember'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+
+    notifier.set('2000-01-01'); // the first day
+    await tester.pumpAndSettle();
+    expect(arrow(Icons.chevron_left_rounded).onPressed, isNull);
+    expect(arrow(Icons.chevron_right_rounded).onPressed, isNotNull);
+  });
+
+  testWidgets('switching the day keeps the old values until the new ones '
+      'are there: no spinner, the ring moves from the old value', (
+    tester,
+  ) async {
+    await goals.saveGoal(kcal: 2000);
+    await log(amount: 200); // today: 500 kcal
+    await log(name: 'Gestern', amount: 400, day: '2026-11-13'); // 1000 kcal
+    await pumpTall(tester);
+    expect(ringPainter(tester).progress, closeTo(0.25, 0.001));
+
+    await tester.tap(find.byTooltip('Vorheriger Tag'));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(CalorieRing), findsOneWidget);
+    expect(find.text('13. November'), findsOneWidget);
+
+    // Wait until the new day's entries are there (the label changes at
+    // once), then look half-way through the animation.
+    final newLine = find.text('Gegessen 1.000 · Ziel 2.000 kcal');
+    for (var i = 0; i < 10 && newLine.evaluate().isEmpty; i++) {
+      await tester.pump();
+    }
+    await tester.pump(const Duration(milliseconds: 200));
+    final progress = ringPainter(tester).progress;
+    expect(progress, greaterThan(0.25)); // from the old value, not from 0
+    expect(progress, lessThan(0.5));
+    await tester.pumpAndSettle();
+    expect(ringPainter(tester).progress, closeTo(0.5, 0.001));
+  });
+
+  testWidgets('back in the foreground after midnight: "Heute" is the new '
+      'day, a picked day stays', (tester) async {
+    var now = DateTime(2026, 11, 14, 23, 50);
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpFoodTrackerApp(tester, db: db, clock: Clock(() => now));
+    expect(find.text('14. November'), findsOneWidget);
+
+    Future<void> nextMorning() async {
+      now = now.add(const Duration(hours: 8));
+      // Into the background and back, step by step like on a phone.
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pumpAndSettle();
+    }
+
+    await nextMorning();
+    expect(find.text('SONNTAG'), findsOneWidget);
+    expect(find.text('15. November'), findsOneWidget);
+
+    // A day the user picked is kept.
+    await tester.tap(find.byTooltip('Vorheriger Tag'));
+    await tester.pumpAndSettle();
+    await nextMorning();
+    expect(find.text('14. November'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Heute'), findsOneWidget);
+  });
+
+  testWidgets('Today meets the tap target guidelines (48 px on Android)', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await log();
+    await pumpTall(tester);
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    semantics.dispose();
+  });
+
   testWidgets('hidden meals only show up when they have entries', (
     tester,
   ) async {
@@ -515,7 +651,7 @@ void main() {
   testWidgets('"+" opens the add page of that meal', (tester) async {
     await pumpTall(tester);
 
-    await tester.tap(find.byTooltip('Zu Mittagessen hinzufügen'));
+    await tester.tap(find.byTooltip('Zum Mittagessen hinzufügen'));
     await tester.pumpAndSettle();
 
     expect(find.text('Mittagessen · Heute, 14. Nov.'), findsOneWidget);

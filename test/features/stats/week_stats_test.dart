@@ -211,6 +211,25 @@ void main() {
       expect(stats.average(Nutrient.kcal), 500);
     });
 
+    test('a new week (todayProvider.refresh) moves the current week on, not '
+        'a picked one', () {
+      var now = DateTime(2026, 11, 15, 23, 50); // Sunday
+      final c = ProviderContainer.test(
+        overrides: testOverrides(db: db, clock: Clock(() => now)),
+      );
+      expect(c.read(selectedWeekProvider), '2026-11-09');
+
+      now = DateTime(2026, 11, 16, 7); // Monday
+      c.read(todayProvider.notifier).refresh();
+      expect(c.read(selectedWeekProvider), '2026-11-16');
+      expect(c.read(selectedWeekProvider.notifier).isCurrentWeek, isTrue);
+
+      c.read(selectedWeekProvider.notifier).previous();
+      now = DateTime(2026, 11, 23, 7);
+      c.read(todayProvider.notifier).refresh();
+      expect(c.read(selectedWeekProvider), '2026-11-09');
+    });
+
     test('starts at this week, goes back, never into the future', () {
       final c = container();
       final notifier = c.read(selectedWeekProvider.notifier);

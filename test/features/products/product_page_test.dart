@@ -303,7 +303,7 @@ void main() {
 
     // Back on the Today tab, with the confirmation.
     expect(find.text('chipsfrisch ungarisch'), findsNothing);
-    expect(find.text('Zu Snacks hinzugefügt'), findsOneWidget);
+    expect(find.text('Zu den Snacks hinzugefügt'), findsOneWidget);
   });
 
   testWidgets('without day and meal: today and the meal of the time of day; '

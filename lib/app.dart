@@ -1,17 +1,40 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'core/clock.dart';
 import 'core/theme/app_theme.dart';
 import 'data/settings_repository.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 
 /// The root widget: theme, language and navigation.
-class FoodTrackerApp extends ConsumerWidget {
+class FoodTrackerApp extends ConsumerStatefulWidget {
   const FoodTrackerApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FoodTrackerApp> createState() => _FoodTrackerAppState();
+}
+
+class _FoodTrackerAppState extends ConsumerState<FoodTrackerApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Back in the foreground – maybe on a new day: "Heute" moves on.
+    _lifecycle = AppLifecycleListener(
+      onResume: () => ref.read(todayProvider.notifier).refresh(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // While the settings are still loading, follow the system.
     final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
     final locale = ref.watch(localeProvider).value;

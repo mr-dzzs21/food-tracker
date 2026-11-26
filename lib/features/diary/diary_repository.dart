@@ -358,6 +358,26 @@ String mealSlotName(MealSlot slot, AppLocalizations l10n) {
   };
 }
 
+/// Which meal a text with a German article means: `breakfast`, `lunch`,
+/// `dinner` or `snacks` for the built-in meals ("zum Frühstück", "zu den
+/// Snacks"), `other` for renamed and own meals ("zu {meal}"). For the ARB
+/// texts with `{slot, select, …}`.
+String mealSlotTextKey(MealSlot slot) {
+  final custom = slot.customName?.trim();
+  if (custom != null && custom.isNotEmpty) return 'other';
+  return switch (slot.builtIn) {
+    final builtIn?
+        when const {
+          'breakfast',
+          'lunch',
+          'dinner',
+          'snacks',
+        }.contains(builtIn) =>
+      builtIn,
+    _ => 'other',
+  };
+}
+
 /// Minutes after midnight of [time], for [preselectMealSlot].
 int minuteOfDay(DateTime time) => time.hour * 60 + time.minute;
 
@@ -405,6 +425,18 @@ final dayEntriesProvider = StreamProvider.autoDispose
       return ref.watch(diaryRepositoryProvider).watchDay(day);
     });
 
+/// The entries of the day shown on "Heute" ([selectedDayProvider]).
+///
+/// One provider for every day (not one per day like [dayEntriesProvider]):
+/// when the user switches the day, Riverpod keeps the old entries as the
+/// value of the loading state until the new ones arrive. So the page shows
+/// no spinner in between, and the ring moves from the old to the new total.
+final selectedDayEntriesProvider = StreamProvider.autoDispose<List<DayEntry>>(
+  (ref) => ref
+      .watch(diaryRepositoryProvider)
+      .watchDay(ref.watch(selectedDayProvider)),
+);
+
 /// All meals (also hidden ones), sorted by position.
 final mealSlotsProvider = StreamProvider.autoDispose<List<MealSlot>>(
   (ref) => ref.watch(diaryRepositoryProvider).watchMealSlots(),
@@ -415,20 +447,54 @@ final lastAmountProvider = FutureProvider.autoDispose.family<double?, int>(
   (ref, foodId) => ref.watch(diaryRepositoryProvider).lastAmountFor(foodId),
 );
 
-/// The day shown on the "Heute" tab (key `yyyy-MM-dd`). Starts at today.
+/// The first day the "Heute" tab can show. The date picker needs limits, and
+/// ‹ › stop at the same ones.
+const firstSelectableDay = '2000-01-01';
+
+/// The last day the "Heute" tab can show: 31 December of next year.
+String lastSelectableDay(Clock clock) => '${clock.now().year + 1}-12-31';
+
+/// [day], moved into the range from [firstSelectableDay] to
+/// [lastSelectableDay]. Day keys sort like dates, so text comparison works.
+String clampSelectableDay(String day, Clock clock) {
+  if (day.compareTo(firstSelectableDay) < 0) return firstSelectableDay;
+  final last = lastSelectableDay(clock);
+  return day.compareTo(last) > 0 ? last : day;
+}
+
+/// The day shown on the "Heute" tab (key `yyyy-MM-dd`). Starts at today and
+/// stays between [firstSelectableDay] and [lastSelectableDay].
 class SelectedDay extends Notifier<String> {
   @override
-  String build() => todayKey(ref.watch(clockProvider));
+  String build() {
+    // After midnight "today" moves on (see todayProvider). The page follows
+    // only when it still shows the old today – not a day the user picked.
+    ref.listen(todayProvider, (previous, next) {
+      if (previous != null && state == previous) state = next;
+    });
+    return ref.read(todayProvider);
+  }
 
-  void previous() => state = addDays(state, -1);
+  /// Whether ‹ can go one day back.
+  bool get canGoBack => state.compareTo(firstSelectableDay) > 0;
 
-  void next() => state = addDays(state, 1);
+  /// Whether › can go one day forward.
+  bool get canGoForward =>
+      state.compareTo(lastSelectableDay(ref.read(clockProvider))) < 0;
+
+  void previous() {
+    if (canGoBack) state = addDays(state, -1);
+  }
+
+  void next() {
+    if (canGoForward) state = addDays(state, 1);
+  }
 
   void today() => state = todayKey(ref.read(clockProvider));
 
   void set(String day) {
     if (!isDayKey(day)) throw ArgumentError.value(day, 'day');
-    state = day;
+    state = clampSelectableDay(day, ref.read(clockProvider));
   }
 }
 
@@ -436,10 +502,11 @@ final selectedDayProvider = NotifierProvider<SelectedDay, String>(
   SelectedDay.new,
 );
 
-/// Reads an amount the user typed (`45`, `12,5`, `12.5`). `null` when it is
+/// Reads an amount the user typed in the language [locale] (`45`, `12,5`,
+/// `12.5`, `1.000` in German, see [parseUserNumber]). `null` when it is
 /// empty, not a number, 0 or less, or above [DiaryRepository.maxAmount].
-double? parseEntryAmount(String text) {
-  final value = parseUserNumber(text);
+double? parseEntryAmount(String text, String locale) {
+  final value = parseUserNumber(text, locale);
   if (value == null || value <= 0 || value > DiaryRepository.maxAmount) {
     return null;
   }

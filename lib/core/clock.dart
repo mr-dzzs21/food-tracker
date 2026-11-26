@@ -8,6 +8,22 @@ import 'package:intl/intl.dart';
 /// Tests replace it with `Clock.fixed(...)` so "today" never changes.
 final clockProvider = Provider<Clock>((ref) => const Clock());
 
+/// Today's day key (`yyyy-MM-dd`).
+///
+/// A phone keeps the app in the background for hours, often over midnight.
+/// The app calls [Today.refresh] when it comes back to the foreground (see
+/// `FoodTrackerApp`), so "Heute" and the current week move on to the new
+/// day. Pages that only need the date once can still use [todayKey].
+final todayProvider = NotifierProvider<Today, String>(Today.new);
+
+class Today extends Notifier<String> {
+  @override
+  String build() => todayKey(ref.watch(clockProvider));
+
+  /// Reads the clock again (the date may have changed meanwhile).
+  void refresh() => state = todayKey(ref.read(clockProvider));
+}
+
 /// A diary day is stored as text in the form `yyyy-MM-dd`, for example
 /// `2026-11-14`. Text keys avoid time-zone and daylight-saving surprises:
 /// a meal eaten at 23:30 always belongs to that local calendar day.

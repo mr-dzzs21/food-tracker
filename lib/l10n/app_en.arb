@@ -40,8 +40,11 @@
   },
   "mealAddTooltip": "Add to {meal}",
   "@mealAddTooltip": {
-    "description": "Tooltip of the + button of a meal section",
+    "description": "Tooltip of the + button of a meal section. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles: 'Zum Frühstück hinzufügen'), otherwise 'other'.",
     "placeholders": {
+      "slot": {
+        "type": "String"
+      },
       "meal": {
         "type": "String"
       }
@@ -424,8 +427,11 @@
   },
   "productAdded": "Added to {meal}",
   "@productAdded": {
-    "description": "SnackBar after adding a food to the diary",
+    "description": "SnackBar after adding a food to the diary. slot = breakfast/lunch/dinner/snacks for the built-in meals (for German articles: 'Zum Frühstück hinzugefügt'), otherwise 'other'.",
     "placeholders": {
+      "slot": {
+        "type": "String"
+      },
       "meal": {
         "type": "String"
       }

@@ -25,6 +25,7 @@ import '../diary/day_label.dart';
 import '../diary/diary_repository.dart';
 import '../diary/widgets/amount_field.dart';
 import 'basic_foods.dart';
+import 'food_form_page.dart';
 import 'food_source.dart';
 import 'nutrient_format.dart';
 import 'nutrients.dart';
@@ -356,7 +357,11 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     }
     unawaited(HapticFeedback.lightImpact());
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.productAdded(mealSlotName(slot, l10n)))),
+      SnackBar(
+        content: Text(
+          l10n.productAdded(mealSlotTextKey(slot), mealSlotName(slot, l10n)),
+        ),
+      ),
     );
     await navigator.maybePop(true);
   }
@@ -370,11 +375,10 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
   String _ctaLabel(AppLocalizations l10n, MealSlot slot, double amount) {
     final food = widget.food;
     final kcal = food.nutrients.scaled(amount).kcal;
-    final custom = slot.customName?.trim();
     return l10n.productAddToMeal(
       formatAmount(amount, isLiquid: food.isLiquid, locale: l10n.localeName),
       // Built-in meals get their German article ("zum", "zu den").
-      (custom == null || custom.isEmpty) ? slot.builtIn ?? 'other' : 'other',
+      mealSlotTextKey(slot),
       mealSlotName(slot, l10n),
       kcal == null ? '–' : formatNutrientValue(Nutrient.kcal, kcal, l10n),
     );
@@ -391,7 +395,7 @@ class _FoodDetailsState extends ConsumerState<_FoodDetails> {
     final slots = ref.watch(mealSlotsProvider).value ?? const <MealSlot>[];
     final slot = _slotFor(slots, clock);
     final lastAmount = ref.watch(lastAmountProvider(food.id)).value;
-    final amount = parseEntryAmount(_amount.text);
+    final amount = parseEntryAmount(_amount.text, l10n.localeName);
     final barcode = food.barcode;
     final fromOff = food.source == FoodSource.openFoodFacts && barcode != null;
     final fromBls = food.source.isFromBls;
@@ -563,6 +567,15 @@ class _ProductHeader extends ConsumerWidget {
 
   final Food food;
 
+  /// Opens the form of an own food. Deleted there: this page closes too,
+  /// instead of showing "Dieses Lebensmittel gibt es nicht mehr".
+  static Future<void> _edit(BuildContext context, int id) async {
+    // Taken first: this header is gone once the food is deleted.
+    final router = GoRouter.of(context);
+    final result = await router.push<FoodFormResult>(Routes.editFood(id));
+    if (result == FoodFormResult.deleted) router.pop();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -606,7 +619,7 @@ class _ProductHeader extends ConsumerWidget {
                   RoundIconButton(
                     icon: Icons.edit_rounded,
                     tooltip: l10n.actionEdit,
-                    onPressed: () => context.push(Routes.editFood(food.id)),
+                    onPressed: () => _edit(context, food.id),
                   ),
               ],
             ),

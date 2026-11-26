@@ -25,6 +25,14 @@ import 'nutrient_format.dart';
 import 'nutrients.dart';
 import 'product_repository.dart';
 
+/// What the form returns when it closes after editing a food.
+enum FoodFormResult {
+  saved,
+
+  /// The food was deleted: a page that showed it should close, too.
+  deleted,
+}
+
 /// Form to create or edit an own food (name + nutrients per 100 g/ml).
 ///
 /// - [foodId] set: edit that food.
@@ -137,8 +145,11 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
     }
   }
 
+  /// The language decides how "1.000" or "1,5" is read (see parseUserNumber).
+  String get _locale => AppLocalizations.of(context).localeName;
+
   double? _number(Nutrient nutrient) =>
-      parseUserNumber(_values[nutrient]!.text);
+      parseUserNumber(_values[nutrient]!.text, _locale);
 
   // ---------------------------------------------------------------------------
   // Validation (texts come from the ARB files)
@@ -152,7 +163,7 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
       // Only the calories are required: without them nothing can be counted.
       return nutrient == Nutrient.kcal ? l10n.foodFormKcalMissing : null;
     }
-    final value = parseUserNumber(text);
+    final value = parseUserNumber(text, l10n.localeName);
     if (value == null) return l10n.foodFormNotANumber;
 
     final max = nutrient == Nutrient.kcal
@@ -184,7 +195,9 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
           ? null
           : l10n.foodFormPortionSizeMissing;
     }
-    return parseEntryAmount(text) == null ? l10n.amountInvalid : null;
+    return parseEntryAmount(text, l10n.localeName) == null
+        ? l10n.amountInvalid
+        : null;
   }
 
   // ---------------------------------------------------------------------------
@@ -221,7 +234,7 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
             brand: _brand.text,
             barcode: _barcode,
             isLiquid: _isLiquid,
-            servingSize: parseEntryAmount(_servingSize.text),
+            servingSize: parseEntryAmount(_servingSize.text, _locale),
             servingLabel: _servingLabel.text,
             nutrients: Nutrients(
               kcal: _number(Nutrient.kcal),
@@ -245,7 +258,7 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
     if (!mounted) return;
 
     if (_isEdit) {
-      context.pop(true);
+      context.pop(FoodFormResult.saved);
       return;
     }
     final day = widget.day;
@@ -275,7 +288,7 @@ class _FoodFormPageState extends ConsumerState<FoodFormPage> {
     messenger.showSnackBar(
       SnackBar(content: Text(l10n.foodFormDeleted(food.name))),
     );
-    if (mounted) context.pop();
+    if (mounted) context.pop(FoodFormResult.deleted);
   }
 
   // ---------------------------------------------------------------------------

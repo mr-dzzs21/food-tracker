@@ -33,7 +33,7 @@ class TodayPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final day = ref.watch(selectedDayProvider);
-    final entries = ref.watch(dayEntriesProvider(day));
+    final entries = ref.watch(selectedDayEntriesProvider);
     final slots = ref.watch(mealSlotsProvider);
     final goal = ref.watch(goalProvider);
 
@@ -41,8 +41,10 @@ class TodayPage extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: switch ((entries, slots, goal)) {
+          // While another day loads, the entries of the last day stay (see
+          // selectedDayEntriesProvider): no spinner, the ring animates.
           (
-            AsyncData(value: final entries),
+            AsyncValue(hasError: false, value: final entries?),
             AsyncData(value: final slots),
             AsyncData(value: final goal),
           ) =>
@@ -56,7 +58,7 @@ class TodayPage extends ConsumerWidget {
               title: AppLocalizations.of(context).errorGeneric,
               actionLabel: AppLocalizations.of(context).actionRetry,
               onAction: () => ref
-                ..invalidate(dayEntriesProvider(day))
+                ..invalidate(selectedDayEntriesProvider)
                 ..invalidate(mealSlotsProvider)
                 ..invalidate(goalProvider),
             ),
@@ -100,12 +102,13 @@ class _DayHeader extends ConsumerWidget {
   final String day;
 
   Future<void> _pickDay(BuildContext context, WidgetRef ref) async {
-    final now = ref.read(clockProvider).now();
+    final clock = ref.read(clockProvider);
+    // The same limits as ‹ › (the picker fails for a day outside them).
     final picked = await showDatePicker(
       context: context,
-      initialDate: parseDayKey(day),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(now.year + 1, 12, 31),
+      initialDate: parseDayKey(clampSelectableDay(day, clock)),
+      firstDate: parseDayKey(firstSelectableDay),
+      lastDate: parseDayKey(lastSelectableDay(clock)),
     );
     if (picked != null && context.mounted) {
       ref.read(selectedDayProvider.notifier).set(dayKeyOf(picked));
@@ -118,7 +121,7 @@ class _DayHeader extends ConsumerWidget {
     final colors = context.appColors;
     final locale = l10n.localeName;
     final date = parseDayKey(day);
-    final isToday = day == todayKey(ref.watch(clockProvider));
+    final isToday = day == ref.watch(todayProvider);
     final notifier = ref.read(selectedDayProvider.notifier);
     final pillStyle = Theme.of(context).textTheme.labelMedium!
         .copyWith(color: colors.onTonal, fontWeight: FontWeight.w800);
@@ -168,15 +171,16 @@ class _DayHeader extends ConsumerWidget {
         ],
       ),
       actions: [
+        // Disabled at the first and last day the date picker offers.
         RoundIconButton(
           icon: Icons.chevron_left_rounded,
           tooltip: l10n.dayPrevious,
-          onPressed: notifier.previous,
+          onPressed: notifier.canGoBack ? notifier.previous : null,
         ),
         RoundIconButton(
           icon: Icons.chevron_right_rounded,
           tooltip: l10n.dayNext,
-          onPressed: notifier.next,
+          onPressed: notifier.canGoForward ? notifier.next : null,
         ),
       ],
     );
@@ -284,7 +288,8 @@ class _TodayContent extends ConsumerWidget {
               0,
             ),
             child: GoalPrompt(
-              onSetGoal: () => context.go(Routes.goal),
+              // Pushed on this tab, so "back" and saving return to Heute.
+              onSetGoal: () => context.push(Routes.todayGoal),
               onDismiss: () =>
                   ref.read(goalCardDismissedProvider.notifier).dismiss(),
             ),

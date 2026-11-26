@@ -30,6 +30,10 @@ abstract final class Routes {
   static const stats = '/stats';
   static const profile = '/profile';
   static const goal = '/profile/goal';
+
+  /// The goal page opened from "Heute" (same page, but on the Today tab, so
+  /// "back" and saving return there).
+  static const todayGoal = '/today/goal';
   static const meals = '/profile/meals';
   static const myFoods = '/profile/my-foods';
   static const about = '/profile/about';
@@ -113,6 +117,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: Routes.today,
                 builder: (_, _) => const TodayPage(),
                 routes: [
+                  GoRoute(path: 'goal', builder: (_, _) => const GoalPage()),
                   GoRoute(
                     path: 'add/:day/:mealId',
                     builder: (_, state) => AddFoodPage(

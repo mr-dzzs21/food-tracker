@@ -69,7 +69,10 @@ class _EntrySheetState extends ConsumerState<EntrySheet> {
   }
 
   Future<void> _save() async {
-    final amount = parseEntryAmount(_amount.text);
+    final amount = parseEntryAmount(
+      _amount.text,
+      AppLocalizations.of(context).localeName,
+    );
     if (amount == null) return;
     final navigator = Navigator.of(context);
     await ref
@@ -134,7 +137,8 @@ class _EntrySheetState extends ConsumerState<EntrySheet> {
               CtaButton(
                 icon: Icons.check_rounded,
                 label: l10n.actionSave,
-                onPressed: parseEntryAmount(_amount.text) == null
+                onPressed:
+                    parseEntryAmount(_amount.text, l10n.localeName) == null
                     ? null
                     : _save,
               ),

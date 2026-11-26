@@ -105,7 +105,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealUnnamed => 'Meal';
 
   @override
-  String mealAddTooltip(String meal) {
+  String mealAddTooltip(String slot, String meal) {
     return 'Add to $meal';
   }
 
@@ -393,7 +393,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String productAdded(String meal) {
+  String productAdded(String slot, String meal) {
     return 'Added to $meal';
   }
 

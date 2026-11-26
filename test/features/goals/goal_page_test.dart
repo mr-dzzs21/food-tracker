@@ -28,8 +28,8 @@ void main() {
 
   tearDown(() => db.close());
 
-  /// Starts the app and opens the goal page like the "Ziel festlegen" card
-  /// does (with `go`, so the profile page is below it).
+  /// Starts the app and opens the goal page of the Profil tab (with `go`,
+  /// so the profile page is below it).
   Future<void> openGoalPage(
     WidgetTester tester, {
     Locale locale = const Locale('de'),
@@ -257,6 +257,29 @@ void main() {
       expect(find.text('Weniger als 1.780 kcal?'), findsOneWidget);
     });
 
+    testWidgets('"2.000" with the German thousands dot is 2000 kcal, never 2', (
+      tester,
+    ) async {
+      await openManual(tester);
+      await enter(tester, 'Kalorien pro Tag', '2.000');
+      await tapText(tester, 'Speichern');
+
+      // No "below the floor" dialog: it is 2000 kcal.
+      expect(find.byType(AlertDialog), findsNothing);
+      expect((await goals.getGoal())!.kcal, 2000);
+    });
+
+    testWidgets('a decimal is no calorie goal', (tester) async {
+      await openManual(tester);
+      await enter(tester, 'Kalorien pro Tag', '2,5');
+      await tapText(tester, 'Speichern');
+      expect(
+        find.text('Bitte gib einen Wert von 1 bis 10.000 kcal ein.'),
+        findsOneWidget,
+      );
+      expect(await goals.getGoal(), isNull);
+    });
+
     testWidgets('kcal is required', (tester) async {
       await openManual(tester);
       await tapText(tester, 'Speichern');
@@ -318,6 +341,23 @@ void main() {
     expect(find.text('approx. 1,780 kcal'), findsOneWidget);
     expect(find.text('Call 0221 892031'), findsOneWidget);
     expect(find.textContaining('talk to someone you trust'), findsOneWidget);
+  });
+
+  testWidgets('English: "2,000" kcal is 2000, "2.000" is not a whole number', (
+    tester,
+  ) async {
+    await openGoalPage(tester, locale: const Locale('en'));
+    await tester.tap(find.text('Enter myself'));
+    await tester.pumpAndSettle();
+    await enter(tester, 'Calories per day', '2.000');
+    await tapText(tester, 'Save');
+    expect(find.textContaining('Please enter'), findsOneWidget);
+    expect(await goals.getGoal(), isNull);
+
+    await enter(tester, 'Calories per day', '2,000');
+    await tapText(tester, 'Save');
+    expect(find.byType(AlertDialog), findsNothing);
+    expect((await goals.getGoal())!.kcal, 2000);
   });
 
   testWidgets('survives text scale 2.0 on a small phone', (tester) async {

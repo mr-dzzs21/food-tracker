@@ -19,6 +19,7 @@ import '../../helpers/pump_app.dart';
 import '../../helpers/scan_helpers.dart';
 
 const crisps = '4003586100313'; // recorded product: chipsfrisch ungarisch
+const unknown = '4099999999996'; // valid, but unknown at Open Food Facts
 
 void main() {
   late AppDatabase db;
@@ -31,11 +32,14 @@ void main() {
 
   tearDown(() => db.close());
 
-  /// Open Food Facts answers with the crisps for every product and with
-  /// the recorded search page for every search.
+  /// Open Food Facts answers with the crisps for every product (except
+  /// [unknown]) and with the recorded search page for every search.
   final client = MockClient((request) async {
     if (request.url.host == 'search.openfoodfacts.org') {
       return jsonResponse(fixtureText('search_haferflocken.json'));
+    }
+    if (request.url.path.endsWith(unknown)) {
+      return jsonResponse(fixtureText('not_found.json'), status: 404);
     }
     return jsonResponse(fixtureText('crisps.json'));
   });
@@ -161,6 +165,63 @@ void main() {
       expect(location(router), Routes.scan);
       // The product page counted as "viewed".
       expect(find.text('chipsfrisch ungarisch'), findsOneWidget);
+      expect(scanner.isRunning, isTrue);
+    });
+
+    // "Selbst eintragen" replaces the product page with the form
+    // (pushReplacement), and go_router never completes the future of a
+    // replaced page: the camera must start again anyway.
+    testWidgets('unknown barcode → "Selbst eintragen" → back: the camera '
+        'scans again', (tester) async {
+      final router = await startApp(tester);
+      await openScanTab(tester);
+
+      unawaited(scanner.scan(unknown));
+      await tester.pumpAndSettle();
+      expect(scanner.isRunning, isFalse);
+      await tester.tap(find.text('Selbst eintragen'));
+      await tester.pumpAndSettle();
+      expect(location(router), Routes.newFood(barcode: unknown));
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(location(router), Routes.scan);
+      expect(scanner.isRunning, isTrue);
+
+      unawaited(scanner.scan(crisps));
+      await tester.pumpAndSettle();
+      expect(location(router), Routes.product(crisps));
+    });
+
+    testWidgets('unknown barcode → form saved → its page → back: the camera '
+        'scans again', (tester) async {
+      final router = await startApp(tester);
+      await openScanTab(tester);
+
+      unawaited(scanner.scan(unknown));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Selbst eintragen'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Name *'),
+        'Omas Marmelade',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Energie *'),
+        '250',
+      );
+      await tester.tap(find.text('Speichern'));
+      await tester.pumpAndSettle();
+      // The form replaced itself with the page of the new food.
+      expect(find.text('Omas Marmelade'), findsOneWidget);
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(location(router), Routes.scan);
+      expect(scanner.isRunning, isTrue);
+      unawaited(scanner.scan(crisps));
+      await tester.pumpAndSettle();
+      expect(location(router), Routes.product(crisps));
     });
   });
 

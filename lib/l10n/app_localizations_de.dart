@@ -105,8 +105,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get mealUnnamed => 'Mahlzeit';
 
   @override
-  String mealAddTooltip(String meal) {
-    return 'Zu $meal hinzufügen';
+  String mealAddTooltip(String slot, String meal) {
+    String _temp0 = intl.Intl.selectLogic(slot, {
+      'breakfast': 'Zum Frühstück hinzufügen',
+      'lunch': 'Zum Mittagessen hinzufügen',
+      'dinner': 'Zum Abendessen hinzufügen',
+      'snacks': 'Zu den Snacks hinzufügen',
+      'other': 'Zu $meal hinzufügen',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -393,8 +400,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String productAdded(String meal) {
-    return 'Zu $meal hinzugefügt';
+  String productAdded(String slot, String meal) {
+    String _temp0 = intl.Intl.selectLogic(slot, {
+      'breakfast': 'Zum Frühstück hinzugefügt',
+      'lunch': 'Zum Mittagessen hinzugefügt',
+      'dinner': 'Zum Abendessen hinzugefügt',
+      'snacks': 'Zu den Snacks hinzugefügt',
+      'other': 'Zu $meal hinzugefügt',
+    });
+    return '$_temp0';
   }
 
   @override
